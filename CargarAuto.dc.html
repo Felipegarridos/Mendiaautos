@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  :root{--bg:#0c0c0e;--c-card:#161619;--c-input:#161619;--c-circle:#1c1c20;--t-strong:#fff;--t-1:rgba(255,255,255,.8);--t-2:rgba(255,255,255,.58);--t-3:rgba(255,255,255,.42);--ln:rgba(255,255,255,.09);--ln-strong:rgba(255,255,255,.2);--logo-bg:#101012}
+  body[data-theme="light"]{--bg:#fff;--c-card:#f6f6f7;--c-input:#f6f6f7;--c-circle:#f4f4f5;--t-strong:#0e0e10;--t-1:rgba(14,14,16,.82);--t-2:rgba(14,14,16,.56);--t-3:rgba(14,14,16,.44);--ln:rgba(0,0,0,.09);--ln-strong:rgba(0,0,0,.16);--logo-bg:#fff}
+  body{margin:0;background:var(--bg);font-family:'Open Sans',system-ui,sans-serif;color:var(--t-1);transition:background .35s,color .35s}
+  a{color:inherit;text-decoration:none}
+  a:hover{color:#1E50A2}
+  .mnd-mich{font-family:'Michroma',sans-serif}
+  .mnd-reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .65s cubic-bezier(.22,1,.36,1)}
+  .mnd-reveal.mnd-in{opacity:1;transform:none}
+  .mnd-lab{display:block;font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-3);margin-bottom:8px}
+  .mnd-fld{width:100%;background:var(--c-input);border:1px solid var(--ln);border-radius:10px;padding:12px 13px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-strong);outline:none;transition:border-color .25s}
+  .mnd-fld::placeholder{color:var(--t-3)}
+  .mnd-fld:focus{border-color:#1E50A2}
+  .mnd-card{background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:26px 26px}
+  .mnd-sec-h{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .mnd-seg-g{display:inline-flex;background:var(--c-input);border:1px solid var(--ln);border-radius:10px;padding:3px;gap:3px}
+  .mnd-seg-g button{border:0;background:transparent;color:var(--t-2);border-radius:8px;padding:9px 16px;font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+  .mnd-seg-g button.on{background:#1E50A2;color:#fff}
+  .mnd-up{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1px dashed var(--ln-strong);border-radius:14px;padding:26px 18px;cursor:pointer;text-align:center;transition:border-color .25s,background .25s;min-height:150px}
+  .mnd-up:hover{border-color:#1E50A2;background:rgba(30,80,162,.04)}
+  .mnd-up.filled{border-style:solid;border-color:#1E50A2}
+  .mnd-thumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;border:1px solid var(--ln);background:var(--c-input)}
+  .mnd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .mnd-thumb .mnd-ord{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:#1E50A2;color:#fff;font:700 11px/22px 'Open Sans',sans-serif;text-align:center}
+  .mnd-thumb .mnd-rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;cursor:pointer;font-size:14px;line-height:22px;padding:0}
+  .mnd-thumb .mnd-mv{position:absolute;bottom:6px;background:rgba(0,0,0,.6);color:#fff;border:0;cursor:pointer;width:22px;height:22px;font-size:13px;line-height:22px;padding:0}
+  .mnd-thumb .mnd-mv-l{left:6px}.mnd-thumb .mnd-mv-r{left:32px}
+  .mnd-up-ico{width:44px;height:44px;border-radius:11px;background:var(--c-input);display:flex;align-items:center;justify-content:center;color:#1E50A2}
+  .mnd-add{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px dashed var(--ln-strong);border-radius:9px;padding:11px 16px;font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-strong);cursor:pointer;transition:border-color .2s}
+  .mnd-add:hover{border-color:#1E50A2}
+  .mnd-del{width:42px;height:42px;flex:none;border:1px solid var(--ln-strong);border-radius:10px;background:transparent;color:var(--t-3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .mnd-del:hover{border-color:#1E50A2;color:#1E50A2}
+  .mnd-cta{transition:transform .3s,box-shadow .3s}
+  .mnd-cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(30,80,162,.6)}
+  .mnd-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+  .mnd-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 18px}
+  @media (prefers-reduced-motion:reduce){.mnd-reveal{opacity:1!important;transform:none!important}}
+</style>
+</helmet>
+<div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
+
+  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+    <a href="MendiautosHome.dc.html" style="display:flex;align-items:center;gap:12px;flex:1"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></a>
+    <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
+    <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
+      <svg class="mnd-theme-btn" style="cursor:pointer" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path></svg>
+      <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
+    </div>
+  </header>
+
+  <div style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase" onmouseover="this.style.color='var(--t-strong)'" onmouseout="this.style.color='var(--t-3)'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+
+  <section style="padding:30px 34px 10px">
+    <div class="mnd-reveal" style="max-width:820px">
+      <div style="display:flex;align-items:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--t-3)">Panel · Cargar vehículo</span></div>
+      <h1 class="mnd-mich" style="margin:18px 0 0;font-size:clamp(30px,4vw,46px);line-height:1.04;color:var(--t-strong);text-transform:uppercase">Cargar un auto</h1>
+      <p style="margin:16px 0 0;font:400 15px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Registra manualmente toda la información del vehículo: fotos, video, ficha técnica completa e historial. Así aparecerá en la ficha de detalle.</p>
+    </div>
+  </section>
+
+  <section style="padding:14px 34px 40px;display:flex;flex-direction:column;gap:20px">
+
+    <!-- MEDIA -->
+    <div class="mnd-card mnd-reveal">
+      <div class="mnd-sec-h"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Fotos y video</span></div>
+      <div class="mnd-grid3">
+        <label class="mnd-up mnd-fotos-slot"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m4 18 5-5 4 4 3-3 4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Fotos del vehículo</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Máximo 15 imágenes · JPG/PNG</span><input type="file" accept="image/*" multiple hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="14" height="12" rx="2"></rect><path d="m17 10 4-2v8l-4-2z" stroke-linejoin="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Video HD</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">MP4 · alta resolución</span><input type="file" accept="video/*" hidden></label>
+      </div>
+      <div class="mnd-sec-h mnd-docs-toggle" style="margin-top:28px;cursor:pointer;display:flex;align-items:center;gap:12px;justify-content:space-between"><span style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Documentos</span></span><svg class="mnd-docs-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--t-3);transition:transform .4s cubic-bezier(.22,1,.36,1)"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+      <div class="mnd-docs-panel" style="overflow:hidden;max-height:0;opacity:0;transition:max-height .5s cubic-bezier(.22,1,.36,1),opacity .4s ease,margin .4s ease;margin-top:0">
+      <div class="mnd-grid3" style="margin-top:16px">
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M8 9h8M8 13h5" stroke-linecap="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Tarjeta de propiedad</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Ambos lados · PDF/JPG</span><input type="file" accept="image/*,application/pdf" multiple hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 5 6v5c0 4 3 7 7 9 4-2 7-5 7-9V6l-7-3Z"></path><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">SOAT</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Vigente · PDF/JPG</span><input type="file" accept="image/*,application/pdf" hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h9l3 3v15H6z"></path><path d="M9 12h6M9 16h6M9 8h3" stroke-linecap="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Revisión técnico-mecánica</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">RTM vigente · PDF/JPG</span><input type="file" accept="image/*,application/pdf" hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Historial RUNT</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Opcional · PDF</span><input type="file" accept="image/*,application/pdf" hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Paz y salvo / prenda</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Opcional · PDF</span><input type="file" accept="image/*,application/pdf" hidden></label>
+        <label class="mnd-up"><span class="mnd-up-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 5v14M5 12h14" stroke-linecap="round"></path></svg></span><span style="font:700 13px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Otros documentos</span><span class="mnd-up-s" style="font:400 11px/1.4 'Open Sans',sans-serif;color:var(--t-3)">Facturas, manuales · PDF/JPG</span><input type="file" accept="image/*,application/pdf" multiple hidden></label>
+      </div>
+      </div>
+      <div class="mnd-fotos-gallery" style="display:none;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:16px"></div>
+      <div class="mnd-fotos-count" style="display:none;margin-top:10px;font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.06em;color:var(--t-3)"></div>
+    </div>
+
+    <!-- IDENTIFICACIÓN -->
+    <div class="mnd-card mnd-reveal">
+      <div class="mnd-sec-h"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Identificación</span></div>
+      <div class="mnd-grid3">
+        <div><label class="mnd-lab">Marca</label><input class="mnd-fld" placeholder="Ej. Renault"></div>
+        <div><label class="mnd-lab">Modelo</label><input class="mnd-fld" placeholder="Ej. Duster"></div>
+        <div><label class="mnd-lab">Versión</label><input class="mnd-fld" placeholder="Ej. Intens"></div>
+        <div><label class="mnd-lab">Año</label><input class="mnd-fld" inputmode="numeric" placeholder="2023"></div>
+        <div><label class="mnd-lab">Referencia interna</label><input class="mnd-fld" placeholder="MND-00123"></div>
+        <div><label class="mnd-lab">Precio (COP)</label><input class="mnd-fld" inputmode="numeric" placeholder="$ 78.900.000"></div>
+      </div>
+    </div>
+
+    <!-- FICHA TÉCNICA -->
+    <div class="mnd-card mnd-reveal">
+      <div class="mnd-sec-h"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Ficha técnica</span></div>
+      <div class="mnd-grid3">
+        <div><label class="mnd-lab">Kilometraje</label><input class="mnd-fld" inputmode="numeric" placeholder="28.400 km"></div>
+        <div><label class="mnd-lab">Combustible</label><select class="mnd-fld"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select></div>
+        <div><label class="mnd-lab">Transmisión</label><select class="mnd-fld"><option>Automática</option><option>Mecánica</option></select></div>
+        <div><label class="mnd-lab">Tipo de carrocería</label><select class="mnd-fld"><option>SUV</option><option>Sedán</option><option>Hatchback</option><option>Pickup</option><option>Coupé</option><option>Camioneta</option></select></div>
+        <div><label class="mnd-lab">Tracción</label><select class="mnd-fld"><option>4x2</option><option>4x4</option><option>AWD</option></select></div>
+        <div><label class="mnd-lab">Cilindraje</label><input class="mnd-fld" placeholder="1.300 cc"></div>
+        <div><label class="mnd-lab">Potencia</label><input class="mnd-fld" placeholder="156 HP"></div>
+        <div><label class="mnd-lab">Autonomía (si es eléctrico)</label><input class="mnd-fld" placeholder="— / 420 km"></div>
+        <div><label class="mnd-lab">Color exterior</label><input class="mnd-fld" placeholder="Gris Cassiopée"></div>
+        <div><label class="mnd-lab">Color interior</label><input class="mnd-fld" placeholder="Negro"></div>
+        <div><label class="mnd-lab">Ciudad</label><input class="mnd-fld" placeholder="Bucaramanga"></div>
+        <div><label class="mnd-lab">Fin. de placa (Pico y placa)</label><input class="mnd-fld" placeholder="3"></div>
+      </div>
+    </div>
+
+    <!-- CONDICIÓN Y LEGAL -->
+    <div class="mnd-card mnd-reveal">
+      <div class="mnd-sec-h"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Condición y opciones</span></div>
+      <div class="mnd-grid3" style="gap:22px 18px">
+        <div><label class="mnd-lab">Condición</label><div class="mnd-seg-g"><button type="button" class="on">Usado</button><button type="button">Nuevo</button></div></div>
+        <div><label class="mnd-lab">Negociable</label><div class="mnd-seg-g"><button type="button" class="on">Sí</button><button type="button">No</button></div></div>
+        <div><label class="mnd-lab">Financiación</label><div class="mnd-seg-g"><button type="button" class="on">Sí</button><button type="button">No</button></div></div>
+        <div><label class="mnd-lab">Acepta permuta</label><div class="mnd-seg-g"><button type="button" class="on">Sí</button><button type="button">No</button></div></div>
+        <div><label class="mnd-lab">Único dueño</label><div class="mnd-seg-g"><button type="button" class="on">Sí</button><button type="button">No</button></div></div>
+        <div><label class="mnd-lab">Asegurable</label><div class="mnd-seg-g"><button type="button" class="on">Sí</button><button type="button">No</button></div></div>
+        <div><label class="mnd-lab">Blindado</label><div class="mnd-seg-g"><button type="button">Sí</button><button type="button" class="on">No</button></div></div>
+        <div><label class="mnd-lab">Garantía</label><input class="mnd-fld" placeholder="Vigente · 2027"></div>
+      </div>
+      <div style="margin-top:20px"><label class="mnd-lab">Descripción</label><textarea class="mnd-fld" rows="4" placeholder="SUV turbo, único dueño, mantenimientos al día en concesionario. Ideal para ciudad y carretera." style="resize:vertical"></textarea></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="mnd-card mnd-reveal">
+      <div class="mnd-sec-h"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:16px;color:var(--t-strong);text-transform:uppercase">Historial del vehículo</span></div>
+      <div class="mnd-grid3">
+        <div><label class="mnd-lab">Dueños anteriores</label><input class="mnd-fld" inputmode="numeric" placeholder="1"></div>
+        <div><label class="mnd-lab">Siniestros / choques</label><input class="mnd-fld" inputmode="numeric" placeholder="0"></div>
+        <div><label class="mnd-lab">Mantenimientos</label><input class="mnd-fld" inputmode="numeric" placeholder="4"></div>
+      </div>
+      <div class="mnd-grid2" style="margin-top:16px">
+        <div><label class="mnd-lab">RTM (revisión técnico-mecánica)</label><input class="mnd-fld" placeholder="Vigente · jun 2027"></div>
+        <div><label class="mnd-lab">SOAT</label><input class="mnd-fld" placeholder="Vigente · mar 2027"></div>
+        <div><label class="mnd-lab">Prenda / pignoración</label><select class="mnd-fld"><option>Sin prenda · a paz y salvo</option><option>Con prenda</option></select></div>
+        <div><label class="mnd-lab">Comparendos / multas</label><select class="mnd-fld"><option>A paz y salvo</option><option>Pendientes</option></select></div>
+      </div>
+      <div style="margin-top:24px;display:flex;align-items:center;justify-content:space-between"><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--t-3)">Línea de tiempo</span><button type="button" class="mnd-add mnd-add-hito"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"></path></svg> Agregar hito</button></div>
+      <div class="mnd-hitos" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+        <div class="mnd-hito" style="display:grid;grid-template-columns:130px 1fr auto;gap:10px"><input class="mnd-fld" placeholder="Año / fecha" value="2023"><input class="mnd-fld" placeholder="Descripción del hito" value="Compra original en concesionario autorizado."><button type="button" class="mnd-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div>
+      </div>
+    </div>
+
+    <div class="mnd-reveal" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:sticky;bottom:0;background:var(--bg);padding:18px 0;border-top:1px solid var(--ln)">
+      <span class="mnd-save-ok" style="display:none;font:600 13px/1 'Open Sans',sans-serif;color:#1E50A2">✓ Vehículo guardado correctamente.</span>
+      <span style="flex:1"></span>
+      <button type="button" class="mnd-cta mnd-save" style="display:inline-flex;align-items:center;gap:10px;background:#1E50A2;color:#fff;border:0;border-radius:11px;padding:16px 34px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Guardar vehículo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 3h11l3 3v15H5V3ZM8 3v6h7M8 21v-6h8v6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+    </div>
+  </section>
+
+  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:40px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+    <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:32px;display:block"></a>
+    <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1800}}">
+class Component extends DCLogic {
+  componentDidMount(){
+    let saved='dark'; try{ saved=localStorage.getItem('mnd-theme')||'dark'; }catch(e){}
+    this._applyTheme(saved);
+    document.querySelectorAll('.mnd-theme-btn').forEach(b=>b.onclick=(e)=>{e.preventDefault();this._applyTheme(window.__mndTheme==='light'?'dark':'light');});
+    const io=new IntersectionObserver((es)=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('mnd-in'); io.unobserve(en.target);} }),{threshold:.08});
+    document.querySelectorAll('.mnd-reveal').forEach((el,i)=>{ el.style.transitionDelay=(Math.min(i,4)*0.06)+'s'; io.observe(el); });
+    // uploads
+    this._fotos=[];
+    const fotoSlot=document.querySelector('.mnd-fotos-slot');
+    const fotoInp=fotoSlot?fotoSlot.querySelector('input[type=file]'):null;
+    if(fotoInp) fotoInp.addEventListener('change',()=>{
+      const files=Array.from(fotoInp.files||[]);
+      files.forEach(f=>{ if(this._fotos.length<15) this._fotos.push({file:f,url:URL.createObjectURL(f)}); });
+      fotoInp.value='';
+      this._renderFotos();
+    });
+    document.querySelectorAll('.mnd-up:not(.mnd-fotos-slot) input[type=file]').forEach(inp=>inp.addEventListener('change',()=>{
+      const box=inp.closest('.mnd-up'), s=box.querySelector('.mnd-up-s');
+      if(inp.files&&inp.files.length){ box.classList.add('filled'); s.textContent=inp.files.length>1?inp.files.length+' archivos seleccionados':inp.files[0].name; }
+      else box.classList.remove('filled');
+    }));
+    const dt=document.querySelector('.mnd-docs-toggle'), dp=document.querySelector('.mnd-docs-panel'), dc=document.querySelector('.mnd-docs-chev');
+    if(dt&&dp) dt.addEventListener('click',()=>{ const open=dp.classList.toggle('open'); if(open){ dp.style.maxHeight=dp.scrollHeight+'px'; dp.style.opacity='1'; dp.style.marginTop='16px'; if(dc) dc.style.transform='rotate(180deg)'; } else { dp.style.maxHeight='0'; dp.style.opacity='0'; dp.style.marginTop='0'; if(dc) dc.style.transform='none'; } });
+    // segmented toggles
+    document.querySelectorAll('.mnd-seg-g').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ g.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); }));
+    // add hito
+    document.querySelector('.mnd-add-hito').onclick=()=>{
+      const list=document.querySelector('.mnd-hitos');
+      const row=document.createElement('div'); row.className='mnd-hito'; row.style.cssText='display:grid;grid-template-columns:130px 1fr auto;gap:10px';
+      row.innerHTML='<input class="mnd-fld" placeholder="Año / fecha"><input class="mnd-fld" placeholder="Descripción del hito"><button type="button" class="mnd-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>';
+      list.appendChild(row); this._bindDel(row);
+    };
+    document.querySelectorAll('.mnd-hito').forEach(r=>this._bindDel(r));
+    // save
+    document.querySelector('.mnd-save').onclick=()=>{ const ok=document.querySelector('.mnd-save-ok'); if(ok) ok.style.display='inline'; window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); };
+  }
+  _bindDel(row){ const d=row.querySelector('.mnd-del'); if(d) d.onclick=()=>row.remove(); }
+  _renderFotos(){
+    const g=document.querySelector('.mnd-fotos-gallery'), c=document.querySelector('.mnd-fotos-count');
+    const slot=document.querySelector('.mnd-fotos-slot');
+    if(!g) return;
+    g.innerHTML='';
+    this._fotos.forEach((f,i)=>{
+      const d=document.createElement('div'); d.className='mnd-thumb';
+      d.innerHTML='<img src="'+f.url+'" alt="Foto '+(i+1)+'"><span class="mnd-ord">'+(i+1)+'</span>'
+        +'<button type="button" class="mnd-rm" title="Quitar">×</button>'
+        +(i>0?'<button type="button" class="mnd-mv mnd-mv-l" title="Mover izquierda">‹</button>':'')
+        +(i<this._fotos.length-1?'<button type="button" class="mnd-mv mnd-mv-r" title="Mover derecha">›</button>':'');
+      d.querySelector('.mnd-rm').onclick=()=>{ URL.revokeObjectURL(f.url); this._fotos.splice(i,1); this._renderFotos(); };
+      const l=d.querySelector('.mnd-mv-l'); if(l) l.onclick=()=>{ [this._fotos[i-1],this._fotos[i]]=[this._fotos[i],this._fotos[i-1]]; this._renderFotos(); };
+      const r=d.querySelector('.mnd-mv-r'); if(r) r.onclick=()=>{ [this._fotos[i+1],this._fotos[i]]=[this._fotos[i],this._fotos[i+1]]; this._renderFotos(); };
+      g.appendChild(d);
+    });
+    const has=this._fotos.length>0;
+    g.style.display=has?'grid':'none';
+    if(c){ c.style.display=has?'block':'none'; c.textContent=this._fotos.length+' de 15 fotos · la primera es la portada'; }
+    if(slot){ slot.classList.toggle('filled',has); const s=slot.querySelector('.mnd-up-s'); if(s) s.textContent=this._fotos.length>=15?'Máximo alcanzado (15)':'Máximo 15 imágenes · JPG/PNG'; const inp=slot.querySelector('input'); if(inp) inp.disabled=this._fotos.length>=15; }
+  }
+  _applyTheme(theme){
+    window.__mndTheme=theme; try{localStorage.setItem('mnd-theme',theme);}catch(e){}
+    if(theme==='light') document.body.setAttribute('data-theme','light'); else document.body.removeAttribute('data-theme');
+    document.querySelectorAll('.mnd-theme-btn').forEach(btn=>{ btn.innerHTML = theme==='light'
+      ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" stroke-linecap="round"></path>'
+      : '<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>'; });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<title>Autos vendidos | Mendiautos</title>
+<meta name="description" content="Vehículos ya vendidos por Mendiautos. Encuentra uno similar disponible en nuestro inventario.">
+<meta property="og:title" content="Autos vendidos | Mendiautos">
+<meta property="og:description" content="Vehículos ya vendidos por Mendiautos. Encuentra uno similar disponible en nuestro inventario.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0c0c0e">
+<script src="assets/inventario.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#0c0c0e; --c-panel:#0c0c0e; --c-card:#161619; --c-circle:#1c1c20; --c-chip:#1e1e22;
+    --t-strong:#ffffff; --t-1:rgba(255,255,255,.8); --t-2:rgba(255,255,255,.58); --t-3:rgba(255,255,255,.55); --t-4:rgba(255,255,255,.32);
+    --ln:rgba(255,255,255,.09);--logo-bg:#101012; --ln-strong:rgba(255,255,255,.2);
+  }
+  body[data-theme="light"]{
+    --bg:#ffffff; --c-panel:#ffffff; --c-card:#ffffff; --c-circle:#f4f4f5; --c-chip:#f1f1f2;
+    --t-strong:#0e0e10; --t-1:rgba(14,14,16,.82); --t-2:rgba(14,14,16,.56); --t-3:rgba(14,14,16,.58); --t-4:rgba(14,14,16,.36);
+    --ln:rgba(0,0,0,.09); --ln-strong:rgba(0,0,0,.16);
+  }
+  body{margin:0;background:var(--bg);font-family:'Open Sans',system-ui,sans-serif;color:var(--t-1);transition:background .35s ease,color .35s ease}
+  a{color:inherit;text-decoration:none}
+  a:hover{color:#1E50A2}
+  .mnd-photo{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  .mnd-card:hover .mnd-photo{transform:scale(1.09)}
+  .mnd-card{transition:transform .45s cubic-bezier(.2,.75,.2,1),box-shadow .45s ease,border-color .45s ease}
+  .mnd-card:hover{transform:translateY(-7px);box-shadow:0 22px 46px -22px rgba(0,0,0,.5);border-color:var(--ln-strong)}
+  .mnd-reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .75s cubic-bezier(.2,.75,.2,1)}
+  .mnd-reveal.mnd-in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.mnd-reveal{opacity:1!important;transform:none!important}}
+  /* filters */
+  .mnd-filt{transition:background .3s ease}
+  .mnd-filt:hover{background:color-mix(in oklch, var(--t-strong) 4%, transparent)}
+  .mnd-filt-head > div:first-child{transition:color .3s ease}
+  .mnd-filt:hover .mnd-filt-head > div:first-child{color:#1E50A2}
+  .mnd-filt-chev{display:inline-block;transition:transform .3s ease}
+  .mnd-filt.open .mnd-filt-chev{transform:rotate(180deg);color:#1E50A2}
+  .mnd-filt.open .mnd-filt-val{color:#1E50A2}
+  .mnd-drop{position:absolute;top:calc(100% + 12px);left:8px;min-width:320px;background:var(--c-card);border:1px solid var(--ln);border-radius:18px;box-shadow:0 40px 80px -28px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.02) inset;padding:22px;z-index:60;display:none}
+  .mnd-drop-r{left:auto;right:0}
+  .mnd-filt.open .mnd-drop{display:block;animation:mnd-drop-in .28s ease}
+  @keyframes mnd-drop-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .mnd-brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:280px;overflow-y:auto}
+  .mnd-brand-chip{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--ln-strong);background:transparent;border-radius:100px;padding:9px 14px;font:600 13px/1 'Open Sans',sans-serif;color:var(--t-1);cursor:pointer;transition:all .2s ease;text-align:left}
+  .mnd-brand-chip.mnd-all{justify-content:center}
+  .mnd-brand-chip.sel{border-color:#1E50A2;color:#1E50A2;background:rgba(30,80,162,.07)}
+  .mnd-blogo{width:22px;height:22px;border-radius:50%;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;background:var(--logo-bg);overflow:hidden;flex:none;font:700 8px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle);flex:none}
+  .mnd-aplicar{width:100%;margin-top:18px;background:#1E50A2;color:#fff;border:0;border-radius:11px;padding:15px;font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:transform .25s,box-shadow .25s,background .25s;box-shadow:0 12px 26px -12px rgba(30,80,162,.7)}
+  .mnd-aplicar:hover{background:#c2151b;transform:translateY(-2px);box-shadow:0 18px 34px -12px rgba(30,80,162,.85)}
+  .mnd-fl{display:flex;flex-direction:column;gap:8px;font:600 12px/1 'Open Sans',sans-serif;color:var(--t-2)}
+  .mnd-fl select{padding:11px 12px;border:1px solid var(--ln-strong);border-radius:8px;background:var(--bg);color:var(--t-strong);font:400 14px/1 'Open Sans',sans-serif}
+  .mnd-chk{display:flex;align-items:center;gap:11px;padding:9px 2px;font:400 14px/1 'Open Sans',sans-serif;color:var(--t-strong);cursor:pointer}
+  .mnd-chk input{width:17px;height:17px;accent-color:#1E50A2;cursor:pointer}
+  .mnd-chips{display:none;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .mnd-chips.on{display:flex}
+  .mnd-chips-list{display:inline-flex;gap:10px;flex-wrap:wrap}
+  .mnd-chip{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(30,80,162,.45);color:#1E50A2;background:rgba(30,80,162,.08);border-radius:100px;padding:8px 9px 8px 15px;box-shadow:0 4px 14px -6px rgba(30,80,162,.5);font:600 12px/1 'Open Sans',sans-serif}
+  .mnd-chip button{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(30,80,162,.14);border:0;color:inherit;cursor:pointer;font-size:13px;line-height:1;transition:background .2s,transform .2s}
+  .mnd-chip button:hover{background:#1E50A2;color:#fff;transform:scale(1.1)}
+  .mnd-reset{background:none;border:0;color:#1E50A2;font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;text-decoration:underline;cursor:pointer}
+  .mnd-morewrap{display:none}
+  .mnd-morewrap.on{display:grid;animation:mnd-drop-in .3s ease}
+  .mnd-morefilt-btn:hover{border-color:#1E50A2;color:#1E50A2}
+  .mnd-morefilt-btn.on{border-color:#1E50A2;color:#1E50A2}
+  .mnd-morefilt-btn.on .mnd-morefilt-chev{transform:rotate(180deg)}
+  .mnd-sort-chev{display:inline-block;transition:transform .3s ease;color:var(--t-3)}
+  .mnd-sort.open .mnd-sort-chev{transform:rotate(180deg);color:#1E50A2}
+  .mnd-sort.open .mnd-sort-head{border-color:#1E50A2}
+  .mnd-sort-list{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg);border:1px solid var(--ln);border-radius:12px;box-shadow:0 24px 50px -18px rgba(0,0,0,.45);padding:6px;z-index:60;display:none}
+  .mnd-sort.open .mnd-sort-list{display:block;animation:mnd-drop-in .26s ease}
+  .mnd-sort-list button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;padding:13px 14px;border-radius:8px;font:600 13px/1 'Open Sans',sans-serif;color:var(--t-1)}
+  .mnd-sort-list button:hover{background:var(--c-chip);color:#1E50A2}
+  /* ===== full-screen menu ===== */
+  #mnd-menu{position:fixed;inset:0;z-index:2147483200;overflow-y:auto;display:none;background:radial-gradient(75% 95% at 0% 22%,rgba(30,80,162,.12),transparent 55%),var(--bg);color:var(--t-strong);font-family:'Open Sans',system-ui,sans-serif}
+  body[data-theme="light"] #mnd-menu{background:linear-gradient(118deg,#ffffff 52%,#fbe7e8 100%)}
+  @keyframes mnd-menu-in{0%{opacity:0;transform:scale(1.015) translateY(8px)}100%{opacity:1;transform:none}}
+  @keyframes mnd-menu-flash{0%{opacity:0;transform:translateY(-110%)}20%{opacity:.6}52%{opacity:.55;transform:translateY(110%)}80%{opacity:.4;transform:translateY(-25%)}100%{opacity:0;transform:translateY(0)}}
+  .mnd-menu-flash{position:absolute;left:0;right:0;top:0;height:42%;pointer-events:none;z-index:1;background:linear-gradient(to bottom,transparent,rgba(30,80,162,.2),transparent)}
+  #mnd-menu.mnd-open{opacity:1;visibility:visible}
+  .mnd-menu-inner{max-width:1280px;margin:0 auto;padding:20px 40px 60px;min-height:100%;display:flex;flex-direction:column}
+  .mnd-menu-top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 30px}
+  .mnd-menu-close{display:inline-flex;align-items:center;gap:11px;background:none;border:0;cursor:pointer;color:var(--t-strong);font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.22em}
+  .mnd-menu-close svg{transition:transform .35s ease}
+  .mnd-menu-close:hover{color:#1E50A2}
+  .mnd-menu-close:hover svg{transform:rotate(90deg)}
+  .mnd-menu-logo{height:26px;display:block}
+  .mnd-menu-grid{display:grid;grid-template-columns:1fr 380px;gap:48px;flex:1}
+  .mnd-menu-list{display:flex;flex-direction:column}
+  .mnd-mi{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:22px;padding:14px 6px;border-bottom:1px solid var(--ln);text-decoration:none;color:var(--t-strong);opacity:0;transform:translateY(30px);transition:opacity .55s ease,transform .6s cubic-bezier(.2,.75,.2,1),color .3s ease}
+  #mnd-menu.mnd-open .mnd-mi{opacity:1;transform:none}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(1){transition-delay:.1s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(2){transition-delay:.17s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(3){transition-delay:.24s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(4){transition-delay:.31s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(5){transition-delay:.38s}
+  .mnd-mi-num{font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.08em;color:var(--t-3);transition:color .3s ease;align-self:start;padding-top:12px}
+  .mnd-mi-label{font:800 clamp(22px,2.6vw,34px)/1 'Michroma','Open Sans',sans-serif;letter-spacing:.005em;text-transform:uppercase}
+  .mnd-mi-arrow{color:#1E50A2;opacity:0;transform:translateX(-10px);transition:opacity .35s ease,transform .35s ease}
+  .mnd-mi:hover{color:#1E50A2}
+  .mnd-mi:hover .mnd-mi-num{color:#1E50A2}
+  .mnd-mi:hover .mnd-mi-arrow{opacity:1;transform:none}
+  .mnd-menu-side{display:flex;flex-direction:column}
+  .mnd-side-label{font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.3em;color:var(--t-3);margin-bottom:16px}
+  .mnd-map{position:relative;display:block;height:260px;border-radius:6px;overflow:hidden;border:1px solid var(--ln);background:linear-gradient(135deg,#2a2d31,#1a1c1f);text-decoration:none}
+  body[data-theme="light"] .mnd-map{background:linear-gradient(135deg,#e7ebef,#d7dde3)}
+  .mnd-map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px}
+  body[data-theme="light"] .mnd-map-grid{background-image:linear-gradient(rgba(0,0,0,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.05) 1px,transparent 1px)}
+  .mnd-map-open{position:absolute;top:10px;left:10px;font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#1E50A2;padding:6px 9px;border-radius:4px;display:inline-flex;gap:6px;align-items:center}
+  .mnd-side-addr{margin-top:16px;font:600 14px/1.5 'Open Sans',sans-serif;color:var(--t-1)}
+  .mnd-side-phone{margin-top:10px;font:600 14px/1 'Open Sans',sans-serif;color:var(--t-1);display:flex;align-items:center;gap:9px}
+  .mnd-menu-bottom{margin-top:auto;padding-top:40px;display:flex;flex-direction:column;gap:18px}
+  .mnd-menu-theme{display:inline-flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--t-3);font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase}
+  .mnd-menu-theme:hover{color:#1E50A2}
+  .mnd-menu-socials{display:flex;gap:14px;color:var(--t-3)}
+  .mnd-menu-socials a{color:inherit;transition:color .3s ease}
+  .mnd-menu-socials a:hover{color:#1E50A2}
+  @media (prefers-reduced-motion:reduce){.mnd-mi{opacity:1!important;transform:none!important}}
+  /* expandable submenu */
+  .mnd-mi-exp{display:block;padding:0}
+  .mnd-mi-head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:22px;padding:14px 6px;cursor:pointer;color:var(--t-strong);transition:color .3s ease}
+  .mnd-mi-head:hover{color:#1E50A2}
+  .mnd-mi-head:hover .mnd-mi-num{color:#1E50A2}
+  .mnd-mi-chev{color:var(--t-3);transition:transform .45s cubic-bezier(.2,.75,.2,1),color .3s ease}
+  .mnd-mi-exp.exp-open .mnd-mi-head{color:#1E50A2}
+  .mnd-mi-exp.exp-open .mnd-mi-num{color:#1E50A2}
+  .mnd-mi-exp.exp-open .mnd-mi-chev{transform:rotate(180deg);color:#1E50A2}
+  .mnd-sub{display:none;padding:0 6px 26px}
+  .mnd-sublinks{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:14px 46px;margin-bottom:4px}
+  .mnd-sublink{display:inline-flex;align-items:center;gap:12px;font:700 13px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-2);transition:color .3s ease}
+  .mnd-sublink .mnd-dash{width:16px;height:2px;background:currentColor;transition:width .3s ease,background .3s ease}
+  .mnd-sublink:hover,.mnd-sublink.active{color:#1E50A2}
+  .mnd-sublink:hover .mnd-dash,.mnd-sublink.active .mnd-dash{width:26px;background:#1E50A2}
+  .mnd-brands-panel{display:none;margin-top:26px;padding-top:22px;border-top:1px solid var(--ln)}
+  .mnd-brands-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+  .mnd-brands-title{font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--t-2)}
+  .mnd-brands-sub{margin-top:6px;font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)}
+  .mnd-brands-viewall{font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#1E50A2}
+  .mnd-brands-grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px 44px}
+  .mnd-brand-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:11px 4px;border-bottom:1px solid var(--ln)}
+  .mnd-brand-logo{width:34px;height:34px;border-radius:50%;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;background:var(--logo-bg);overflow:hidden;font:700 10px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)}
+  .mnd-brand-name{font:600 14px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-strong)}
+  .mnd-brand-count{min-width:30px;height:30px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid var(--ln-strong);background:var(--c-circle);font:700 13px/1 'Open Sans',sans-serif;color:var(--t-2);transition:color .45s cubic-bezier(.2,.75,.2,1),background .45s cubic-bezier(.2,.75,.2,1),border-color .45s cubic-bezier(.2,.75,.2,1),transform .45s cubic-bezier(.2,.75,.2,1);box-shadow:0 0 0 0 rgba(30,80,162,0)}
+  .mnd-brand-count.counted{color:#fff;background:#1E50A2;border-color:#1E50A2;transform:scale(1.08);box-shadow:0 6px 16px -6px rgba(30,80,162,.65)}
+  @keyframes mnd-sub-in{0%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:none}}
+  @keyframes mnd-stair{0%{opacity:0;transform:translateX(-20px)}100%{opacity:1;transform:none}}
+
+  /* lux-motion */
+  @keyframes mnd-page-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes mnd-sheen{0%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(240%) skewX(-18deg)}}
+  body{animation:mnd-page-enter .7s cubic-bezier(.22,.61,.36,1) both}
+  .mnd-reveal{transition:opacity 1s cubic-bezier(.22,.61,.36,1),transform 1s cubic-bezier(.22,.61,.36,1)!important}
+  .mnd-card{transition:transform .55s cubic-bezier(.22,.61,.36,1),box-shadow .55s cubic-bezier(.22,.61,.36,1),border-color .55s cubic-bezier(.22,.61,.36,1)!important;will-change:transform}
+  .mnd-card:hover{transform:translateY(-7px)!important;box-shadow:0 34px 70px -34px rgba(0,0,0,.72)!important}
+  .mnd-photo,.mnd-rec-scroll a>div:first-child{overflow:hidden}
+  .mnd-photo img{transition:transform .8s cubic-bezier(.22,.61,.36,1)}
+  .mnd-card:hover .mnd-photo img{transform:scale(1.07)}
+  .mnd-agenda,.mnd-cta,.mnd-alerta-btn,.mnd-save-btn{position:relative;overflow:hidden}
+  .mnd-agenda::after,.mnd-cta::after,.mnd-alerta-btn::after{content:"";position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:translateX(-140%) skewX(-18deg);pointer-events:none}
+  .mnd-agenda:hover::after,.mnd-cta:hover::after,.mnd-alerta-btn:hover::after{animation:mnd-sheen .9s cubic-bezier(.22,.61,.36,1)}
+  a,button{transition:color .3s cubic-bezier(.22,.61,.36,1),background-color .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),box-shadow .35s cubic-bezier(.22,.61,.36,1),opacity .3s ease}
+  .mnd-brand-logo,.mnd-soc{transition:transform .4s cubic-bezier(.22,.61,.36,1),border-color .35s ease,color .35s ease}
+  @media (prefers-reduced-motion:reduce){body{animation:none}.mnd-agenda::after,.mnd-cta::after,.mnd-alerta-btn::after{display:none}}
+</style>
+</helmet>
+<div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
+
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+    <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left">
+      <span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong);display:block"></span><span style="width:22px;height:2px;background:var(--t-strong);display:block"></span><span style="width:22px;height:2px;background:var(--t-strong);display:block"></span></span>
+      <span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span>
+    </button>
+    <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
+    <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
+      <a href="AutosDisponibles.dc.html?focus=search" aria-label="Buscar autos" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5" stroke-linecap="round"></path></svg></a>
+      <svg class="mnd-theme-btn" style="cursor:pointer" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path></svg>
+      <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
+    </div>
+  </header>
+  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+
+  <!-- HERO -->
+  <section style="position:relative;height:60vh;min-height:420px;background:radial-gradient(120% 100% at 50% 20%,#26262a 0%,#141416 55%,#0a0a0b 100%);overflow:hidden">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.08)"><svg width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5" stroke-linecap="round"></path><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4Z"></path></svg></div>
+    <div style="position:absolute;top:16px;right:22px;font:400 10px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.4);border:1px dashed rgba(255,255,255,.22);padding:6px 10px">FOTO · sala de exposición</div>
+    <div style="position:absolute;left:52px;bottom:64px;max-width:760px">
+      <div style="display:flex;align-items:center;gap:14px;font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.6)"><a href="MendiautosHome.dc.html" style="color:rgba(255,255,255,.6)">Inicio</a><span style="width:28px;height:1px;background:rgba(255,255,255,.35)"></span><span style="color:#fff">Vendido</span></div>
+      <h1 style="margin:18px 0 0;font:400 clamp(48px,7vw,92px)/.9 'Michroma','Open Sans',sans-serif;letter-spacing:.01em;color:#fff;text-transform:uppercase">Vendido<br>Archivo</h1>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:24px"><span style="width:44px;height:2px;background:#1E50A2"></span><span style="font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)"><span class="mnd-hero-count">520</span> automóviles vendidos</span></div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg))"></div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <section style="max-width:1180px;margin:-40px auto 0;position:relative;z-index:5;padding:0 20px">
+    <div style="background:var(--c-card);border:1px solid var(--ln);border-radius:22px;padding:28px 30px;box-shadow:0 50px 90px -40px rgba(0,0,0,.6)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+        <div style="display:inline-flex;background:var(--c-chip);border-radius:100px;padding:5px">
+          <button class="mnd-tab" data-href="AutosDisponibles.dc.html" style="border:0;cursor:pointer;background:transparent;padding:9px 22px;border-radius:100px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-3)">Disponible</button>
+          <button class="mnd-tab mnd-tab-on" data-href="AutosVendidos.dc.html" style="border:0;cursor:pointer;padding:9px 22px;border-radius:100px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Vendido</button>
+        </div>
+        <span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-3)"><span class="mnd-res-count">520</span> resultados</span>
+      </div>
+      <div id="mnd-chips" class="mnd-chips"><span class="mnd-chips-list"></span><button class="mnd-reset" type="button">Restablecer todo</button></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="marca" style="position:relative;padding:18px 20px 18px 0;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Marca</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas las marcas</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <div class="mnd-brand-grid">
+              <button class="mnd-brand-chip mnd-all" data-brand="Todo" type="button">Todo</button>
+              <button class="mnd-brand-chip" data-brand="Renault" type="button"><span class="mnd-blogo"><img src="assets/marcas/renault.png" alt="Renault" style="width:18px;height:18px;object-fit:contain"></span>Renault</button>
+              <button class="mnd-brand-chip" data-brand="Toyota" type="button"><span class="mnd-blogo"><img src="assets/marcas/toyota.png" alt="Toyota" style="width:18px;height:18px;object-fit:contain"></span>Toyota</button>
+              <button class="mnd-brand-chip" data-brand="Kia" type="button"><span class="mnd-blogo"><img src="assets/marcas/kia.png" alt="Kia" style="width:18px;height:18px;object-fit:contain"></span>Kia</button>
+              <button class="mnd-brand-chip" data-brand="Suzuki" type="button"><span class="mnd-blogo"><img src="assets/marcas/suzuki.png" alt="Suzuki" style="width:18px;height:18px;object-fit:contain"></span>Suzuki</button>
+              <button class="mnd-brand-chip" data-brand="Ford" type="button"><span class="mnd-blogo"><img src="assets/marcas/ford.png" alt="Ford" style="width:18px;height:18px;object-fit:contain"></span>Ford</button>
+              <button class="mnd-brand-chip" data-brand="Hyundai" type="button"><span class="mnd-blogo"><img src="assets/marcas/hyundai.png" alt="Hyundai" style="width:18px;height:18px;object-fit:contain"></span>Hyundai</button>
+              <button class="mnd-brand-chip" data-brand="Honda" type="button"><span class="mnd-blogo"><img src="assets/marcas/honda.png" alt="Honda" style="width:18px;height:18px;object-fit:contain"></span>Honda</button>
+              <button class="mnd-brand-chip" data-brand="Mercedes-Benz" type="button"><span class="mnd-blogo"><img src="assets/marcas/mercedes-benz.png" alt="Mercedes-Benz" style="width:18px;height:18px;object-fit:contain"></span>Mercedes-Benz</button>
+              <button class="mnd-brand-chip" data-brand="BMW" type="button"><span class="mnd-blogo"><img src="assets/marcas/bmw.png" alt="BMW" style="width:18px;height:18px;object-fit:contain"></span>BMW</button>
+              <button class="mnd-brand-chip" data-brand="Audi" type="button"><span class="mnd-blogo"><img src="assets/marcas/audi.png" alt="Audi" style="width:18px;height:18px;object-fit:contain"></span>Audi</button>
+              <button class="mnd-brand-chip" data-brand="Peugeot" type="button"><span class="mnd-blogo"><img src="assets/marcas/peugeot.png" alt="Peugeot" style="width:18px;height:18px;object-fit:contain"></span>Peugeot</button>
+              <button class="mnd-brand-chip" data-brand="Citroën" type="button"><span class="mnd-blogo"><img src="assets/marcas/citroen.png" alt="Citroën" style="width:18px;height:18px;object-fit:contain"></span>Citroën</button>
+              <button class="mnd-brand-chip" data-brand="Land Rover" type="button"><span class="mnd-blogo"><img src="assets/marcas/land-rover.png" alt="Land Rover" style="width:18px;height:18px;object-fit:contain"></span>Land Rover</button>
+              <button class="mnd-brand-chip" data-brand="Porsche" type="button"><span class="mnd-blogo"><img src="assets/marcas/porsche.png" alt="Porsche" style="width:18px;height:18px;object-fit:contain"></span>Porsche</button>
+              <button class="mnd-brand-chip" data-brand="JAC" type="button"><span class="mnd-blogo"><img src="assets/marcas/jac.png" alt="JAC" style="width:18px;height:18px;object-fit:contain"></span>JAC</button>
+              <button class="mnd-brand-chip" data-brand="Tesla" type="button"><span class="mnd-blogo"><img src="assets/marcas/tesla.png" alt="Tesla" style="width:18px;height:18px;object-fit:contain"></span>Tesla</button>
+              <button class="mnd-brand-chip" data-brand="Aston Martin" type="button"><span class="mnd-blogo"><img src="assets/marcas/aston-martin.png" alt="Aston Martin" style="width:18px;height:18px;object-fit:contain"></span>Aston Martin</button>
+            </div>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="anio" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Año</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los años</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><label class="mnd-fl">De<select class="mnd-year-from"></select></label><label class="mnd-fl">A<select class="mnd-year-to"></select></label></div>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="precio" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Precio</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los precios</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-price-all" checked>Todos los rangos de precios</label>
+            <label class="mnd-chk"><input type="checkbox" class="mnd-price-req">Solicitar precio</label>
+            <div class="mnd-price-range" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px;opacity:.5;pointer-events:none"><label class="mnd-fl">De<select class="mnd-price-from"><option>20 mill.</option><option>50 mill.</option><option>100 mill.</option></select></label><label class="mnd-fl">A<select class="mnd-price-to"><option>100 mill.</option><option>200 mill.</option><option>500 mill.</option></select></label></div>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="tipo" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Tipo de carrocería</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los tipos</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-type-all" checked>Todos los tipos</label>
+            <label class="mnd-chk"><input type="checkbox" value="SUV">SUV</label>
+            <label class="mnd-chk"><input type="checkbox" value="Sedán">Sedán</label>
+            <label class="mnd-chk"><input type="checkbox" value="Hatchback">Hatchback</label>
+            <label class="mnd-chk"><input type="checkbox" value="Pickup">Pickup</label>
+            <label class="mnd-chk"><input type="checkbox" value="Coupé">Coupé</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0 0">
+        <button class="mnd-morefilt-btn" type="button" style="display:inline-flex;align-items:center;gap:10px;background:transparent;border:1px solid var(--ln-strong);border-radius:100px;padding:11px 20px;font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--t-strong);cursor:pointer;transition:border-color .25s,color .25s">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round"></path></svg>
+          <span class="mnd-morefilt-txt">Más filtros</span>
+          <span class="mnd-morefilt-badge" style="display:none;min-width:19px;height:19px;padding:0 5px;border-radius:100px;background:#1E50A2;color:#fff;font:700 10px/19px 'Open Sans',sans-serif;text-align:center"></span>
+          <svg class="mnd-morefilt-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition:transform .3s"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+      </div>
+      <div class="mnd-morewrap" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);margin-top:14px">
+        <div class="mnd-filt" data-f="combustible" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Combustible</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Todos</label>
+            <label class="mnd-chk"><input type="checkbox" value="Gasolina">Gasolina</label>
+            <label class="mnd-chk"><input type="checkbox" value="Diésel">Diésel</label>
+            <label class="mnd-chk"><input type="checkbox" value="Híbrido">Híbrido</label>
+            <label class="mnd-chk"><input type="checkbox" value="Eléctrico">Eléctrico</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="transmision" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Transmisión</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Todas</label>
+            <label class="mnd-chk"><input type="checkbox" value="Automática">Automática</label>
+            <label class="mnd-chk"><input type="checkbox" value="Mecánica">Mecánica</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="km" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Kilometraje</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Cualquiera</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><label class="mnd-fl">Desde<select class="mnd-km-from"></select></label><label class="mnd-fl">Hasta<select class="mnd-km-to"></select></label></div>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="ciudad" style="position:relative;padding:18px 20px">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Ciudad</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Todas</label>
+            <label class="mnd-chk"><input type="checkbox" value="Bucaramanga">Bucaramanga</label>
+            <label class="mnd-chk"><input type="checkbox" value="Bogotá">Bogotá</label>
+            <label class="mnd-chk"><input type="checkbox" value="Medellín">Medellín</label>
+            <label class="mnd-chk"><input type="checkbox" value="Cali">Cali</label>
+            <label class="mnd-chk"><input type="checkbox" value="Barranquilla">Barranquilla</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="traccion" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Tracción</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Todas</label>
+            <label class="mnd-chk"><input type="checkbox" value="4x2">4x2</label>
+            <label class="mnd-chk"><input type="checkbox" value="4x4">4x4 / AWD</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="cilindraje" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Cilindraje</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Todos</label>
+            <label class="mnd-chk"><input type="checkbox" value="Hasta 1.4">Hasta 1.4</label>
+            <label class="mnd-chk"><input type="checkbox" value="1.5 - 2.0">1.5 – 2.0</label>
+            <label class="mnd-chk"><input type="checkbox" value="2.1 - 3.0">2.1 – 3.0</label>
+            <label class="mnd-chk"><input type="checkbox" value="Más de 3.0">Más de 3.0</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="hp" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Potencia (HP)</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Cualquiera</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" checked>Cualquiera</label>
+            <label class="mnd-chk"><input type="checkbox" value="Hasta 120 HP">Hasta 120 HP</label>
+            <label class="mnd-chk"><input type="checkbox" value="121 - 180 HP">121 – 180 HP</label>
+            <label class="mnd-chk"><input type="checkbox" value="181 - 300 HP">181 – 300 HP</label>
+            <label class="mnd-chk"><input type="checkbox" value="Más de 300 HP">Más de 300 HP</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+        <div class="mnd-filt" data-f="specs" style="position:relative;padding:18px 0 18px 20px">
+          <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Detalles</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
+          <div class="mnd-drop mnd-drop-r">
+            <label class="mnd-chk"><input type="checkbox" class="mnd-spec-all" checked>Todos</label>
+            <label class="mnd-chk"><input type="checkbox" value="Negociable">Negociable</label>
+            <label class="mnd-chk"><input type="checkbox" value="Financiación">Con financiación</label>
+            <label class="mnd-chk"><input type="checkbox" value="Único dueño">Único dueño</label>
+            <label class="mnd-chk"><input type="checkbox" value="Acepta permuta">Acepta permuta</label>
+            <label class="mnd-chk"><input type="checkbox" value="Blindado">Blindado</label>
+            <label class="mnd-chk"><input type="checkbox" value="Asegurable">Asegurable</label>
+            <button class="mnd-aplicar" type="button">Aplicar</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:20px">
+        <div class="mnd-sort" style="position:relative;flex:0 0 340px"><div class="mnd-sort-head" style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--ln);border-radius:10px;padding:13px 18px;font:600 13px/1 'Open Sans',sans-serif;color:var(--t-strong);cursor:pointer"><span class="mnd-sort-val">Recomendado</span><span class="mnd-sort-chev">▾</span></div><div class="mnd-sort-list"><button type="button" data-sort="rec">Recomendado</button><button type="button" data-sort="pasc">Precio de menor a mayor</button><button type="button" data-sort="pdesc">Precio de mayor a menor</button><button type="button" data-sort="kasc">Kilometraje de bajo a alto</button><button type="button" data-sort="kdesc">Kilometraje de mayor a menor</button></div></div>
+        <a href="ComparaAutos.dc.html" style="display:inline-flex;align-items:center;gap:10px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 8h13M7 8 4 5m3 3-3 3M17 16H4m13 0 3-3m-3 3 3 3" stroke-linecap="round" stroke-linejoin="round"></path></svg>Comparar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAR GRID -->
+  <section style="max-width:1180px;margin:44px auto 0;padding:0 20px 90px">
+    <div id="mnd-cargrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Renault Duster</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">RN</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Renault</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Renault Duster Intens 2023</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">28.400 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 8 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=8" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Chevrolet Onix</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">CH</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Chevrolet</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Chevrolet Onix Turbo 2024</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">9.100 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 15 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=15" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Toyota Corolla Cross</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">TO</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Toyota</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Toyota Corolla Cross 2023</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">15.700 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 3 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=3" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Mazda CX-30</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">MZ</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Mazda</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Mazda CX-30 Grand Touring 2024</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">6.200 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 27 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=27" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Kia Sportage</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">KI</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Kia</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Kia Sportage 2023</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">19.300 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 42 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=42" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Nissan Frontier</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">NI</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Nissan</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Nissan Frontier PRO-4X 2024</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">11.500 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 60 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=60" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Renault Koleos</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">RN</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Renault</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Renault Koleos Iconic 2022</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">34.000 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 8 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=8" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Chevrolet Tracker</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">CH</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Chevrolet</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Chevrolet Tracker Premier 2023</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">22.100 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 15 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=15" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+      <div class="mnd-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden"><div style="padding:8px 8px 0"><div class="mnd-photo" style="position:relative;height:230px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(45deg,#17130f 0 15px,#211b16 15px 30px);display:flex;align-items:flex-end;padding:12px"><span style="font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4)">FOTO · Toyota Hilux</span><div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center"><span style="width:18px;height:6px;border-radius:100px;background:#fff"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span><span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)"></span></div></div></div><div style="padding:18px 20px 20px"><div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)">TO</span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Toyota</span></div><h3 style="margin:14px 0 0;font:500 20px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Toyota Hilux SRV 2024</h3><div style="margin-top:12px;font:400 13px/1 'Open Sans',sans-serif;color:var(--t-2)">8.900 km</div><div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 'Open Sans',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Vendido hace 3 días</div><div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 'Open Sans',sans-serif;color:var(--t-strong)">Vendido</span><a href="DetalleAuto.dc.html?vendido=1&dias=3" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div></div>
+    </div>
+  </section>
+
+</div>
+<div id="mnd-menu">
+  <div class="mnd-menu-flash"></div>
+  <div class="mnd-menu-inner">
+    <div class="mnd-menu-top">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
+      <span style="width:90px"></span>
+    </div>
+    <div class="mnd-menu-grid">
+      <nav class="mnd-menu-list">
+        <div class="mnd-mi mnd-mi-exp">
+          <div class="mnd-mi-head"><span class="mnd-mi-num">01</span><span class="mnd-mi-label">Compra tu auto</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="mnd-sub">
+            <div class="mnd-sublinks">
+              <a class="mnd-sublink mnd-sublink-brands" href="AutosDisponibles.dc.html"><span class="mnd-dash"></span>Autos disponibles</a>
+              <a class="mnd-sublink mnd-sublink-brands" href="AutosVendidos.dc.html"><span class="mnd-dash"></span>Carros vendidos</a>
+              <a class="mnd-sublink" href="ComparaAutos.dc.html"><span class="mnd-dash"></span>Comparación de autos</a>
+              <a class="mnd-sublink" href="BuscaTuAuto.dc.html"><span class="mnd-dash"></span>Busca tu auto</a>
+            </div>
+            <div class="mnd-brands-panel">
+              <div class="mnd-brands-head"><div><div class="mnd-brands-title">Marcas disponibles</div><div class="mnd-brands-sub">11 marcas en inventario</div></div><a class="mnd-brands-viewall" href="AutosDisponibles.dc.html">Ver todo</a></div>
+              <div class="mnd-brands-grid2">
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/renault.png" alt="Renault" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Renault</span><span class="mnd-brand-count" data-count="12">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/toyota.png" alt="Toyota" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Toyota</span><span class="mnd-brand-count" data-count="10">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/kia.png" alt="Kia" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Kia</span><span class="mnd-brand-count" data-count="9">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/suzuki.png" alt="Suzuki" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Suzuki</span><span class="mnd-brand-count" data-count="8">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/ford.png" alt="Ford" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Ford</span><span class="mnd-brand-count" data-count="7">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/hyundai.png" alt="Hyundai" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Hyundai</span><span class="mnd-brand-count" data-count="6">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/mercedes-benz.png" alt="Mercedes-Benz" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Mercedes-Benz</span><span class="mnd-brand-count" data-count="5">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/bmw.png" alt="BMW" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">BMW</span><span class="mnd-brand-count" data-count="4">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/audi.png" alt="Audi" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Audi</span><span class="mnd-brand-count" data-count="3">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/peugeot.png" alt="Peugeot" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Peugeot</span><span class="mnd-brand-count" data-count="3">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/jac.png" alt="JAC" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">JAC</span><span class="mnd-brand-count" data-count="2">00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">02</span><span class="mnd-mi-label">Vende tu auto</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="VendeTuAuto.dc.html"><span class="mnd-dash"></span>Cotizar mi auto</a><a class="mnd-sublink" href="CompraInmediata.dc.html"><span class="mnd-dash"></span>Compra inmediata</a><a class="mnd-sublink" href="ConsignacionFisica.dc.html"><span class="mnd-dash"></span>Consignación física</a><a class="mnd-sublink" href="ConsignacionVirtual.dc.html"><span class="mnd-dash"></span>Consignación virtual</a></div></div></div>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">03</span><span class="mnd-mi-label">Créditos</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="Creditos.dc.html"><span class="mnd-dash"></span>Simulador de crédito</a><a class="mnd-sublink" href="SolicitudCredito.dc.html"><span class="mnd-dash"></span>Solicitar crédito</a></div></div></div>
+        <div class="mnd-mi mnd-mi-exp">
+          <div class="mnd-mi-head"><span class="mnd-mi-num">04</span><span class="mnd-mi-label">Información adicional</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="mnd-sub">
+            <div class="mnd-sublinks">
+              <a class="mnd-sublink" href="SobreNosotros.dc.html"><span class="mnd-dash"></span>Sobre nosotros</a>
+              <a class="mnd-sublink" href="Inversionista.dc.html"><span class="mnd-dash"></span>El inversionista</a>
+              <a class="mnd-sublink" href="DashboardInversiones.dc.html"><span class="mnd-dash"></span>Dashboard de inversiones</a>
+              <a class="mnd-sublink" href="Aprende.dc.html"><span class="mnd-dash"></span>Aprende (videos)</a>
+            </div>
+          </div>
+        </div>
+        <a class="mnd-mi" href="Contacto.dc.html"><span class="mnd-mi-num">05</span><span class="mnd-mi-label">Contacto</span><svg class="mnd-mi-arrow" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">06</span><span class="mnd-mi-label">Otros servicios</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="OtrosServicios.dc.html#transito"><span class="mnd-dash"></span>Servicios de tránsito</a><a class="mnd-sublink" href="OtrosServicios.dc.html#fotografia"><span class="mnd-dash"></span>Fotografía profesional</a><a class="mnd-sublink" href="OtrosServicios.dc.html#acompanamiento"><span class="mnd-dash"></span>Acompañamiento de compra</a></div></div></div>
+        </nav>
+      
+      <aside class="mnd-menu-side">
+        <div class="mnd-side-label">VISITA</div>
+        <div class="mnd-map">
+          <iframe src="https://maps.google.com/maps?q=7.112294,-73.1078731&amp;z=16&amp;output=embed" style="width:100%;height:100%;border:0;display:block" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación Mendiautos"></iframe>
+          <a class="mnd-map-open" href="https://www.google.com/maps/place/MENDIAUTOS/@7.1143274,-73.1119876,16z/data=!3m1!4b1!4m6!3m5!1s0x8e683f0047e5ea23:0x3d521e7ffb3372a7!8m2!3d7.112294!4d-73.1078731" target="_blank" rel="noopener">Abrir en Maps<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        </div>
+        <div class="mnd-side-addr">Cra. 36 #52-141, Cabecera del llano, Bucaramanga, Santander, Colombia</div>
+        <div class="mnd-side-phone"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 5 5L17 12l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path></svg>+57 311 8058 132</div>
+        <div class="mnd-menu-bottom">
+          <button class="mnd-menu-theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path></svg><span class="mnd-menu-theme-label">Modo claro</span></button>
+          <div class="mnd-menu-socials">
+            <a href="https://www.instagram.com/mendiautos/?hl=en" target="_blank" rel="noopener" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"></circle></svg></a>
+            <a href="https://www.facebook.com/mendiautos" target="_blank" rel="noopener" aria-label="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-1.9 0-3 1.4-3 3.2V11H9v3h2v6h3v-6h2.4l.6-3H14V9.6c0-.4.2-.6.7-.6Z"></path></svg></a>
+            <a href="#" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="12" rx="3"></rect><path d="m11 9.5 4 2.5-4 2.5Z" fill="currentColor"></path></svg></a>
+            <a href="https://www.tiktok.com/@mendiautoscol" target="_blank" rel="noopener" aria-label="TikTok"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3c.3 2.2 1.7 3.8 3.9 4v2.5c-1.4 0-2.7-.4-3.9-1.1v5.9c0 3-2.3 5.2-5.2 5.2S3.6 21.3 3.6 18.3c0-2.8 2.2-5 5-5 .3 0 .6 0 .9.1v2.7a2.3 2.3 0 1 0 1.6 2.2V3H14Z"></path></svg></a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:2400}}">class Component extends DCLogic {
+  componentDidMount(){
+    let saved = 'dark';
+    try { saved = localStorage.getItem('mnd-theme') || 'dark'; } catch(e){}
+    this._applyTheme(saved);
+    document.querySelectorAll('.mnd-theme-btn').forEach(b => b.onclick = (e)=>{ e.preventDefault(); this._applyTheme(window.__mndTheme==='light'?'dark':'light'); });
+    this._setupMenu();
+    this._applyTab();
+    this._setupFilters();
+    this._setupSort();
+    this._setupTabs();
+    this._indexCards();
+    this._applyQ();
+    const WA='573118058132';
+    document.querySelectorAll('#mnd-cargrid .mnd-card').forEach(card=>{
+      const link=card.querySelector('a[href*="DetalleAuto"]');
+      const href=link?link.getAttribute('href'):'DetalleAuto.dc.html?vendido=1';
+      card.style.cursor='pointer';
+      if(!card._navBound){ card._navBound=true; card.addEventListener('click',(e)=>{ if(e.target.closest('a')||e.target.closest('button'))return; window.location.href=href; }); }
+      const ref=(card.querySelector('h3')?.textContent||'este auto').trim();
+      const footer=card.querySelector('h3')?.closest('div[style*="padding:18px"]')||card;
+      footer.querySelectorAll('.mnd-similar-wrap').forEach(w=>w.remove());
+      const wrap=document.createElement('div');
+      wrap.className='mnd-similar-wrap';
+      wrap.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--ln)';
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.style.cssText="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;background:transparent;border:1px solid var(--ln-strong);color:var(--t-strong);border-radius:10px;padding:12px;font:700 10.5px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;transition:background .3s ease,color .3s ease,border-color .3s ease";
+      btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5Z" stroke-linejoin="round"></path></svg> Buscar uno similar';
+      btn.onmouseenter=()=>{ btn.style.background='var(--t-strong)'; btn.style.color='var(--bg)'; btn.style.borderColor='var(--t-strong)'; };
+      btn.onmouseleave=()=>{ btn.style.background='transparent'; btn.style.color='var(--t-strong)'; btn.style.borderColor='var(--ln-strong)'; };
+      btn.addEventListener('click',(e)=>{ e.stopPropagation(); const msg='Hola Mendiautos, vi que el '+ref+' ya está vendido. Me gustaría que me ayuden a encontrar un auto similar. ¿Me pueden asesorar?'; window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank'); });
+      wrap.appendChild(btn);
+      footer.appendChild(wrap);
+    });
+    // reveal on scroll
+    const els = Array.from(document.querySelectorAll('.mnd-reveal'));
+    const io = new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(!en.isIntersecting) return; const el=en.target; const sibs=Array.from(el.parentNode.children).filter(c=>c.classList&&c.classList.contains('mnd-reveal')); el.style.transitionDelay=Math.min(sibs.indexOf(el)*80,480)+'ms'; el.classList.add('mnd-in'); io.unobserve(el); }); },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    els.forEach(el=>io.observe(el));
+    setTimeout(()=>{ els.forEach(el=>{ const r=el.getBoundingClientRect(); if(r.top<window.innerHeight&&r.bottom>0&&!el.classList.contains('mnd-in')) el.classList.add('mnd-in'); }); }, 1300);
+  }
+  _setupTabs(){
+    document.querySelectorAll('.mnd-tab[data-href]').forEach(t => t.addEventListener('click',()=>{
+      if(!t.classList.contains('mnd-tab-on')) window.location.href = t.dataset.href;
+    }));
+  }
+  _setupSort(){
+    const sort = document.querySelector('.mnd-sort'); if(!sort) return;
+    const head = sort.querySelector('.mnd-sort-head'), val = sort.querySelector('.mnd-sort-val');
+    const grid = document.querySelector('#mnd-cargrid') || (document.querySelector('.mnd-card') && document.querySelector('.mnd-card').parentNode);
+    this._cardOrder = grid ? Array.from(grid.children) : [];
+    head.addEventListener('click',(e)=>{ e.stopPropagation(); sort.classList.toggle('open'); });
+    sort.querySelector('.mnd-sort-list').addEventListener('click',(e)=>e.stopPropagation());
+    document.addEventListener('click',()=> sort.classList.remove('open'));
+    const num = (t,re)=>{ const m=(t||'').replace(/\./g,'').match(re); return m?+m[1]:null; };
+    sort.querySelectorAll('button[data-sort]').forEach(b => b.addEventListener('click',()=>{
+      val.textContent = b.textContent; sort.classList.remove('open');
+      const mode = b.dataset.sort;
+      if(!grid) return;
+      let arr = this._cardOrder.slice();
+      const price = c => { const v=num(c.textContent, /\$(\d+)/); return v==null?null:v; };
+      const km = c => { const v=num(c.textContent, /(\d+)\s*km/i); return v==null?0:v; };
+      if(mode==='rec') arr = this._cardOrder.slice();
+      else if(mode==='pasc') arr.sort((a,b)=>(price(a)??Infinity)-(price(b)??Infinity));
+      else if(mode==='pdesc') arr.sort((a,b)=>(price(b)??-Infinity)-(price(a)??-Infinity));
+      else if(mode==='kasc') arr.sort((a,b)=>km(a)-km(b));
+      else if(mode==='kdesc') arr.sort((a,b)=>km(b)-km(a));
+      arr.forEach(c=>grid.appendChild(c));
+    }));
+  }
+  _setupFilters(){
+    // populate year selects
+    this.querySelectorAll && null;
+    const yf = document.querySelector('.mnd-year-from'), yt = document.querySelector('.mnd-year-to');
+    if(yf && yt){ for(let y=2026;y>=1990;y--){ yf.insertAdjacentHTML('beforeend','<option>'+y+'</option>'); yt.insertAdjacentHTML('beforeend','<option>'+y+'</option>'); } yf.value='2015'; yt.value='2026'; }
+    const kf=document.querySelector('.mnd-km-from'), kt=document.querySelector('.mnd-km-to');
+    if(kf && kt){ const steps=[0,5000,10000,20000,30000,50000,80000,120000,200000]; steps.forEach(v=>{ const t=v.toLocaleString('es-CO')+' km'; kf.insertAdjacentHTML('beforeend','<option value="'+v+'">'+t+'</option>'); kt.insertAdjacentHTML('beforeend','<option value="'+v+'">'+t+'</option>'); }); kt.insertAdjacentHTML('beforeend','<option value="999999">Sin límite</option>'); kf.value='0'; kt.value='999999'; }
+    const filts = Array.from(document.querySelectorAll('.mnd-filt'));
+    const closeAll = (except)=> filts.forEach(f=>{ if(f!==except) f.classList.remove('open'); });
+    filts.forEach(f=>{
+      const head = f.querySelector('.mnd-filt-head');
+      head.addEventListener('click',(e)=>{ e.stopPropagation(); const was=f.classList.contains('open'); closeAll(f); f.classList.toggle('open',!was); });
+      f.querySelector('.mnd-drop').addEventListener('click',(e)=>e.stopPropagation());
+      // brand chips
+      f.querySelectorAll('.mnd-brand-chip').forEach(ch=>ch.addEventListener('click',()=>{
+        if(ch.classList.contains('mnd-all')){ f.querySelectorAll('.mnd-brand-chip').forEach(x=>x.classList.remove('sel')); ch.classList.add('sel'); }
+        else { f.querySelector('.mnd-all')?.classList.remove('sel'); ch.classList.toggle('sel'); }
+      }));
+      // price checkboxes exclusivity
+      const pAll=f.querySelector('.mnd-price-all'), pReq=f.querySelector('.mnd-price-req'), pRange=f.querySelector('.mnd-price-range');
+      if(pAll) pAll.addEventListener('change',()=>{ if(pAll.checked){ pReq.checked=false; if(pRange){pRange.style.opacity=.5;pRange.style.pointerEvents='none';} } });
+      if(pReq) pReq.addEventListener('change',()=>{ if(pReq.checked){ pAll.checked=false; if(pRange){pRange.style.opacity=1;pRange.style.pointerEvents='auto';} } else if(pRange){pRange.style.opacity=.5;pRange.style.pointerEvents='none';} });
+      // "all" checkboxes for tipo/specs
+      const allChk=f.querySelector('.mnd-type-all,.mnd-spec-all,.mnd-grp-all');
+      if(allChk){ const others=Array.from(f.querySelectorAll('.mnd-chk input')).filter(i=>i!==allChk);
+        allChk.addEventListener('change',()=>{ if(allChk.checked) others.forEach(o=>o.checked=false); });
+        others.forEach(o=>o.addEventListener('change',()=>{ if(o.checked) allChk.checked=false; if(!others.some(x=>x.checked)) allChk.checked=true; }));
+      }
+      f.querySelector('.mnd-aplicar').addEventListener('click',()=>{ this._applyFilter(f); f.classList.remove('open'); });
+    });
+    document.addEventListener('click',()=>closeAll(null));
+    document.querySelector('.mnd-reset')?.addEventListener('click',()=>this._resetFilters());
+    const moreBtn=document.querySelector('.mnd-morefilt-btn'), moreWrap=document.querySelector('.mnd-morewrap');
+    if(moreBtn&&moreWrap) moreBtn.addEventListener('click',()=>{ const on=!moreWrap.classList.contains('on'); moreWrap.classList.toggle('on',on); moreBtn.classList.toggle('on',on); });
+    this._chips = {};
+    this._updateCounts();
+  }
+  _applyQ(){
+    try{
+      const q=(new URLSearchParams(location.search).get('q')||'').trim().toLowerCase();
+      if(!q) return;
+      const filt=document.querySelector('.mnd-filt[data-f="marca"]'); if(!filt) return;
+      const chip=Array.from(filt.querySelectorAll('.mnd-brand-chip')).find(c=>(c.dataset.brand||'').toLowerCase()===q);
+      if(!chip) return;
+      filt.querySelector('.mnd-all')?.classList.remove('sel');
+      chip.classList.add('sel');
+      this._applyFilter(filt);
+    }catch(e){}
+  }
+  _applyFilter(f){
+    const key=f.dataset.f, val=f.querySelector('.mnd-filt-val');
+    let label='', def='';
+    if(key==='marca'){ const sel=Array.from(f.querySelectorAll('.mnd-brand-chip.sel')).filter(c=>!c.classList.contains('mnd-all')).map(c=>c.dataset.brand); def='Todas las marcas';
+      label = sel.length ? (sel.length>1? sel.length+' marcas' : sel[0]) : ''; }
+    else if(key==='anio'){ const a=f.querySelector('.mnd-year-from').value,b=f.querySelector('.mnd-year-to').value; def='Todos los años'; if(!(a==='1990'&&b==='2026')) label=a+' – '+b; }
+    else if(key==='precio'){ def='Todos los precios'; if(f.querySelector('.mnd-price-req').checked){ label=f.querySelector('.mnd-price-from').value+' – '+f.querySelector('.mnd-price-to').value; } }
+    else if(key==='tipo'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-type-all')).map(i=>i.value); def='Todos los tipos'; label=sel.length?(sel.length>1?sel.length+' tipos':sel[0]):''; }
+    else if(key==='specs'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-spec-all')).map(i=>i.value); def='Todos'; label=sel.length?(sel.length>1?sel.length+' detalles':sel[0]):''; }
+    else if(key==='combustible'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Todos'; label=sel.length?(sel.length>1?sel.length+' combustibles':sel[0]):''; }
+    else if(key==='transmision'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Todas'; label=sel.length?(sel.length>1?sel.length+' tipos':sel[0]):''; }
+    else if(key==='ciudad'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Todas'; label=sel.length?(sel.length>1?sel.length+' ciudades':sel[0]):''; }
+    else if(key==='km'){ const a=+f.querySelector('.mnd-km-from').value,b=+f.querySelector('.mnd-km-to').value; def='Cualquiera'; if(!(a===0&&b===999999)){ const fmt=n=>n>=999999?'Sin límite':n.toLocaleString('es-CO')+' km'; label=fmt(a)+' – '+fmt(b); } }
+    else if(key==='traccion'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Todas'; label=sel.length?(sel.length>1?sel.length+' tracciones':sel[0]):''; }
+    else if(key==='cilindraje'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Todos'; label=sel.length?(sel.length>1?sel.length+' rangos':sel[0]):''; }
+    else if(key==='hp'){ const sel=Array.from(f.querySelectorAll('.mnd-chk input:checked')).filter(i=>!i.classList.contains('mnd-grp-all')).map(i=>i.value); def='Cualquiera'; label=sel.length?(sel.length>1?sel.length+' rangos':sel[0]):''; }
+    val.textContent = label || def;
+    if(label) this._chips[key]={label,f}; else delete this._chips[key];
+    this._renderChips();
+    this._applyAllFilters();
+  }
+  _indexCards(){
+    const grid=document.getElementById('mnd-cargrid'); if(!grid) return;
+    const inv=(window.MND_INVENTARIO||[]);
+    const BRANDS=['Renault','Chevrolet','Toyota','Mazda','Kia','Nissan','Hyundai','Ford','Volkswagen','Suzuki','Mercedes-Benz','BMW','Audi','Peugeot','JAC'];
+    this._cards=Array.from(grid.querySelectorAll('.mnd-card'));
+    this._cards.forEach(card=>{
+      const txt=(card.innerText||'').replace(/\n/g,' '); const title=txt.toLowerCase();
+      const match=inv.find(c=>title.includes(c.modelo.toLowerCase()) && title.includes(c.marca.toLowerCase())) || inv.find(c=>title.includes(c.modelo.toLowerCase()));
+      const brandGuess=BRANDS.find(b=>title.includes(b.toLowerCase()));
+      const anio=(txt.match(/\b(19|20)\d{2}\b/)||[])[0];
+      const km=(txt.replace(/\./g,'').match(/(\d+)\s*km/i)||[])[1];
+      const d=card.dataset;
+      d.marca=match?match.marca:(brandGuess||''); d.anio=anio||(match?match.anio:''); d.km=km||(match?match.km:'');
+      d.combustible=match?match.combustible:''; d.transmision=match?match.transmision:''; d.carroceria=match?match.carroceria:''; d.traccion=match?match.traccion:'';
+    });
+    this._searchTerm='';
+  }
+  _sel(f){ return Array.from((f||document).querySelectorAll('.mnd-chk input:checked')).filter(i=>!/mnd-(type|spec|grp)-all/.test(i.className)).map(i=>i.value.toLowerCase()); }
+  _applyAllFilters(){
+    const grid=document.getElementById('mnd-cargrid'); if(!grid||!this._cards) return;
+    const F=document.querySelector.bind(document);
+    const marcaF=F('.mnd-filt[data-f="marca"]'), anioF=F('.mnd-filt[data-f="anio"]'), kmF=F('.mnd-filt[data-f="km"]');
+    const marcas=marcaF?Array.from(marcaF.querySelectorAll('.mnd-brand-chip.sel')).filter(c=>!c.classList.contains('mnd-all')).map(c=>(c.dataset.brand||'').toLowerCase()):[];
+    const aF=anioF?+anioF.querySelector('.mnd-year-from').value:1990, aT=anioF?+anioF.querySelector('.mnd-year-to').value:2026;
+    const anioActive=this._chips&&this._chips.anio;
+    const kF=kmF?+kmF.querySelector('.mnd-km-from').value:0, kT=kmF?+kmF.querySelector('.mnd-km-to').value:999999;
+    const kmActive=this._chips&&this._chips.km;
+    const combustibles=this._chips&&this._chips.combustible?this._sel(F('.mnd-filt[data-f="combustible"]')):[];
+    const transmisiones=this._chips&&this._chips.transmision?this._sel(F('.mnd-filt[data-f="transmision"]')):[];
+    const tipos=this._chips&&this._chips.tipo?this._sel(F('.mnd-filt[data-f="tipo"]')):[];
+    const tracciones=this._chips&&this._chips.traccion?this._sel(F('.mnd-filt[data-f="traccion"]')):[];
+    let shown=0;
+    this._cards.forEach(card=>{ const d=card.dataset; let ok=true;
+      if(marcas.length && !marcas.includes((d.marca||'').toLowerCase())) ok=false;
+      if(ok && anioActive && d.anio && !(+d.anio>=aF && +d.anio<=aT)) ok=false;
+      if(ok && kmActive && d.km!=='' && !(+d.km>=kF && +d.km<=kT)) ok=false;
+      if(ok && combustibles.length && d.combustible && !combustibles.includes(d.combustible.toLowerCase())) ok=false;
+      if(ok && transmisiones.length && d.transmision && !transmisiones.includes(d.transmision.toLowerCase())) ok=false;
+      if(ok && tipos.length && d.carroceria && !tipos.includes(d.carroceria.toLowerCase())) ok=false;
+      if(ok && tracciones.length && d.traccion && !tracciones.includes(d.traccion.toLowerCase())) ok=false;
+      card.style.display=ok?'':'none'; if(ok) shown++;
+    });
+    const countEl=document.querySelector('.mnd-res-count'); if(countEl) countEl.textContent=shown;
+  }
+  _updateCounts(){
+    const grid=document.getElementById('mnd-cargrid');
+    const total=grid?grid.querySelectorAll('.mnd-card').length:0;
+    const visible=grid?Array.from(grid.querySelectorAll('.mnd-card')).filter(c=>c.style.display!=='none').length:total;
+    document.querySelectorAll('.mnd-hero-count').forEach(e=>e.textContent=total);
+    document.querySelectorAll('.mnd-res-count').forEach(e=>e.textContent=visible);
+    const secondary=['combustible','transmision','km','ciudad','traccion','cilindraje','hp','tipo','specs'];
+    const n=Object.keys(this._chips||{}).filter(k=>secondary.includes(k)).length;
+    const badge=document.querySelector('.mnd-morefilt-badge');
+    if(badge){ badge.textContent=n; badge.style.display=n?'inline-block':'none'; }
+  }
+  _renderChips(){
+    this._updateCounts();
+    const wrap=document.getElementById('mnd-chips'), list=wrap.querySelector('.mnd-chips-list');
+    const keys=Object.keys(this._chips);
+    list.innerHTML = keys.map(k=>'<span class="mnd-chip" data-k="'+k+'">'+this._chips[k].label+'<button type="button" aria-label="Quitar">×</button></span>').join('');
+    wrap.classList.toggle('on', keys.length>0);
+    list.querySelectorAll('.mnd-chip button').forEach(b=>b.addEventListener('click',()=>{ const k=b.parentNode.dataset.k; this._clearFilter(k); }));
+  }
+  _clearFilter(k){
+    const f=this._chips[k] && this._chips[k].f; delete this._chips[k];
+    if(f){ const val=f.querySelector('.mnd-filt-val');
+      if(k==='marca'){ f.querySelectorAll('.mnd-brand-chip').forEach(c=>c.classList.remove('sel')); val.textContent='Todas las marcas'; }
+      else if(k==='anio'){ f.querySelector('.mnd-year-from').value='1990'; f.querySelector('.mnd-year-to').value='2026'; val.textContent='Todos los años'; }
+      else if(k==='precio'){ f.querySelector('.mnd-price-all').checked=true; f.querySelector('.mnd-price-req').checked=false; const pr=f.querySelector('.mnd-price-range'); pr.style.opacity=.5; pr.style.pointerEvents='none'; val.textContent='Todos los precios'; }
+      else if(k==='tipo'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-type-all').checked=true; val.textContent='Todos los tipos'; }
+      else if(k==='specs'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-spec-all').checked=true; val.textContent='Todos'; }
+      else if(k==='combustible'||k==='transmision'||k==='ciudad'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-grp-all').checked=true; val.textContent=(k==='combustible')?'Todos':'Todas'; }
+      else if(k==='km'){ f.querySelector('.mnd-km-from').value='0'; f.querySelector('.mnd-km-to').value='999999'; val.textContent='Cualquiera'; }
+      else if(k==='traccion'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-grp-all').checked=true; val.textContent='Todas'; }
+      else if(k==='cilindraje'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-grp-all').checked=true; val.textContent='Todos'; }
+      else if(k==='hp'){ f.querySelectorAll('.mnd-chk input').forEach(i=>i.checked=false); f.querySelector('.mnd-grp-all').checked=true; val.textContent='Cualquiera'; }
+    }
+    this._renderChips();
+    this._applyAllFilters();
+  }
+  _resetFilters(){ Object.keys(this._chips).forEach(k=>this._clearFilter(k)); this._applyAllFilters(); }
+  _applyTab(){
+    document.querySelectorAll('.mnd-tab-on').forEach(t=>{ t.style.background='var(--bg)'; t.style.color='var(--t-strong)'; t.style.boxShadow='0 1px 4px rgba(0,0,0,.15)'; });
+  }
+  _setupMenu(){
+    // remove any stale menu(s) previously relocated to <body> (from earlier hot-reloads) to drop their old listeners
+    Array.from(document.body.children).forEach(n => { if(n.id === 'mnd-menu') n.remove(); });
+    const menu = (document.getElementById('dc-root') || document).querySelector('#mnd-menu') || document.getElementById('mnd-menu');
+    if(!menu) return;
+    // move to <body> so position:fixed escapes any transformed ancestor
+    if(menu.parentNode !== document.body) document.body.appendChild(menu);
+    this._menu = menu;
+    // inject !important state rules into head (helmet-scoped rules don't win after body relocation)
+    if(!document.getElementById('mnd-menu-state')){
+      const st = document.createElement('style');
+      st.id = 'mnd-menu-state';
+      st.textContent = '#mnd-menu.mnd-open{display:block!important;animation:mnd-menu-in .6s cubic-bezier(.22,1,.36,1) both!important}'
+        + '#mnd-menu.mnd-open .mnd-menu-flash{opacity:0!important}'
+        + '#mnd-menu.mnd-open .mnd-mi{opacity:1!important;transform:none!important}'
+        + '#mnd-menu .mnd-mi-exp.exp-open .mnd-sub{display:block!important;animation:mnd-sub-in .4s ease both!important}'
+        + '#mnd-menu .mnd-brands-panel.brands-on{display:block!important}'
+        + '#mnd-menu .brands-on .mnd-brand-row{animation:mnd-stair .5s ease both!important}';
+      document.head.appendChild(st);
+    }
+    const items = Array.from(menu.querySelectorAll('.mnd-mi'));
+    items.forEach((it,i) => { it.style.transitionDelay = (0.1 + i*0.07) + 's'; });
+    const open = () => { menu.classList.add('mnd-open'); document.body.style.overflow = 'hidden'; if(this._wrap) this._wrap.style.display = 'none'; };
+    const close = () => { menu.classList.remove('mnd-open'); document.body.style.overflow = ''; if(this._wrap) this._wrap.style.display = ''; };
+    this._openMenu = open; this._closeMenu = close;
+    document.querySelectorAll('.mnd-menu-btn').forEach(b => b.onclick = (e)=>{ e.preventDefault(); open(); });
+    menu.querySelectorAll('.mnd-menu-close').forEach(b => b.onclick = (e)=>{ e.preventDefault(); close(); });
+    menu.querySelectorAll('a.mnd-mi').forEach(a => a.addEventListener('click', ()=> close()));
+    this._setupSubmenus(menu, close);
+    const themeBtn = menu.querySelector('.mnd-menu-theme');
+    if(themeBtn) themeBtn.onclick = (e)=>{ e.preventDefault(); this._toggleTheme(); };
+    document.addEventListener('keydown', this._escHandler = (e)=>{ if(e.key === 'Escape') close(); });
+  }
+  _setupSubmenus(menu, close){
+    menu.querySelectorAll('.mnd-mi-exp').forEach(exp => {
+      const head = exp.querySelector('.mnd-mi-head');
+      const panel = exp.querySelector('.mnd-brands-panel');
+      const brandsLinks = Array.from(exp.querySelectorAll('.mnd-sublink-brands'));
+      const rows = Array.from(exp.querySelectorAll('.mnd-brand-row'));
+      const reveal = () => {
+        brandsLinks.forEach(l=>l.classList.add('active'));
+        if(!panel) return;
+        // restart staircase
+        rows.forEach((r,i)=>{ r.style.animation='none'; r.style.animationDelay=''; });
+        void panel.offsetWidth;
+        panel.classList.add('brands-on');
+        rows.forEach((r,i)=>{ r.style.animation=''; r.style.animationDelay=(0.08+i*0.14)+'s'; });
+        // count up after each row lands on the staircase
+        exp.querySelectorAll('.mnd-brand-count').forEach((el,i)=>{
+          el.classList.remove('counted');
+          el.textContent='00';
+          setTimeout(()=> this._countUp(el), 420 + i*140);
+        });
+      };
+      const hide = () => { if(panel) panel.classList.remove('brands-on'); brandsLinks.forEach(l=>l.classList.remove('active')); };
+      if(head) head.addEventListener('click',(e)=>{
+        e.preventDefault();
+        const willOpen = !exp.classList.contains('exp-open');
+        exp.classList.toggle('exp-open', willOpen);
+        if(!willOpen) hide();
+      });
+      brandsLinks.forEach(l=>l.addEventListener('mouseenter',()=>{ this._brandTarget=l.getAttribute('href')||'AutosDisponibles.dc.html'; reveal(); }));
+      rows.forEach(r=>{ r.style.cursor='pointer'; r.addEventListener('click',()=>{ const nm=(r.querySelector('.mnd-brand-name')||{}).textContent||''; const t=this._brandTarget||'AutosDisponibles.dc.html'; location.href=t+'?q='+encodeURIComponent(nm.trim()); }); });
+      brandsLinks.forEach(l=>l.addEventListener('click',(e)=> e.preventDefault()));
+      // stays open once shown; hide only when clicking outside the submenu
+      const sub = exp.querySelector('.mnd-sub');
+      document.addEventListener('click',(e)=>{
+        if(!panel || !panel.classList.contains('brands-on')) return;
+        if(sub && sub.contains(e.target)) return;      // clicking inside the submenu keeps it
+        if(head && head.contains(e.target)) return;     // toggling the header handled above
+        hide();
+      });
+    });
+  }
+  _countUp(el){
+    const target = +el.dataset.count || 0;
+    const dur = 1700, start = performance.now();
+    const step = (now)=>{
+      const p = Math.min(1,(now-start)/dur);
+      const val = Math.round(target*(1-Math.pow(1-p,3)));
+      el.textContent = String(val).padStart(2,'0');
+      if(p<1) requestAnimationFrame(step);
+      else { el.textContent = String(target).padStart(2,'0'); el.classList.add('counted'); }
+    };
+    requestAnimationFrame(step);
+  }
+  _toggleTheme(){ this._applyTheme((window.__mndTheme==='light')?'dark':'light'); }
+  _applyTheme(theme){
+    window.__mndTheme = theme;
+    try { localStorage.setItem('mnd-theme', theme); } catch(e){}
+    if(theme==='light') document.body.setAttribute('data-theme','light'); else document.body.removeAttribute('data-theme');
+    document.querySelectorAll('.mnd-theme-btn').forEach(btn => { btn.innerHTML = theme==='light'
+      ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" stroke-linecap="round"></path>'
+      : '<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>'; });
+    this._applyTab();
+  }
+}</script>
+</body>
+</html>

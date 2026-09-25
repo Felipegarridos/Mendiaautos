@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  :root{--bg:#0c0c0e;--c-card:#161619;--c-input:#161619;--t-strong:#fff;--t-1:rgba(255,255,255,.8);--t-2:rgba(255,255,255,.58);--t-3:rgba(255,255,255,.42);--ln:rgba(255,255,255,.09);--ln-strong:rgba(255,255,255,.2)}
+  body[data-theme="light"]{--bg:#fff;--c-card:#fff;--c-input:#f6f6f7;--t-strong:#0e0e10;--t-1:rgba(14,14,16,.82);--t-2:rgba(14,14,16,.56);--t-3:rgba(14,14,16,.44);--ln:rgba(0,0,0,.09);--ln-strong:rgba(0,0,0,.16)}
+  body{margin:0;background:var(--bg);font-family:'Open Sans',system-ui,sans-serif;color:var(--t-1);transition:background .35s,color .35s}
+  a{color:inherit;text-decoration:none}
+  a:hover{color:#1E50A2}
+  .mnd-mich{font-family:'Michroma',sans-serif}
+  .mnd-fld{width:100%;background:var(--c-input);border:1px solid var(--ln);border-radius:10px;padding:14px 15px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-strong);outline:none;transition:border-color .25s}
+  .mnd-fld::placeholder{color:var(--t-3)}
+  .mnd-fld:focus{border-color:#1E50A2}
+  .mnd-lab{display:block;font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-3);margin-bottom:9px}
+  .mnd-cta{transition:transform .3s,box-shadow .3s}
+  .mnd-cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(30,80,162,.6)}
+  .mnd-tabx{flex:1;background:none;border:0;cursor:pointer;padding:13px 4px;font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-3);border-bottom:2px solid transparent;transition:color .25s,border-color .25s}
+  .mnd-tabx.on{color:var(--t-strong);border-bottom-color:#1E50A2}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,#22232a 0%,#111015 45%,var(--bg) 100%);padding:40px 20px;position:relative">
+  <button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="position:absolute;top:24px;left:24px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button>
+  <div style="width:100%;max-width:420px">
+    <a href="MendiautosHome.dc.html" style="display:flex;justify-content:center;margin-bottom:28px"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:42px"></a>
+    <div style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;padding:34px 32px;box-shadow:0 40px 80px -40px rgba(0,0,0,.6)">
+      <div style="display:flex;margin-bottom:26px;border-bottom:1px solid var(--ln)">
+        <button class="mnd-tabx on" data-tab="login">Iniciar sesión</button>
+        <button class="mnd-tabx" data-tab="signup">Crear cuenta</button>
+      </div>
+
+      <div class="mnd-pane-login">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div><label class="mnd-lab">Usuario o correo</label><input class="mnd-fld mnd-l-user" placeholder="tu@correo.com"></div>
+          <div><label class="mnd-lab">Contraseña</label><div style="position:relative"><input class="mnd-fld mnd-l-pass" type="password" placeholder="••••••••" style="padding-right:44px"><button type="button" class="mnd-eye" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--t-3);cursor:pointer;padding:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;font:400 12.5px/1 'Open Sans',sans-serif;color:var(--t-2)"><input type="checkbox" style="width:16px;height:16px;accent-color:#1E50A2;cursor:pointer">Recuérdame</label><a href="#" style="font:600 12px/1 'Open Sans',sans-serif;color:#1E50A2">¿Olvidaste tu contraseña?</a></div>
+          <button type="button" class="mnd-cta mnd-l-submit" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#1E50A2;color:#fff;border:0;border-radius:10px;padding:16px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:4px">Ingresar <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12h15M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        </div>
+      </div>
+
+      <div class="mnd-pane-signup" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div><label class="mnd-lab">Nombre completo</label><input class="mnd-fld" placeholder="Tu nombre"></div>
+          <div><label class="mnd-lab">Correo electrónico</label><input class="mnd-fld" placeholder="tu@correo.com"></div>
+          <div><label class="mnd-lab">Celular (WhatsApp)</label><input class="mnd-fld" placeholder="+57 300 000 0000"></div>
+          <div><label class="mnd-lab">Contraseña</label><input class="mnd-fld" type="password" placeholder="••••••••"></div>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font:400 12px/1.5 'Open Sans',sans-serif;color:var(--t-2)"><input type="checkbox" style="width:16px;height:16px;accent-color:#1E50A2;margin-top:2px;cursor:pointer">Acepto los términos y la política de tratamiento de datos (Ley 1581 de 2012).</label>
+          <button type="button" class="mnd-cta mnd-s-submit" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#1E50A2;color:#fff;border:0;border-radius:10px;padding:16px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">Crear mi cuenta</button>
+        </div>
+      </div>
+
+      <div class="mnd-ok" style="display:none;margin-top:18px;padding:14px 16px;border:1px solid rgba(46,168,106,.4);background:rgba(46,168,106,.08);border-radius:10px;font:600 13px/1.5 'Open Sans',sans-serif;color:#2fa86a"></div>
+
+      <div style="margin-top:24px;display:flex;align-items:center;gap:12px"><span style="flex:1;height:1px;background:var(--ln)"></span><span style="font:400 11px/1 'Open Sans',sans-serif;color:var(--t-3)">o continúa con</span><span style="flex:1;height:1px;background:var(--ln)"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;background:transparent;border:1px solid var(--ln-strong);color:var(--t-1);border-radius:10px;padding:13px;font:600 12px/1 'Open Sans',sans-serif;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.2c0-.6 0-1.2-.2-1.8H12v3.4h5.1a4.4 4.4 0 0 1-1.9 2.9v2.4h3.1c1.8-1.7 2.7-4.1 2.7-6.9Z"></path><path d="M12 21c2.4 0 4.5-.8 6-2.2l-3.1-2.4c-.8.6-1.9.9-2.9.9-2.3 0-4.2-1.5-4.9-3.6H3.9v2.5A9 9 0 0 0 12 21Z"></path><path d="M7.1 13.7a5.4 5.4 0 0 1 0-3.4V7.8H3.9a9 9 0 0 0 0 8.4l3.2-2.5Z"></path><path d="M12 6.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 3.9 7.8l3.2 2.5C7.8 8.1 9.7 6.6 12 6.6Z"></path></svg>Google</button>
+        <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;background:transparent;border:1px solid var(--ln-strong);color:var(--t-1);border-radius:10px;padding:13px;font:600 12px/1 'Open Sans',sans-serif;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-1.9 0-3 1.4-3 3.2V11H9v3h2v6h3v-6h2.4l.6-3H14V9.6c0-.4.2-.6.7-.6Z"></path></svg>Facebook</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:22px"><a href="MendiautosHome.dc.html" style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-3)">← Volver al inicio</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:760}}">
+class Component extends DCLogic {
+  componentDidMount(){
+    let saved='dark'; try{ saved=localStorage.getItem('mnd-theme')||'dark'; }catch(e){}
+    if(saved==='light') document.body.setAttribute('data-theme','light');
+    document.querySelectorAll('.mnd-tabx').forEach(t=>t.onclick=()=>{
+      document.querySelectorAll('.mnd-tabx').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+      document.querySelector('.mnd-pane-login').style.display = t.dataset.tab==='login'?'block':'none';
+      document.querySelector('.mnd-pane-signup').style.display = t.dataset.tab==='signup'?'block':'none';
+      document.querySelector('.mnd-ok').style.display='none';
+    });
+    const eye=document.querySelector('.mnd-eye'), pass=document.querySelector('.mnd-l-pass');
+    if(eye&&pass) eye.onclick=()=>{ pass.type = pass.type==='password'?'text':'password'; };
+    const ok=document.querySelector('.mnd-ok');
+    const show=(msg)=>{ ok.textContent='✓ '+msg; ok.style.display='block'; };
+    document.querySelector('.mnd-l-submit').onclick=()=>{
+      const u=document.querySelector('.mnd-l-user').value.trim();
+      try{ localStorage.setItem('mnd-user',JSON.stringify({user:u||'invitado',ts:Date.now()})); }catch(e){}
+      show('Sesión iniciada. Bienvenido'+(u?', '+u:'')+'.');
+    };
+    document.querySelector('.mnd-s-submit').onclick=()=>show('Cuenta creada. Ya puedes iniciar sesión.');
+  }
+}
+</script>
+</body>
+</html>

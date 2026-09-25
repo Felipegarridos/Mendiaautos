@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<title>Aprende | Mendiautos</title>
+<meta name="description" content="Videos que explican cómo comprar, vender, financiar e invertir con Mendiautos.">
+<meta property="og:title" content="Aprende | Mendiautos">
+<meta property="og:description" content="Videos que explican cómo comprar, vender, financiar e invertir con Mendiautos.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0c0c0e">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  :root{--bg:#0c0c0e;--c-card:#141417;--c-panel:#161619;--c-input:#161619;--c-circle:#1c1c20;--t-strong:#fff;--t-1:rgba(255,255,255,.8);--t-2:rgba(255,255,255,.56);--t-3:rgba(255,255,255,.55);--ln:rgba(255,255,255,.09);--ln-strong:rgba(255,255,255,.2)}
+  body[data-theme="light"]{--bg:#fff;--c-card:#fff;--c-panel:#f6f6f7;--c-input:#f6f6f7;--c-circle:#f4f4f5;--t-strong:#0e0e10;--t-1:rgba(14,14,16,.82);--t-2:rgba(14,14,16,.56);--t-3:rgba(14,14,16,.58);--ln:rgba(0,0,0,.1);--ln-strong:rgba(0,0,0,.16)}
+  body{margin:0;background:var(--bg);font-family:'Open Sans',system-ui,sans-serif;color:var(--t-1);transition:background .35s,color .35s}
+  a{color:inherit;text-decoration:none}
+  a:hover{color:#1E50A2}
+  .mnd-mich{font-family:'Michroma',sans-serif}
+  .mnd-reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .75s cubic-bezier(.2,.75,.2,1)}
+  .mnd-reveal.mnd-in{opacity:1;transform:none}
+  .mnd-vcard{transition:transform .3s,border-color .3s}
+  .mnd-vcard:hover{transform:translateY(-6px);border-color:#1E50A2}
+  .mnd-vthumb{transition:filter .3s}
+  .mnd-vcard:hover .mnd-vthumb{filter:brightness(1.12)}
+  .mnd-play{transition:transform .3s,background .3s}
+  .mnd-vcard:hover .mnd-play{transform:scale(1.1);background:#1E50A2}
+  .mnd-cta{transition:transform .3s,box-shadow .3s}
+  .mnd-cta:hover{transform:translateY(-3px);box-shadow:0 16px 30px -12px rgba(30,80,162,.6)}
+  .mnd-modal{position:fixed;inset:0;z-index:2147483200;display:none;overflow-y:auto;background:rgba(6,6,8,.82);backdrop-filter:blur(6px)}
+  .mnd-modal.on{display:block}
+  @media (prefers-reduced-motion:reduce){.mnd-reveal{opacity:1!important;transform:none!important}}
+  /* ===== full-screen menu ===== */
+  #mnd-menu{position:fixed;inset:0;z-index:2147483200;overflow-y:auto;display:none;background:radial-gradient(75% 95% at 0% 22%,rgba(30,80,162,.12),transparent 55%),var(--bg);color:var(--t-strong);font-family:'Open Sans',system-ui,sans-serif}
+  body[data-theme="light"] #mnd-menu{background:linear-gradient(118deg,#ffffff 52%,#fbe7e8 100%)}
+  @keyframes mnd-menu-in{0%{opacity:0;transform:scale(1.015) translateY(8px)}100%{opacity:1;transform:none}}
+  @keyframes mnd-menu-flash{0%{opacity:0;transform:translateY(-110%)}20%{opacity:.6}52%{opacity:.55;transform:translateY(110%)}80%{opacity:.4;transform:translateY(-25%)}100%{opacity:0;transform:translateY(0)}}
+  .mnd-menu-flash{position:absolute;left:0;right:0;top:0;height:42%;pointer-events:none;z-index:1;background:linear-gradient(to bottom,transparent,rgba(30,80,162,.2),transparent)}
+  #mnd-menu.mnd-open{opacity:1;visibility:visible}
+  .mnd-menu-inner{max-width:1280px;margin:0 auto;padding:20px 40px 60px;min-height:100%;display:flex;flex-direction:column}
+  .mnd-menu-top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 30px}
+  .mnd-menu-close{display:inline-flex;align-items:center;gap:11px;background:none;border:0;cursor:pointer;color:var(--t-strong);font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.22em}
+  .mnd-menu-close svg{transition:transform .35s ease}
+  .mnd-menu-close:hover{color:#1E50A2}
+  .mnd-menu-close:hover svg{transform:rotate(90deg)}
+  .mnd-menu-logo{height:26px;display:block}
+  .mnd-menu-grid{display:grid;grid-template-columns:1fr 380px;gap:48px;flex:1}
+  .mnd-menu-list{display:flex;flex-direction:column}
+  .mnd-mi{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:22px;padding:14px 6px;border-bottom:1px solid var(--ln);text-decoration:none;color:var(--t-strong);opacity:0;transform:translateY(30px);transition:opacity .55s ease,transform .6s cubic-bezier(.2,.75,.2,1),color .3s ease}
+  #mnd-menu.mnd-open .mnd-mi{opacity:1;transform:none}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(1){transition-delay:.1s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(2){transition-delay:.17s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(3){transition-delay:.24s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(4){transition-delay:.31s}
+  #mnd-menu.mnd-open .mnd-mi:nth-child(5){transition-delay:.38s}
+  .mnd-mi-num{font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.08em;color:var(--t-3);transition:color .3s ease;align-self:start;padding-top:12px}
+  .mnd-mi-label{font:800 clamp(22px,2.6vw,34px)/1 'Michroma','Open Sans',sans-serif;letter-spacing:.005em;text-transform:uppercase}
+  .mnd-mi-arrow{color:#1E50A2;opacity:0;transform:translateX(-10px);transition:opacity .35s ease,transform .35s ease}
+  .mnd-mi:hover{color:#1E50A2}
+  .mnd-mi:hover .mnd-mi-num{color:#1E50A2}
+  .mnd-mi:hover .mnd-mi-arrow{opacity:1;transform:none}
+  .mnd-menu-side{display:flex;flex-direction:column}
+  .mnd-side-label{font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.3em;color:var(--t-3);margin-bottom:16px}
+  .mnd-map{position:relative;display:block;height:260px;border-radius:6px;overflow:hidden;border:1px solid var(--ln);background:linear-gradient(135deg,#2a2d31,#1a1c1f);text-decoration:none}
+  body[data-theme="light"] .mnd-map{background:linear-gradient(135deg,#e7ebef,#d7dde3)}
+  .mnd-map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px}
+  body[data-theme="light"] .mnd-map-grid{background-image:linear-gradient(rgba(0,0,0,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.05) 1px,transparent 1px)}
+  .mnd-map-open{position:absolute;top:10px;left:10px;font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#1E50A2;padding:6px 9px;border-radius:4px;display:inline-flex;gap:6px;align-items:center}
+  .mnd-side-addr{margin-top:16px;font:600 14px/1.5 'Open Sans',sans-serif;color:var(--t-1)}
+  .mnd-side-phone{margin-top:10px;font:600 14px/1 'Open Sans',sans-serif;color:var(--t-1);display:flex;align-items:center;gap:9px}
+  .mnd-menu-bottom{margin-top:auto;padding-top:40px;display:flex;flex-direction:column;gap:18px}
+  .mnd-menu-theme{display:inline-flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--t-3);font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase}
+  .mnd-menu-theme:hover{color:#1E50A2}
+  .mnd-menu-socials{display:flex;gap:14px;color:var(--t-3)}
+  .mnd-menu-socials a{color:inherit;transition:color .3s ease}
+  .mnd-menu-socials a:hover{color:#1E50A2}
+  @media (prefers-reduced-motion:reduce){.mnd-mi{opacity:1!important;transform:none!important}}
+  /* expandable submenu */
+  .mnd-mi-exp{display:block;padding:0}
+  .mnd-mi-head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:22px;padding:14px 6px;cursor:pointer;color:var(--t-strong);transition:color .3s ease}
+  .mnd-mi-head:hover{color:#1E50A2}
+  .mnd-mi-head:hover .mnd-mi-num{color:#1E50A2}
+  .mnd-mi-chev{color:var(--t-3);transition:transform .45s cubic-bezier(.2,.75,.2,1),color .3s ease}
+  .mnd-mi-exp.exp-open .mnd-mi-head{color:#1E50A2}
+  .mnd-mi-exp.exp-open .mnd-mi-num{color:#1E50A2}
+  .mnd-mi-exp.exp-open .mnd-mi-chev{transform:rotate(180deg);color:#1E50A2}
+  .mnd-sub{display:none;padding:0 6px 26px}
+  .mnd-sublinks{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:14px 46px;margin-bottom:4px}
+  .mnd-sublink{display:inline-flex;align-items:center;gap:12px;font:700 13px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-2);transition:color .3s ease}
+  .mnd-sublink .mnd-dash{width:16px;height:2px;background:currentColor;transition:width .3s ease,background .3s ease}
+  .mnd-sublink:hover,.mnd-sublink.active{color:#1E50A2}
+  .mnd-sublink:hover .mnd-dash,.mnd-sublink.active .mnd-dash{width:26px;background:#1E50A2}
+  .mnd-brands-panel{display:none;margin-top:26px;padding-top:22px;border-top:1px solid var(--ln)}
+  .mnd-brands-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+  .mnd-brands-title{font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--t-2)}
+  .mnd-brands-sub{margin-top:6px;font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)}
+  .mnd-brands-viewall{font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#1E50A2}
+  .mnd-brands-grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px 44px}
+  .mnd-brand-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:11px 4px;border-bottom:1px solid var(--ln)}
+  .mnd-brand-logo{width:34px;height:34px;border-radius:50%;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;background:var(--logo-bg);overflow:hidden;font:700 10px/1 'Open Sans',sans-serif;color:var(--t-2);background:var(--c-circle)}
+  .mnd-brand-name{font:600 14px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-strong)}
+  .mnd-brand-count{min-width:30px;height:30px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid var(--ln-strong);background:var(--c-circle);font:700 13px/1 'Open Sans',sans-serif;color:var(--t-2);transition:color .45s cubic-bezier(.2,.75,.2,1),background .45s cubic-bezier(.2,.75,.2,1),border-color .45s cubic-bezier(.2,.75,.2,1),transform .45s cubic-bezier(.2,.75,.2,1);box-shadow:0 0 0 0 rgba(30,80,162,0)}
+  .mnd-brand-count.counted{color:#fff;background:#1E50A2;border-color:#1E50A2;transform:scale(1.08);box-shadow:0 6px 16px -6px rgba(30,80,162,.65)}
+  @keyframes mnd-sub-in{0%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:none}}
+  @keyframes mnd-stair{0%{opacity:0;transform:translateX(-20px)}100%{opacity:1;transform:none}}
+
+  /* lux-motion */
+  @keyframes mnd-page-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes mnd-sheen{0%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(240%) skewX(-18deg)}}
+  body{animation:mnd-page-enter .7s cubic-bezier(.22,.61,.36,1) both}
+  .mnd-reveal{transition:opacity 1s cubic-bezier(.22,.61,.36,1),transform 1s cubic-bezier(.22,.61,.36,1)!important}
+  .mnd-card{transition:transform .55s cubic-bezier(.22,.61,.36,1),box-shadow .55s cubic-bezier(.22,.61,.36,1),border-color .55s cubic-bezier(.22,.61,.36,1)!important;will-change:transform}
+  .mnd-card:hover{transform:translateY(-7px)!important;box-shadow:0 34px 70px -34px rgba(0,0,0,.72)!important}
+  .mnd-photo,.mnd-rec-scroll a>div:first-child{overflow:hidden}
+  .mnd-photo img{transition:transform .8s cubic-bezier(.22,.61,.36,1)}
+  .mnd-card:hover .mnd-photo img{transform:scale(1.07)}
+  .mnd-agenda,.mnd-cta,.mnd-alerta-btn,.mnd-save-btn{position:relative;overflow:hidden}
+  .mnd-agenda::after,.mnd-cta::after,.mnd-alerta-btn::after{content:"";position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:translateX(-140%) skewX(-18deg);pointer-events:none}
+  .mnd-agenda:hover::after,.mnd-cta:hover::after,.mnd-alerta-btn:hover::after{animation:mnd-sheen .9s cubic-bezier(.22,.61,.36,1)}
+  a,button{transition:color .3s cubic-bezier(.22,.61,.36,1),background-color .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),box-shadow .35s cubic-bezier(.22,.61,.36,1),opacity .3s ease}
+  .mnd-brand-logo,.mnd-soc{transition:transform .4s cubic-bezier(.22,.61,.36,1),border-color .35s ease,color .35s ease}
+  @media (prefers-reduced-motion:reduce){body{animation:none}.mnd-agenda::after,.mnd-cta::after,.mnd-alerta-btn::after{display:none}}
+</style>
+</helmet>
+<div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
+
+  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+    <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
+    <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
+    <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
+      <a href="AutosDisponibles.dc.html?focus=search" aria-label="Buscar autos" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5" stroke-linecap="round"></path></svg></a>
+      <svg class="mnd-theme-btn" style="cursor:pointer" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path></svg>
+      <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
+    </div>
+  </header>
+  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+
+  <!-- HERO -->
+  <section style="position:relative;padding:60px 34px 30px;background:radial-gradient(120% 120% at 50% 0%,#2b2b30 0%,#141216 55%,var(--bg) 100%)">
+    <div class="mnd-reveal" style="max-width:720px">
+      <div style="display:flex;align-items:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--t-3)">Centro de aprendizaje</span></div>
+      <h1 class="mnd-mich" style="margin:20px 0 0;font-size:clamp(32px,4.4vw,52px);line-height:1.02;color:var(--t-strong);text-transform:uppercase">Aprende con Mendiautos</h1>
+      <p style="margin:20px 0 0;font:400 16px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Videos cortos y guías claras para entender cómo invertir, comprar, vender y financiar tu auto con nosotros. Cada tema incluye un <b style="color:var(--t-strong)">Ver más</b> con tablas y gráficas paso a paso.</p>
+    </div>
+  </section>
+
+  <!-- FILTROS -->
+  <section style="padding:16px 34px 6px">
+    <div class="mnd-cats mnd-reveal" style="display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" class="mnd-cat on" data-c="all" style="border:1px solid var(--ln-strong);background:#1E50A2;border-color:#1E50A2;color:#fff;border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Todos</button>
+      <button type="button" class="mnd-cat" data-c="inv" style="border:1px solid var(--ln-strong);background:transparent;color:var(--t-2);border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Inversión</button>
+      <button type="button" class="mnd-cat" data-c="cv" style="border:1px solid var(--ln-strong);background:transparent;color:var(--t-2);border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Compra y venta</button>
+      <button type="button" class="mnd-cat" data-c="cred" style="border:1px solid var(--ln-strong);background:transparent;color:var(--t-2);border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Crédito</button>
+    </div>
+  </section>
+
+  <!-- GRID DE VIDEOS -->
+  <section style="padding:20px 34px 40px">
+    <div class="mnd-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px"></div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding:10px 34px 66px">
+    <div class="mnd-reveal" style="position:relative;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:radial-gradient(120% 130% at 12% 0%,#26262a,#0d0d0f 70%);padding:48px 44px;text-align:center">
+      <h2 class="mnd-mich" style="margin:0;font-size:26px;line-height:1.2;color:#fff;text-transform:uppercase">¿Te quedan dudas?</h2>
+      <p style="margin:14px auto 0;max-width:440px;font:400 14px/1.7 'Open Sans',sans-serif;color:rgba(255,255,255,.7)">Nuestro equipo te explica todo en persona o por WhatsApp, sin compromiso.</p>
+      <div style="display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap">
+        <a href="Contacto.dc.html" class="mnd-cta" style="background:#1E50A2;color:#fff;border-radius:10px;padding:15px 30px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Hablar con un asesor</a>
+        <a href="Inversionista.dc.html" style="border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:15px 30px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Simular inversión</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+    <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:34px;display:block"></a>
+    <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
+    <span style="font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)">© 2026 Mendiautos</span>
+  </footer>
+
+  <!-- MODAL VER MÁS -->
+  <div class="mnd-modal">
+    <div style="max-width:900px;margin:40px auto;background:var(--bg);border:1px solid var(--ln);border-radius:18px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 26px;border-bottom:1px solid var(--ln)">
+        <span class="mnd-m-cat" style="font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#1E50A2">Tema</span>
+        <button type="button" class="mnd-m-close" style="display:inline-flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg> Cerrar</button>
+      </div>
+      <div class="mnd-m-body" style="padding:28px 30px 34px"></div>
+    </div>
+  </div>
+
+</div>
+<div id="mnd-menu">
+  <div class="mnd-menu-flash"></div>
+  <div class="mnd-menu-inner">
+    <div class="mnd-menu-top">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
+      <span style="width:90px"></span>
+    </div>
+    <div class="mnd-menu-grid">
+      <nav class="mnd-menu-list">
+        <div class="mnd-mi mnd-mi-exp">
+          <div class="mnd-mi-head"><span class="mnd-mi-num">01</span><span class="mnd-mi-label">Compra tu auto</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="mnd-sub">
+            <div class="mnd-sublinks">
+              <a class="mnd-sublink mnd-sublink-brands" href="AutosDisponibles.dc.html"><span class="mnd-dash"></span>Autos disponibles</a>
+              <a class="mnd-sublink mnd-sublink-brands" href="AutosVendidos.dc.html"><span class="mnd-dash"></span>Carros vendidos</a>
+              <a class="mnd-sublink" href="ComparaAutos.dc.html"><span class="mnd-dash"></span>Comparación de autos</a>
+              <a class="mnd-sublink" href="BuscaTuAuto.dc.html"><span class="mnd-dash"></span>Busca tu auto</a>
+            </div>
+            <div class="mnd-brands-panel">
+              <div class="mnd-brands-head"><div><div class="mnd-brands-title">Marcas disponibles</div><div class="mnd-brands-sub">11 marcas en inventario</div></div><a class="mnd-brands-viewall" href="AutosDisponibles.dc.html">Ver todo</a></div>
+              <div class="mnd-brands-grid2">
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/renault.png" alt="Renault" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Renault</span><span class="mnd-brand-count" data-count="12">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/toyota.png" alt="Toyota" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Toyota</span><span class="mnd-brand-count" data-count="10">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/kia.png" alt="Kia" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Kia</span><span class="mnd-brand-count" data-count="9">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/suzuki.png" alt="Suzuki" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Suzuki</span><span class="mnd-brand-count" data-count="8">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/ford.png" alt="Ford" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Ford</span><span class="mnd-brand-count" data-count="7">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/hyundai.png" alt="Hyundai" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Hyundai</span><span class="mnd-brand-count" data-count="6">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/mercedes-benz.png" alt="Mercedes-Benz" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Mercedes-Benz</span><span class="mnd-brand-count" data-count="5">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/bmw.png" alt="BMW" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">BMW</span><span class="mnd-brand-count" data-count="4">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/audi.png" alt="Audi" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Audi</span><span class="mnd-brand-count" data-count="3">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/peugeot.png" alt="Peugeot" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">Peugeot</span><span class="mnd-brand-count" data-count="3">00</span></div>
+                <div class="mnd-brand-row"><span class="mnd-brand-logo"><img src="assets/marcas/jac.png" alt="JAC" style="width:26px;height:26px;object-fit:contain"></span><span class="mnd-brand-name">JAC</span><span class="mnd-brand-count" data-count="2">00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">02</span><span class="mnd-mi-label">Vende tu auto</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="VendeTuAuto.dc.html"><span class="mnd-dash"></span>Cotizar mi auto</a><a class="mnd-sublink" href="CompraInmediata.dc.html"><span class="mnd-dash"></span>Compra inmediata</a><a class="mnd-sublink" href="ConsignacionFisica.dc.html"><span class="mnd-dash"></span>Consignación física</a><a class="mnd-sublink" href="ConsignacionVirtual.dc.html"><span class="mnd-dash"></span>Consignación virtual</a></div></div></div>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">03</span><span class="mnd-mi-label">Créditos</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="Creditos.dc.html"><span class="mnd-dash"></span>Simulador de crédito</a><a class="mnd-sublink" href="SolicitudCredito.dc.html"><span class="mnd-dash"></span>Solicitar crédito</a></div></div></div>
+        <div class="mnd-mi mnd-mi-exp">
+          <div class="mnd-mi-head"><span class="mnd-mi-num">04</span><span class="mnd-mi-label">Información adicional</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="mnd-sub">
+            <div class="mnd-sublinks">
+              <a class="mnd-sublink" href="SobreNosotros.dc.html"><span class="mnd-dash"></span>Sobre nosotros</a>
+              <a class="mnd-sublink" href="Inversionista.dc.html"><span class="mnd-dash"></span>El inversionista</a>
+              <a class="mnd-sublink" href="DashboardInversiones.dc.html"><span class="mnd-dash"></span>Dashboard de inversiones</a>
+              <a class="mnd-sublink" href="Aprende.dc.html"><span class="mnd-dash"></span>Aprende (videos)</a>
+            </div>
+          </div>
+        </div>
+        <a class="mnd-mi" href="Contacto.dc.html"><span class="mnd-mi-num">05</span><span class="mnd-mi-label">Contacto</span><svg class="mnd-mi-arrow" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        <div class="mnd-mi mnd-mi-exp"><div class="mnd-mi-head"><span class="mnd-mi-num">06</span><span class="mnd-mi-label">Otros servicios</span><svg class="mnd-mi-chev" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="mnd-sub"><div class="mnd-sublinks"><a class="mnd-sublink" href="OtrosServicios.dc.html#transito"><span class="mnd-dash"></span>Servicios de tránsito</a><a class="mnd-sublink" href="OtrosServicios.dc.html#fotografia"><span class="mnd-dash"></span>Fotografía profesional</a><a class="mnd-sublink" href="OtrosServicios.dc.html#acompanamiento"><span class="mnd-dash"></span>Acompañamiento de compra</a></div></div></div>
+        </nav>
+      
+      <aside class="mnd-menu-side">
+        <div class="mnd-side-label">VISITA</div>
+        <div class="mnd-map">
+          <iframe src="https://maps.google.com/maps?q=7.112294,-73.1078731&amp;z=16&amp;output=embed" style="width:100%;height:100%;border:0;display:block" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación Mendiautos"></iframe>
+          <a class="mnd-map-open" href="https://www.google.com/maps/place/MENDIAUTOS/@7.1143274,-73.1119876,16z/data=!3m1!4b1!4m6!3m5!1s0x8e683f0047e5ea23:0x3d521e7ffb3372a7!8m2!3d7.112294!4d-73.1078731" target="_blank" rel="noopener">Abrir en Maps<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        </div>
+        <div class="mnd-side-addr">Cra. 36 #52-141, Cabecera del llano, Bucaramanga, Santander, Colombia</div>
+        <div class="mnd-side-phone"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 5 5L17 12l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path></svg>+57 311 8058 132</div>
+        <div class="mnd-menu-bottom">
+          <button class="mnd-menu-theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path></svg><span class="mnd-menu-theme-label">Modo claro</span></button>
+          <div class="mnd-menu-socials">
+            <a href="https://www.instagram.com/mendiautos/?hl=en" target="_blank" rel="noopener" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"></circle></svg></a>
+            <a href="https://www.facebook.com/mendiautos" target="_blank" rel="noopener" aria-label="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-1.9 0-3 1.4-3 3.2V11H9v3h2v6h3v-6h2.4l.6-3H14V9.6c0-.4.2-.6.7-.6Z"></path></svg></a>
+            <a href="#" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="12" rx="3"></rect><path d="m11 9.5 4 2.5-4 2.5Z" fill="currentColor"></path></svg></a>
+            <a href="https://www.tiktok.com/@mendiautoscol" target="_blank" rel="noopener" aria-label="TikTok"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3c.3 2.2 1.7 3.8 3.9 4v2.5c-1.4 0-2.7-.4-3.9-1.1v5.9c0 3-2.3 5.2-5.2 5.2S3.6 21.3 3.6 18.3c0-2.8 2.2-5 5-5 .3 0 .6 0 .9.1v2.7a2.3 2.3 0 1 0 1.6 2.2V3H14Z"></path></svg></a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1400}}">
+class Component extends DCLogic {
+  componentDidMount(){
+    let saved='dark'; try{ saved=localStorage.getItem('mnd-theme')||'dark'; }catch(e){}
+    this._applyTheme(saved);
+    document.querySelectorAll('.mnd-theme-btn').forEach(b=>b.onclick=(e)=>{e.preventDefault();this._applyTheme(window.__mndTheme==='light'?'dark':'light');});
+    this._setupMenu();
+    this._videos=this._data();
+    this._filter='all';
+    try{ const c=new URLSearchParams(location.search).get('c'); if(c && ['inv','cv','cred'].includes(c)) this._filter=c; }catch(e){}
+    this._renderGrid();
+    document.querySelectorAll('.mnd-cat').forEach(x=>{ const on=x.dataset.c===this._filter; x.classList.toggle('on',on); x.style.background=on?'#1E50A2':'transparent'; x.style.borderColor=on?'#1E50A2':'var(--ln-strong)'; x.style.color=on?'#fff':'var(--t-2)'; });
+    document.querySelectorAll('.mnd-cat').forEach(b=>b.onclick=()=>{
+      document.querySelectorAll('.mnd-cat').forEach(x=>{ x.classList.remove('on'); x.style.background='transparent'; x.style.borderColor='var(--ln-strong)'; x.style.color='var(--t-2)'; });
+      b.classList.add('on'); b.style.background='#1E50A2'; b.style.borderColor='#1E50A2'; b.style.color='#fff';
+      this._filter=b.dataset.c; this._renderGrid();
+    });
+    const modal=document.querySelector('.mnd-modal');
+    if(modal.parentNode!==document.body) document.body.appendChild(modal);
+    this._modal=modal;
+    modal.querySelector('.mnd-m-close').onclick=()=>this._closeModal();
+    modal.addEventListener('click',(e)=>{ if(e.target===modal) this._closeModal(); });
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') this._closeModal(); });
+  }
+  _catLabel(c){ return {inv:'Inversión',cv:'Compra y venta',cred:'Crédito'}[c]||'Tema'; }
+  _renderGrid(){
+    const io=new IntersectionObserver((es)=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('mnd-in'); io.unobserve(en.target);} }),{threshold:.1});
+    const list=this._videos.filter(v=>this._filter==='all'||v.cat===this._filter);
+    const grid=document.querySelector('.mnd-grid');
+    grid.innerHTML=list.map((v,i)=>'<div class="mnd-vcard mnd-reveal" data-id="'+v.id+'" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;overflow:hidden;cursor:pointer">'
+      +'<div class="mnd-vthumb" style="position:relative;height:180px;background:'+v.grad+';display:flex;align-items:center;justify-content:center">'
+      +'<span class="mnd-play" style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5Z"></path></svg></span>'
+      +'<span style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);color:#fff;font:700 9px/1 \'Open Sans\',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;border-radius:5px">'+this._catLabel(v.cat)+'</span>'
+      +'<span style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.6);color:#fff;font:600 10px/1 \'Open Sans\',sans-serif;padding:5px 8px;border-radius:5px">'+v.dur+'</span></div>'
+      +'<div style="padding:20px 22px 22px"><div style="font:700 12px/1 \'Open Sans\',sans-serif;color:#1E50A2;letter-spacing:.04em">Video '+String(v.id).padStart(2,"0")+'</div>'
+      +'<h3 style="margin:10px 0 0;font:700 17px/1.28 \'Open Sans\',sans-serif;color:var(--t-strong)">'+v.title+'</h3>'
+      +'<p style="margin:10px 0 0;font:400 13px/1.6 \'Open Sans\',sans-serif;color:var(--t-2)">'+v.desc+'</p>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:16px;border-top:1px solid var(--ln)"><span class="mnd-more" style="font:700 11px/1 \'Open Sans\',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-strong)">Ver más →</span><span style="font:600 11px/1 \'Open Sans\',sans-serif;color:var(--t-3)">▶ Reproducir</span></div></div></div>').join('');
+    grid.querySelectorAll('.mnd-vcard').forEach((c,i)=>{ io.observe(c); c.style.transitionDelay=(i%3*0.07)+'s'; c.onclick=()=>this._openModal(+c.dataset.id); });
+  }
+  _openModal(id){
+    const v=this._videos.find(x=>x.id===id); if(!v) return;
+    const m=this._modal;
+    m.querySelector('.mnd-m-cat').textContent=this._catLabel(v.cat)+' · Video '+String(v.id).padStart(2,'0');
+    m.querySelector('.mnd-m-body').innerHTML=
+      '<div style="position:relative;height:320px;border-radius:14px;overflow:hidden;background:'+v.grad+';display:flex;align-items:center;justify-content:center">'
+      +'<span style="width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;color:#fff"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5Z"></path></svg></span>'
+      +'<span style="position:absolute;bottom:12px;left:14px;font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.55);border:1px dashed rgba(255,255,255,.3);padding:6px 10px">VIDEO · pegar embed de YouTube / Vimeo</span></div>'
+      +'<h2 class="mnd-mich" style="margin:24px 0 6px;font-size:24px;color:var(--t-strong);text-transform:uppercase">'+v.title+'</h2>'
+      +'<p style="margin:0;font:400 14.5px/1.7 \'Open Sans\',sans-serif;color:var(--t-2)">'+v.long+'</p>'
+      +v.detail
+      +'<div style="display:flex;gap:12px;margin-top:28px;flex-wrap:wrap"><a href="'+v.cta.href+'" style="background:#1E50A2;color:#fff;border-radius:10px;padding:14px 26px;font:700 12px/1 \'Open Sans\',sans-serif;letter-spacing:.08em;text-transform:uppercase">'+v.cta.label+'</a><a href="Contacto.dc.html" style="border:1px solid var(--ln-strong);color:var(--t-strong);border-radius:10px;padding:14px 26px;font:700 12px/1 \'Open Sans\',sans-serif;letter-spacing:.08em;text-transform:uppercase">Preguntar a un asesor</a></div>';
+    m.classList.add('on'); document.body.style.overflow='hidden';
+  }
+  _closeModal(){ if(this._modal){ this._modal.classList.remove('on'); document.body.style.overflow=''; } }
+  _steps(arr){ return '<div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">'+arr.map((s,i)=>'<div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid var(--ln);border-radius:12px;background:var(--c-panel)"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:#1E50A2;color:#fff;display:flex;align-items:center;justify-content:center;font:700 13px/1 \'Open Sans\',sans-serif">'+(i+1)+'</span><div><div style="font:700 14px/1.3 \'Open Sans\',sans-serif;color:var(--t-strong)">'+s[0]+'</div><div style="margin-top:4px;font:400 13px/1.55 \'Open Sans\',sans-serif;color:var(--t-2)">'+s[1]+'</div></div></div>').join('')+'</div>'; }
+  _table(head,rows){ return '<div style="margin-top:24px;border:1px solid var(--ln);border-radius:12px;overflow:hidden"><div style="display:grid;grid-template-columns:repeat('+head.length+',1fr);background:var(--c-panel)">'+head.map(h=>'<div style="padding:12px 14px;font:700 10px/1.2 \'Open Sans\',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-3)">'+h+'</div>').join('')+'</div>'+rows.map(r=>'<div style="display:grid;grid-template-columns:repeat('+head.length+',1fr);border-top:1px solid var(--ln)">'+r.map((c,i)=>'<div style="padding:13px 14px;font:'+(i===0?'700':'400')+' 13px/1.4 \'Open Sans\',sans-serif;color:'+(i===r.length-1?'#1E50A2':'var(--t-1)')+'">'+c+'</div>').join('')+'</div>').join('')+'</div>'; }
+  _bars(title,items){ const max=Math.max(...items.map(i=>i[1])); return '<div style="margin-top:24px;border:1px solid var(--ln);border-radius:12px;padding:20px 22px;background:var(--c-panel)"><div style="font:700 11px/1 \'Open Sans\',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-3);margin-bottom:16px">'+title+'</div><div style="display:flex;flex-direction:column;gap:12px">'+items.map(it=>'<div><div style="display:flex;justify-content:space-between;font:600 12px/1 \'Open Sans\',sans-serif;color:var(--t-strong);margin-bottom:6px"><span>'+it[0]+'</span><span>'+it[2]+'</span></div><div style="height:9px;border-radius:6px;background:var(--ln-strong);overflow:hidden"><div style="height:100%;width:'+(it[1]/max*100)+'%;background:linear-gradient(90deg,#1E50A2,#7a1013);border-radius:6px"></div></div></div>').join('')+'</div></div>'; }
+  _data(){
+    return [
+      {id:1,cat:'inv',title:'¿Cómo invertir en Mendiautos?',dur:'4:20',grad:'linear-gradient(135deg,#3a1f1f,#1E50A2)',
+        desc:'El modelo de inversión explicado desde cero: compras, vendemos y ganas.',
+        long:'Te explicamos el modelo del inversionista: compras un auto con nosotros, lo preparamos y lo vendemos; tú recibes tu capital más un porcentaje de la utilidad.',
+        detail:this._steps([['Inviertes','Aportas el capital, solo o con socios.'],['Preparamos','Alistamos y publicamos el auto; los gastos se registran.'],['Vendemos','Nuestra red comercial vende al mejor precio.'],['Ganas','Recuperas tu capital + tu % de utilidad.']])+this._bars('Ejemplo de utilidad (auto de $70M)',[['Compra',70,'$70,0M'],['Venta',82,'$82,0M'],['Gastos',2.4,'$2,4M'],['Utilidad neta',7.68,'$7,68M']]),
+        cta:{href:'Inversionista.dc.html',label:'Simular mi inversión'}},
+      {id:2,cat:'inv',title:'Invertir solo o con socios',dur:'3:35',grad:'linear-gradient(135deg,#241a2e,#5b2b8a)',
+        desc:'Cómo se divide la inversión y la utilidad entre varios inversionistas.',
+        long:'Cuando invierten varias personas, cada quien aporta un monto y recibe una parte de la utilidad proporcional a su aporte. Aquí un ejemplo con tres socios.',
+        detail:this._table(['Socio','Aporte','% part.','Ganancia'],[['Ana','$36,0M','50%','$3,84M'],['Luis','$21,6M','30%','$2,30M'],['Sara','$14,4M','20%','$1,54M']]),
+        cta:{href:'Inversionista.dc.html',label:'Repartir con socios'}},
+      {id:3,cat:'cv',title:'Cómo comprar tu auto',dur:'5:10',grad:'linear-gradient(135deg,#12233a,#1f6fe0)',
+        desc:'Del catálogo a las llaves: búsqueda, peritaje, pago y entrega.',
+        long:'Te acompañamos en cada paso: eliges el auto, verificamos su estado con peritaje, coordinamos el pago y hacemos los trámites de traspaso hasta la entrega.',
+        detail:this._steps([['Explora','Filtra por marca, año y precio en el catálogo.'],['Verifica','Peritaje mecánico y legal del vehículo.'],['Paga','Contado o crédito con bancos aliados.'],['Recibe','Trámites y traspaso incluidos.']]),
+        cta:{href:'AutosDisponibles.dc.html',label:'Ver inventario'}},
+      {id:4,cat:'cv',title:'Cómo vender tu auto',dur:'4:05',grad:'linear-gradient(135deg,#0f2e26,#16b981)',
+        desc:'Cotización, avalúo transparente y pago seguro en pocos días.',
+        long:'Registra tu vehículo, recibe una cotización, agenda la inspección y publica. Cuando se vende, recibes tu pago de forma segura.',
+        detail:this._table(['Etapa','Tiempo estimado','Estado'],[['Cotización','24 horas','Rápido'],['Inspección','1-2 días','Agendable'],['Publicación','Inmediata','En línea'],['Pago','Al vender','Seguro']]),
+        cta:{href:'VendeTuAuto.dc.html',label:'Vender mi auto'}},
+      {id:5,cat:'cred',title:'Cómo pedir un crédito',dur:'4:48',grad:'linear-gradient(135deg,#3a2b12,#e0a11f)',
+        desc:'Simula tu cuota y solicita con nuestros bancos aliados.',
+        long:'Simula el valor, la inicial, el plazo y la tasa para conocer tu cuota. Luego completas la solicitud y nosotros gestionamos con varios bancos para tu mejor oferta.',
+        detail:this._table(['Plazo','Cuota aprox.*','Total aprox.*'],[['24 meses','$3,10M','$74,4M'],['36 meses','$2,25M','$81,0M'],['48 meses','$1,84M','$88,3M'],['60 meses','$1,60M','$96,0M']])+'<div style="margin-top:10px;font:400 11px/1.5 \'Open Sans\',sans-serif;color:var(--t-3)">*Ejemplo sobre $63,1M financiados a 16,5% E.A. Sujeto a estudio del banco.</div>',
+        cta:{href:'Creditos.dc.html',label:'Simular crédito'}},
+      {id:6,cat:'cred',title:'Documentos para tu crédito',dur:'3:12',grad:'linear-gradient(135deg,#2c2c30,#6b6d72)',
+        desc:'Qué necesitas para empleados e independientes en Colombia.',
+        long:'Prepara tus documentos para agilizar la aprobación. Estos son los más comunes según tu tipo de ingreso.',
+        detail:this._table(['Documento','Empleado','Independiente'],[['Cédula','Sí','Sí'],['Desprendibles / extractos','3 últimos','3-6 meses'],['Certificado laboral','Sí','—'],['Declaración de renta / RUT','—','Sí']]),
+        cta:{href:'SolicitudCredito.dc.html',label:'Iniciar solicitud'}},
+      {id:7,cat:'cv',title:'Compra inmediata: te compramos tu auto',dur:'3:40',grad:'linear-gradient(135deg,#0f2e26,#16b981)',
+        desc:'Vende de inmediato a Mendiautos: oferta rápida y pago seguro.',
+        long:'Si quieres vender ya, te hacemos una oferta directa por tu auto. Evalúas, aceptas y recibes tu pago sin esperar a que aparezca un comprador.',
+        detail:this._steps([['Cotiza','Envías los datos y fotos de tu auto.'],['Inspección','Confirmamos el estado del vehículo.'],['Oferta','Recibes una propuesta de compra directa.'],['Pago','Aceptas y te pagamos de forma segura.']]),
+        cta:{href:'CompraInmediata.dc.html',label:'Vender ahora'}},
+      {id:8,cat:'cv',title:'Consignación física: exhibimos tu auto',dur:'3:55',grad:'linear-gradient(135deg,#241a2e,#5b2b8a)',
+        desc:'Nos dejas tu auto y lo mostramos en nuestra vitrina hasta venderlo.',
+        long:'Dejas tu vehículo en nuestro concesionario; nosotros lo exhibimos, lo mostramos a los compradores y gestionamos toda la venta por ti.',
+        detail:this._steps([['Entregas','Dejas tu auto en nuestra sede.'],['Exhibimos','Lo mostramos en vitrina y catálogo.'],['Negociamos','Atendemos a los interesados por ti.'],['Vendemos','Cerramos la venta y te pagamos.']]),
+        cta:{href:'ConsignacionFisica.dc.html',label:'Dejar en consignación'}},
+      {id:9,cat:'cv',title:'Consignación virtual: vende sin dejar tu auto',dur:'3:25',grad:'linear-gradient(135deg,#12233a,#1f6fe0)',
+        desc:'Tomamos fotos y lo publicamos en nuestro catálogo virtual.',
+        long:'Sin dejar tu vehículo con nosotros: tomamos fotos profesionales, lo publicamos en nuestro catálogo y te ayudamos a venderlo mientras sigues usándolo.',
+        detail:this._steps([['Fotos','Registramos tu auto profesionalmente.'],['Publicamos','Entra a nuestro catálogo virtual.'],['Difundimos','Lo promocionamos a compradores.'],['Conectamos','Coordinamos la venta contigo.']]),
+        cta:{href:'ConsignacionVirtual.dc.html',label:'Publicar mi auto'}},
+      {id:10,cat:'cv',title:'Cómo comparar autos',dur:'2:50',grad:'linear-gradient(135deg,#2c2c30,#6b6d72)',
+        desc:'Compara hasta 3 vehículos lado a lado para decidir mejor.',
+        long:'Usa el comparador para ver precio, año, kilometraje, motor y más de varios autos al mismo tiempo y elegir con confianza.',
+        detail:this._steps([['Elige','Selecciona hasta 3 autos del inventario.'],['Compara','Míralos lado a lado por cada característica.'],['Decide','Resaltamos la mejor opción en cada dato.']]),
+        cta:{href:'ComparaAutos.dc.html',label:'Comparar autos'}},
+      {id:11,cat:'inv',title:'Dashboard de inversiones',dur:'3:05',grad:'linear-gradient(135deg,#3a2b12,#e0a11f)',
+        desc:'Visualiza y administra todas tus inversiones en un solo lugar.',
+        long:'Consulta tus inversiones activas, la utilidad esperada y el estado de cada auto desde tu panel de control.',
+        detail:this._steps([['Registra','Guardas cada inversión simulada.'],['Monitorea','Ves capital, utilidad y estado.'],['Decides','Comparas el rendimiento de cada auto.']]),
+        cta:{href:'DashboardInversiones.dc.html',label:'Ver mi dashboard'}}
+    ];
+  }
+  _setupMenu(){
+    // remove any stale menu(s) previously relocated to <body> (from earlier hot-reloads) to drop their old listeners
+    Array.from(document.body.children).forEach(n => { if(n.id === 'mnd-menu') n.remove(); });
+    const menu = (document.getElementById('dc-root') || document).querySelector('#mnd-menu') || document.getElementById('mnd-menu');
+    if(!menu) return;
+    // move to <body> so position:fixed escapes any transformed ancestor
+    if(menu.parentNode !== document.body) document.body.appendChild(menu);
+    this._menu = menu;
+    // inject !important state rules into head (helmet-scoped rules don't win after body relocation)
+    if(!document.getElementById('mnd-menu-state')){
+      const st = document.createElement('style');
+      st.id = 'mnd-menu-state';
+      st.textContent = '#mnd-menu.mnd-open{display:block!important;animation:mnd-menu-in .6s cubic-bezier(.22,1,.36,1) both!important}'
+        + '#mnd-menu.mnd-open .mnd-menu-flash{opacity:0!important}'
+        + '#mnd-menu.mnd-open .mnd-mi{opacity:1!important;transform:none!important}'
+        + '#mnd-menu .mnd-mi-exp.exp-open .mnd-sub{display:block!important;animation:mnd-sub-in .4s ease both!important}'
+        + '#mnd-menu .mnd-brands-panel.brands-on{display:block!important}'
+        + '#mnd-menu .brands-on .mnd-brand-row{animation:mnd-stair .5s ease both!important}';
+      document.head.appendChild(st);
+    }
+    const items = Array.from(menu.querySelectorAll('.mnd-mi'));
+    items.forEach((it,i) => { it.style.transitionDelay = (0.1 + i*0.07) + 's'; });
+    const open = () => { menu.classList.add('mnd-open'); document.body.style.overflow = 'hidden'; if(this._wrap) this._wrap.style.display = 'none'; };
+    const close = () => { menu.classList.remove('mnd-open'); document.body.style.overflow = ''; if(this._wrap) this._wrap.style.display = ''; };
+    this._openMenu = open; this._closeMenu = close;
+    document.querySelectorAll('.mnd-menu-btn').forEach(b => b.onclick = (e)=>{ e.preventDefault(); open(); });
+    menu.querySelectorAll('.mnd-menu-close').forEach(b => b.onclick = (e)=>{ e.preventDefault(); close(); });
+    menu.querySelectorAll('a.mnd-mi').forEach(a => a.addEventListener('click', ()=> close()));
+    this._setupSubmenus(menu, close);
+    const themeBtn = menu.querySelector('.mnd-menu-theme');
+    if(themeBtn) themeBtn.onclick = (e)=>{ e.preventDefault(); this._toggleTheme(); };
+    document.addEventListener('keydown', this._escHandler = (e)=>{ if(e.key === 'Escape') close(); });
+  }
+  _setupSubmenus(menu, close){
+    menu.querySelectorAll('.mnd-mi-exp').forEach(exp => {
+      const head = exp.querySelector('.mnd-mi-head');
+      const panel = exp.querySelector('.mnd-brands-panel');
+      const brandsLinks = Array.from(exp.querySelectorAll('.mnd-sublink-brands'));
+      const rows = Array.from(exp.querySelectorAll('.mnd-brand-row'));
+      const reveal = () => {
+        brandsLinks.forEach(l=>l.classList.add('active'));
+        if(!panel) return;
+        // restart staircase
+        rows.forEach((r,i)=>{ r.style.animation='none'; r.style.animationDelay=''; });
+        void panel.offsetWidth;
+        panel.classList.add('brands-on');
+        rows.forEach((r,i)=>{ r.style.animation=''; r.style.animationDelay=(0.08+i*0.14)+'s'; });
+        // count up after each row lands on the staircase
+        exp.querySelectorAll('.mnd-brand-count').forEach((el,i)=>{
+          el.classList.remove('counted');
+          el.textContent='00';
+          setTimeout(()=> this._countUp(el), 420 + i*140);
+        });
+      };
+      const hide = () => { if(panel) panel.classList.remove('brands-on'); brandsLinks.forEach(l=>l.classList.remove('active')); };
+      if(head) head.addEventListener('click',(e)=>{
+        e.preventDefault();
+        const willOpen = !exp.classList.contains('exp-open');
+        exp.classList.toggle('exp-open', willOpen);
+        if(!willOpen) hide();
+      });
+      brandsLinks.forEach(l=>l.addEventListener('mouseenter',()=>{ this._brandTarget=l.getAttribute('href')||'AutosDisponibles.dc.html'; reveal(); }));
+      rows.forEach(r=>{ r.style.cursor='pointer'; r.addEventListener('click',()=>{ const nm=(r.querySelector('.mnd-brand-name')||{}).textContent||''; const t=this._brandTarget||'AutosDisponibles.dc.html'; location.href=t+'?q='+encodeURIComponent(nm.trim()); }); });
+      brandsLinks.forEach(l=>l.addEventListener('click',(e)=> e.preventDefault()));
+      // stays open once shown; hide only when clicking outside the submenu
+      const sub = exp.querySelector('.mnd-sub');
+      document.addEventListener('click',(e)=>{
+        if(!panel || !panel.classList.contains('brands-on')) return;
+        if(sub && sub.contains(e.target)) return;      // clicking inside the submenu keeps it
+        if(head && head.contains(e.target)) return;     // toggling the header handled above
+        hide();
+      });
+    });
+  }
+  _countUp(el){
+    const target = +el.dataset.count || 0;
+    const dur = 1700, start = performance.now();
+    const step = (now)=>{
+      const p = Math.min(1,(now-start)/dur);
+      const val = Math.round(target*(1-Math.pow(1-p,3)));
+      el.textContent = String(val).padStart(2,'0');
+      if(p<1) requestAnimationFrame(step);
+      else { el.textContent = String(target).padStart(2,'0'); el.classList.add('counted'); }
+    };
+    requestAnimationFrame(step);
+  }
+  _toggleTheme(){ this._applyTheme((window.__mndTheme==='light')?'dark':'light'); }
+  _applyTheme(theme){
+    window.__mndTheme=theme; try{localStorage.setItem('mnd-theme',theme);}catch(e){}
+    if(theme==='light') document.body.setAttribute('data-theme','light'); else document.body.removeAttribute('data-theme');
+    document.querySelectorAll('.mnd-theme-btn').forEach(btn=>{ btn.innerHTML = theme==='light'
+      ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" stroke-linecap="round"></path>'
+      : '<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>'; });
+  }
+}
+</script>
+</body>
+</html>
