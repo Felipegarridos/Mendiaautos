@@ -1,0 +1,75 @@
+/* Mendiautos · estilos compartidos por todas las páginas.
+   El diseño original es de escritorio (1280 px). Estas reglas solo actúan en
+   pantallas más angostas, a través de clases «r-*» añadidas a los
+   contenedores de cada página, así que el escritorio queda igual.
+   Llevan !important porque los estilos de las páginas van en línea. */
+
+/* Botón «Volver»: el desplazamiento de la flecha al pasar el mouse. */
+[data-mnd-back] button:hover svg { transform: translateX(-3px); }
+
+/* ---------- Tabletas y pantallas medianas (≤ 900 px) ---------- */
+@media (max-width: 900px) {
+  /* Grilla o fila de columnas que pasa a una sola columna */
+  .r-stack { grid-template-columns: minmax(0, 1fr) !important; }
+  .r-stack > * { grid-column: auto !important; }
+  /* Grilla de 3-4 columnas que pasa a 2 */
+  .r-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  /* Medidas fijas que deben adaptarse al ancho disponible */
+  .r-fluid { width: auto !important; max-width: 100% !important; height: auto !important; }
+  .r-full { width: 100% !important; max-width: 100% !important; min-width: 0 !important; flex: 1 1 auto !important; }
+  .r-gap { gap: 28px !important; }
+  /* Panel con borde derecho que, al apilarse, pasa a borde inferior */
+  .r-bb { border-right: 0 !important; border-bottom: 1px solid var(--ln) !important; }
+  /* Tablas anchas: se desplazan horizontalmente dentro de su tarjeta */
+  .r-scroll-x { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .r-tbl { min-width: 760px !important; }
+
+  /* Pie de página de 4 columnas: la marca ocupa toda la fila */
+  .r-foot { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 28px !important; }
+  .r-foot > :first-child { grid-column: 1 / -1; }
+
+  /* Menú a pantalla completa: la columna lateral baja debajo del listado */
+  #mnd-menu .mnd-menu-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 36px !important; }
+  #mnd-menu .mnd-menu-side { min-width: 0 !important; }
+}
+
+/* ---------- Celulares (≤ 640 px) ---------- */
+@media (max-width: 640px) {
+  /* Márgenes laterales más angostos */
+  .r-px { padding-left: 20px !important; padding-right: 20px !important; }
+  .r-pc { padding-left: 20px !important; padding-right: 20px !important; }
+  .r-stack-sm { grid-template-columns: minmax(0, 1fr) !important; }
+  .r-stack-sm > * { grid-column: auto !important; }
+  .r-2-sm { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .r-col-sm { flex-direction: column !important; align-items: stretch !important; }
+  .r-wrap { flex-wrap: wrap !important; }
+  .r-hide-sm { display: none !important; }
+  .r-gap-sm { gap: 20px !important; }
+  .r-gap-xs { gap: 10px !important; }
+
+  /* Tipografía: títulos grandes que no caben en una pantalla angosta */
+  .r-display { font-size: clamp(26px, 7.4vw, 40px) !important; line-height: 1.05 !important; }
+  .r-title { font-size: clamp(20px, 6vw, 28px) !important; }
+  .r-num { font-size: 24px !important; }
+  .r-stat { font-size: clamp(20px, 5.6vw, 28px) !important; }
+  .r-left { left: 20px !important; right: 20px !important; }
+
+  #mnd-menu .mnd-menu-inner { padding-left: 20px !important; padding-right: 20px !important; }
+  #mnd-menu .mnd-mi, #mnd-menu .mnd-mi-head { gap: 14px !important; }
+
+  /* Inversionista: filas de gastos (nombre · valor · borrar) */
+  .mnd-gasto-row { grid-template-columns: minmax(0, 1fr) 118px auto !important; }
+  /* Panel de inventario: la descripción arriba, estado y botones debajo */
+  .r-invrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 12px !important; }
+  .r-invrow > :first-child { flex: 1 1 100%; }
+}
+
+@media (max-width: 560px) {
+  .r-foot { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* ---------- Celulares pequeños (≤ 400 px) ---------- */
+@media (max-width: 400px) {
+  .r-stack-xs { grid-template-columns: minmax(0, 1fr) !important; }
+  .r-stack-xs > * { grid-column: auto !important; }
+}
