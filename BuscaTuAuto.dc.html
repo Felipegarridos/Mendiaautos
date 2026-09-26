@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 <title>Busca tu auto | Mendiautos</title>
 <meta name="description" content="Cuéntanos qué auto buscas y nosotros lo encontramos para ti.">
 <meta property="og:title" content="Busca tu auto | Mendiautos">
@@ -133,7 +135,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -142,22 +144,22 @@
       <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
     </div>
   </header>
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
   <!-- HERO con foto -->
   <section style="position:relative;height:440px;overflow:hidden;background:#0f0d0c">
     <div class="mnd-photo" style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#17130f 0 16px,#211b16 16px 32px)"></div>
     <div style="position:absolute;inset:0;background:linear-gradient(to top,var(--bg),rgba(10,9,8,.35) 45%,rgba(10,9,8,.55))"></div>
     <span style="position:absolute;top:16px;right:22px;font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4);border:1px dashed rgba(255,255,255,.24);padding:6px 10px">FOTO · imagen principal (reemplazar)</span>
-    <div style="position:absolute;left:52px;bottom:60px;right:52px">
+    <div class="r-left" style="position:absolute;left:52px;bottom:60px;right:52px">
       <div style="display:flex;align-items:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:#fff">Mendiautos · Concierge</span></div>
-      <h1 class="mnd-mich" style="margin:20px 0 0;font-size:clamp(34px,4.8vw,58px);line-height:1.02;color:#fff;text-transform:uppercase">Busca tu auto</h1>
+      <h1 class="r-display mnd-mich" style="margin:20px 0 0;font-size:clamp(34px,4.8vw,58px);line-height:1.02;color:#fff;text-transform:uppercase">Busca tu auto</h1>
       <p style="margin:16px 0 0;max-width:560px;font:400 16px/1.7 'Open Sans',sans-serif;color:rgba(255,255,255,.82)">¿No encuentras el que buscas? Cuéntanos qué necesitas y nuestro equipo lo busca por ti. Todos los campos son opcionales: escribe lo que sepas y nosotros hacemos el resto.</p>
     </div>
   </section>
 
   <!-- VIDEO opcional -->
-  <section style="padding:40px 34px 10px">
+  <section class="r-px" style="padding:40px 34px 10px">
     <div class="mnd-reveal" style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><span style="width:40px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:20px;color:var(--t-strong);text-transform:uppercase">Cómo funciona</span></div>
     <div class="mnd-reveal" style="max-width:60%;margin:0 auto">
       <a href="Aprende.dc.html?c=cv" style="position:relative;display:block;border-radius:18px;overflow:hidden;border:1px solid var(--ln);background:radial-gradient(90% 90% at 50% 40%,#2a2622,#0f0d0c);aspect-ratio:16/9;text-decoration:none">
@@ -172,8 +174,8 @@
   </section>
 
   <!-- FORMULARIO -->
-  <section style="padding:34px 34px 70px">
-    <div class="mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;padding:38px 40px;max-width:900px;margin:0 auto">
+  <section class="r-px" style="padding:34px 34px 70px">
+    <div class="r-px mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;padding:38px 40px;max-width:900px;margin:0 auto">
       <div style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:2px;background:#1E50A2"></span><span style="font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--t-3)">Cuéntanos qué buscas</span></div>
       <h2 class="mnd-mich" style="margin:14px 0 4px;font-size:24px;color:var(--t-strong);text-transform:uppercase">Tu auto a la medida</h2>
       <p style="margin:0 0 26px;font:400 13.5px/1.6 'Open Sans',sans-serif;color:var(--t-2)">Todos los campos son opcionales. Entre más nos cuentes, mejor lo encontramos.</p>
@@ -208,7 +210,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 18px">
+      <div class="r-stack-sm" style="display:grid;grid-template-columns:1fr 1fr;gap:20px 18px">
         <div><label class="mnd-lab">Marca <span class="mnd-opt">(opcional)</span></label><input class="mnd-fld" placeholder="Ej. Toyota, Renault, Mazda..."></div>
         <div><label class="mnd-lab">Modelo o tipo <span class="mnd-opt">(opcional)</span></label><input class="mnd-fld" placeholder="Ej. SUV, sedán, Duster..."></div>
         <div><label class="mnd-lab">Presupuesto aproximado <span class="mnd-opt">(opcional)</span></label><input class="mnd-fld" placeholder="Ej. $60.000.000 – $90.000.000"></div>
@@ -224,7 +226,7 @@
 
       <div style="margin-top:26px;padding-top:24px;border-top:1px solid var(--ln)">
         <div style="font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--t-3);margin-bottom:16px">¿Cómo te contactamos?</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div class="r-stack-sm" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
           <div><label class="mnd-lab">Nombre</label><input class="mnd-fld" placeholder="Tu nombre"></div>
           <div><label class="mnd-lab">Celular (WhatsApp)</label><input class="mnd-fld" placeholder="+57 300 000 0000"></div>
           <div><label class="mnd-lab">Correo</label><input class="mnd-fld" placeholder="nombre@correo.com"></div>
@@ -237,7 +239,7 @@
     </div>
   </section>
 
-  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+  <footer class="r-px" style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
     <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:34px;display:block"></a>
     <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
     <span style="font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)">© 2026 Mendiautos</span>
@@ -248,7 +250,7 @@
   <div class="mnd-menu-flash"></div>
   <div class="mnd-menu-inner">
     <div class="mnd-menu-top">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" style-hover="color:#1E50A2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
       <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
       <span style="width:90px"></span>
     </div>

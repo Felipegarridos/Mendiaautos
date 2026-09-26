@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 <title>Sobre nosotros | Mendiautos</title>
 <meta name="description" content="Concesionario multimarca de confianza en Colombia desde 2018. Conoce nuestra misión y visión.">
 <meta property="og:title" content="Sobre nosotros | Mendiautos">
@@ -126,7 +128,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -135,26 +137,26 @@
       <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
     </div>
   </header>
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
   <!-- HERO -->
   <section style="position:relative;height:520px;background:radial-gradient(120% 90% at 50% 12%,#2b2b30 0%,#141216 50%,#0a0908 100%);overflow:hidden">
     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.05)"><svg width="240" height="240" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5" stroke-linecap="round"/><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4Z"/></svg></div>
     <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,var(--bg))"></div>
     <span style="position:absolute;top:16px;right:22px;font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.4);border:1px dashed rgba(255,255,255,.22);padding:6px 10px">FOTO · sala de exposición Mendiautos</span>
-    <div style="position:absolute;left:52px;bottom:110px;right:52px">
+    <div class="r-left" style="position:absolute;left:52px;bottom:110px;right:52px">
       <div style="display:flex;align-items:center;gap:20px;font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-3)"><a href="MendiautosHome.dc.html">Inicio</a><span style="width:44px;height:1px;background:var(--ln-strong)"></span><span style="color:#1E50A2">Sobre nosotros</span></div>
-      <h1 class="mnd-mich" style="margin:22px 0 0;font-size:clamp(44px,6.4vw,84px);line-height:.94;letter-spacing:.02em;color:#fff;text-transform:uppercase">Sobre<br>nosotros</h1>
+      <h1 class="r-display mnd-mich" style="margin:22px 0 0;font-size:clamp(44px,6.4vw,84px);line-height:.94;letter-spacing:.02em;color:#fff;text-transform:uppercase">Sobre<br>nosotros</h1>
       <div style="display:flex;align-items:center;gap:16px;margin-top:24px"><span style="width:52px;height:2px;background:#1E50A2"></span><span style="font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--t-2)">Confianza · Transparencia · Respaldo</span></div>
     </div>
   </section>
 
   <!-- STORY -->
-  <section style="padding:20px 34px 10px">
-    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:52px;align-items:center">
+  <section class="r-px" style="padding:20px 34px 10px">
+    <div class="r-stack r-gap" style="display:grid;grid-template-columns:1.1fr .9fr;gap:52px;align-items:center">
       <div class="mnd-reveal">
         <div style="display:flex;align-items:center;gap:12px"><span style="width:34px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--t-3)">Nuestra historia</span></div>
-        <h2 class="mnd-mich" style="margin:20px 0 0;font-size:32px;line-height:1.2;color:var(--t-strong);text-transform:uppercase">El concesionario multimarca de confianza en Colombia</h2>
+        <h2 class="r-title mnd-mich" style="margin:20px 0 0;font-size:32px;line-height:1.2;color:var(--t-strong);text-transform:uppercase">El concesionario multimarca de confianza en Colombia</h2>
         <p style="margin:22px 0 0;font:400 15px/1.8 'Open Sans',sans-serif;color:var(--t-2)">Desde <b style="color:var(--t-strong)">2018</b>, Mendiautos ha acompañado a miles de familias colombianas a encontrar su carro ideal —seguro, revisado y listo para entregar. Nacimos en Bucaramanga con una idea simple: comprar y vender vehículos con la transparencia que la gente merece.</p>
         <p style="margin:18px 0 0;font:400 15px/1.8 'Open Sans',sans-serif;color:var(--t-2)">Hoy trabajamos con las marcas más vendidas del país y ofrecemos financiación a tu medida, garantía mecánica y trámites sin complicaciones. Cada auto pasa por un peritaje mecánico y legal antes de llegar a tus manos.</p>
       </div>
@@ -165,22 +167,22 @@
   </section>
 
   <!-- STATS -->
-  <section style="padding:56px 34px">
-    <div class="mnd-reveal" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ln);border:1px solid var(--ln);border-radius:16px;overflow:hidden">
-      <div style="background:var(--c-card);padding:34px 26px"><div class="mnd-mich" style="font-size:38px;color:var(--t-strong)">2018</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Año de fundación</div></div>
-      <div style="background:var(--c-card);padding:34px 26px"><div class="mnd-mich" style="font-size:38px;color:var(--t-strong)">+1.000</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Vehículos vendidos</div></div>
-      <div style="background:var(--c-card);padding:34px 26px"><div class="mnd-mich" style="font-size:38px;color:var(--t-strong)">+12</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Marcas aliadas</div></div>
-      <div style="background:var(--c-card);padding:34px 26px"><div class="mnd-mich" style="font-size:38px;color:#1E50A2">100%</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Autos peritados</div></div>
+  <section class="r-px" style="padding:56px 34px">
+    <div class="r-2 mnd-reveal" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ln);border:1px solid var(--ln);border-radius:16px;overflow:hidden">
+      <div class="r-pc" style="background:var(--c-card);padding:34px 26px"><div class="r-stat mnd-mich" style="font-size:38px;color:var(--t-strong)">2018</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Año de fundación</div></div>
+      <div class="r-pc" style="background:var(--c-card);padding:34px 26px"><div class="r-stat mnd-mich" style="font-size:38px;color:var(--t-strong)">+1.000</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Vehículos vendidos</div></div>
+      <div class="r-pc" style="background:var(--c-card);padding:34px 26px"><div class="r-stat mnd-mich" style="font-size:38px;color:var(--t-strong)">+12</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Marcas aliadas</div></div>
+      <div class="r-pc" style="background:var(--c-card);padding:34px 26px"><div class="r-stat mnd-mich" style="font-size:38px;color:#1E50A2">100%</div><div style="margin-top:10px;font:600 10px/1.4 'Open Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--t-3)">Autos peritados</div></div>
     </div>
   </section>
 
   <!-- VALUES -->
-  <section style="padding:20px 34px 40px">
+  <section class="r-px" style="padding:20px 34px 40px">
     <div class="mnd-reveal" style="text-align:center;margin-bottom:34px">
       <div style="display:flex;align-items:center;justify-content:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--t-3)">Lo que nos mueve</span><span style="width:40px;height:2px;background:#1E50A2"></span></div>
-      <h2 class="mnd-mich" style="margin:16px 0 0;font-size:30px;color:var(--t-strong);text-transform:uppercase">Nuestros valores</h2>
+      <h2 class="r-title mnd-mich" style="margin:16px 0 0;font-size:30px;color:var(--t-strong);text-transform:uppercase">Nuestros valores</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="r-stack-sm" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
       <div class="mnd-val mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:30px 26px"><span class="mnd-val-ico" style="display:inline-flex;width:48px;height:48px;border-radius:12px;border:1px solid var(--ln-strong);align-items:center;justify-content:center;color:var(--t-2)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 5 6v5c0 4 3 7 7 9 4-2 7-5 7-9V6l-7-3Z"></path><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><h3 style="margin:20px 0 0;font:600 19px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Transparencia</h3><p style="margin:12px 0 0;font:400 14px/1.65 'Open Sans',sans-serif;color:var(--t-2)">Precios claros y avalúos honestos. Sin letra pequeña ni sorpresas.</p></div>
       <div class="mnd-val mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:30px 26px"><span class="mnd-val-ico" style="display:inline-flex;width:48px;height:48px;border-radius:12px;border:1px solid var(--ln-strong);align-items:center;justify-content:center;color:var(--t-2)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 7 12 3 4 7v6c0 5 8 8 8 8s8-3 8-8V7Z"></path></svg></span><h3 style="margin:20px 0 0;font:600 19px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Respaldo</h3><p style="margin:12px 0 0;font:400 14px/1.65 'Open Sans',sans-serif;color:var(--t-2)">Garantía mecánica y acompañamiento posventa en cada compra.</p></div>
       <div class="mnd-val mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:30px 26px"><span class="mnd-val-ico" style="display:inline-flex;width:48px;height:48px;border-radius:12px;border:1px solid var(--ln-strong);align-items:center;justify-content:center;color:var(--t-2)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></span><h3 style="margin:20px 0 0;font:600 19px/1.2 'Open Sans',sans-serif;color:var(--t-strong)">Cercanía</h3><p style="margin:12px 0 0;font:400 14px/1.65 'Open Sans',sans-serif;color:var(--t-2)">Un equipo colombiano que te asesora como a un amigo, no como a un cliente.</p></div>
@@ -188,10 +190,10 @@
   </section>
 
   <!-- MISIÓN - VISIÓN -->
-  <section style="padding:20px 34px 10px">
-    <div class="mnd-reveal" style="position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--ln);min-height:440px;display:grid;grid-template-columns:1.1fr .9fr">
+  <section class="r-px" style="padding:20px 34px 10px">
+    <div class="r-stack mnd-reveal" style="position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--ln);min-height:440px;display:grid;grid-template-columns:1.1fr .9fr">
       <div style="position:relative;background:repeating-linear-gradient(45deg,#17130f 0 18px,#211b16 18px 36px)"><span style="position:absolute;left:14px;bottom:12px;font:400 10px/1 ui-monospace,monospace;color:rgba(255,255,255,.45)">FOTO · sala de exposición Mendiautos</span></div>
-      <div style="background:var(--c-card);padding:48px 44px;display:flex;flex-direction:column;justify-content:center">
+      <div class="r-px" style="background:var(--c-card);padding:48px 44px;display:flex;flex-direction:column;justify-content:center">
         <div style="display:flex;align-items:center;gap:12px"><span style="width:34px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:20px;color:var(--t-strong);text-transform:uppercase">Misión · Visión</span></div>
         <div style="margin-top:26px">
           <div style="font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#1E50A2;margin-bottom:12px">Misión</div>
@@ -206,9 +208,9 @@
   </section>
 
   <!-- CTA -->
-  <section style="padding:20px 34px 70px">
-    <div class="mnd-reveal" style="position:relative;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:radial-gradient(120% 130% at 12% 0%,#26262a,#0d0d0f 70%);padding:52px 44px;text-align:center">
-      <h2 class="mnd-mich" style="margin:0;font-size:28px;line-height:1.2;color:#fff;text-transform:uppercase">¿Listo para tu próximo auto?</h2>
+  <section class="r-px" style="padding:20px 34px 70px">
+    <div class="r-px mnd-reveal" style="position:relative;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:radial-gradient(120% 130% at 12% 0%,#26262a,#0d0d0f 70%);padding:52px 44px;text-align:center">
+      <h2 class="r-title mnd-mich" style="margin:0;font-size:28px;line-height:1.2;color:#fff;text-transform:uppercase">¿Listo para tu próximo auto?</h2>
       <p style="margin:14px auto 0;max-width:440px;font:400 14px/1.7 'Open Sans',sans-serif;color:rgba(255,255,255,.7)">Explora nuestro inventario o cotiza la venta de tu vehículo con Mendiautos.</p>
       <div style="display:flex;gap:14px;justify-content:center;margin-top:28px;flex-wrap:wrap">
         <a href="AutosDisponibles.dc.html" style="background:#1E50A2;color:#fff;border-radius:10px;padding:15px 30px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Ver inventario</a>
@@ -217,7 +219,7 @@
     </div>
   </section>
 
-  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+  <footer class="r-px" style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
     <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:34px;display:block"></a>
     <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
     <span style="font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)">© 2026 Mendiautos</span>
@@ -228,7 +230,7 @@
   <div class="mnd-menu-flash"></div>
   <div class="mnd-menu-inner">
     <div class="mnd-menu-top">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" style-hover="color:#1E50A2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
       <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
       <span style="width:90px"></span>
     </div>

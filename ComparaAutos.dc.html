@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 <title>Comparar autos | Mendiautos</title>
 <meta name="description" content="Compara hasta 3 vehículos de nuestro inventario lado a lado: precio, año, kilometraje y más.">
 <meta property="og:title" content="Comparar autos | Mendiautos">
@@ -125,7 +127,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -133,9 +135,9 @@
       <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
     </div>
   </header>
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
-  <main style="padding:34px 34px 80px">
+  <main class="r-px" style="padding:34px 34px 80px">
     <span style="display:block;width:44px;height:2px;background:#1E50A2"></span>
     <h1 class="mnd-mich" style="margin:16px 0 0;font-size:clamp(28px,3.4vw,42px);line-height:1.05;color:var(--t-strong);text-transform:uppercase">Comparar autos</h1>
     <p style="margin:14px 0 0;max-width:560px;font:400 15px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Elige hasta 3 vehículos de nuestro inventario y compáralos lado a lado: precio, año, kilometraje, motor y más.</p>
@@ -153,7 +155,7 @@
   <div class="mnd-menu-flash"></div>
   <div class="mnd-menu-inner">
     <div class="mnd-menu-top">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" style-hover="color:#1E50A2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
       <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
       <span style="width:90px"></span>
     </div>

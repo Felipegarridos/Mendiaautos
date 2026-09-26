@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -30,10 +32,10 @@
 </style>
 </helmet>
 <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,#22232a 0%,#111015 45%,var(--bg) 100%);padding:40px 20px;position:relative">
-  <button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="position:absolute;top:24px;left:24px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button>
+  <button type="button" style="position:absolute;top:24px;left:24px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button>
   <div style="width:100%;max-width:420px">
     <a href="MendiautosHome.dc.html" style="display:flex;justify-content:center;margin-bottom:28px"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:42px"></a>
-    <div style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;padding:34px 32px;box-shadow:0 40px 80px -40px rgba(0,0,0,.6)">
+    <div class="r-px" style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;padding:34px 32px;box-shadow:0 40px 80px -40px rgba(0,0,0,.6)">
       <div style="display:flex;margin-bottom:26px;border-bottom:1px solid var(--ln)">
         <button class="mnd-tabx on" data-tab="login">Iniciar sesión</button>
         <button class="mnd-tabx" data-tab="signup">Crear cuenta</button>

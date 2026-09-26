@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 <title>El inversionista | Mendiautos</title>
 <meta name="description" content="Invierte en autos con Mendiautos y gana un porcentaje de la utilidad. Simula tu inversión.">
 <meta property="og:title" content="El inversionista | Mendiautos">
@@ -140,7 +142,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -149,22 +151,22 @@
       <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
     </div>
   </header>
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
   <!-- HERO -->
-  <section style="position:relative;padding:64px 34px 36px;background:radial-gradient(120% 120% at 50% 0%,#2b2b30 0%,#141216 55%,var(--bg) 100%)">
+  <section class="r-px" style="position:relative;padding:64px 34px 36px;background:radial-gradient(120% 120% at 50% 0%,#2b2b30 0%,#141216 55%,var(--bg) 100%)">
     <div class="mnd-reveal" style="max-width:760px">
       <div style="display:flex;align-items:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--t-3)">Invierte con Mendiautos</span></div>
-      <h1 class="mnd-mich" style="margin:20px 0 0;font-size:clamp(34px,4.6vw,56px);line-height:1.02;color:var(--t-strong);text-transform:uppercase">El inversionista</h1>
+      <h1 class="r-display mnd-mich" style="margin:20px 0 0;font-size:clamp(34px,4.6vw,56px);line-height:1.02;color:var(--t-strong);text-transform:uppercase">El inversionista</h1>
       <p style="margin:20px 0 0;font:400 16px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Compra un auto con nosotros, nosotros lo vendemos, y tú ganas un porcentaje de la utilidad. Solo o con socios: simula tu inversión, incluye los gastos del vehículo y mira exactamente cuánto te queda de ganancia.</p>
     </div>
   </section>
 
   <!-- SIMULADOR -->
-  <section style="padding:16px 34px 30px">
-    <div class="mnd-reveal" style="display:grid;grid-template-columns:1.05fr .95fr;gap:0;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:var(--c-card)">
+  <section class="r-px" style="padding:16px 34px 30px">
+    <div class="r-stack mnd-reveal" style="display:grid;grid-template-columns:1.05fr .95fr;gap:0;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:var(--c-card)">
       <!-- controles -->
-      <div style="padding:36px 38px;border-right:1px solid var(--ln)">
+      <div class="r-bb r-px" style="padding:36px 38px;border-right:1px solid var(--ln)">
         <div style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:18px;color:var(--t-strong);text-transform:uppercase">Simulador de inversión</span></div>
 
         <div style="margin-top:28px">
@@ -225,7 +227,7 @@
       </div>
 
       <!-- resultado -->
-      <div style="padding:36px 38px;background:radial-gradient(120% 120% at 90% 0%,rgba(30,80,162,.14),transparent 60%)">
+      <div class="r-px" style="padding:36px 38px;background:radial-gradient(120% 120% at 90% 0%,rgba(30,80,162,.14),transparent 60%)">
         <div style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--t-3)">Tu ganancia estimada</div>
         <div class="mnd-tu-gan" style="margin-top:12px;font:800 clamp(36px,4.8vw,52px)/1 'Open Sans',sans-serif;color:#1E50A2">$4.480.000</div>
         <div class="mnd-tu-roi" style="margin-top:8px;font:600 13px/1 'Open Sans',sans-serif;color:var(--t-2)">Rentabilidad sobre tu inversión: 12,4%</div>
@@ -256,21 +258,21 @@
   </section>
 
   <!-- MIS INVERSIONES GUARDADAS -->
-  <section style="padding:20px 34px 10px">
-    <div class="mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:28px 32px">
+  <section class="r-px" style="padding:20px 34px 10px">
+    <div class="r-px mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:28px 32px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
         <div style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:18px;color:var(--t-strong);text-transform:uppercase">Mis inversiones guardadas</span></div>
         <div style="display:flex;align-items:center;gap:16px"><a href="DashboardInversiones.dc.html" style="font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1E50A2">Ver dashboard →</a><span class="mnd-saved-count" style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--t-3)">0 guardadas</span></div>
       </div>
       <div class="mnd-saved-empty" style="margin-top:18px;font:400 13.5px/1.6 'Open Sans',sans-serif;color:var(--t-3)">Aún no has guardado ninguna inversión. Ajusta el simulador y pulsa <b style="color:var(--t-2)">Guardar</b> para verla aquí cuando quieras.</div>
-      <div class="mnd-saved-list" style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+      <div class="r-stack-sm mnd-saved-list" style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
     </div>
   </section>
 
   <!-- CÓMO FUNCIONA -->
-  <section style="padding:40px 34px 30px">
+  <section class="r-px" style="padding:40px 34px 30px">
     <div class="mnd-reveal" style="display:flex;align-items:center;gap:14px;margin-bottom:28px"><span style="width:40px;height:2px;background:#1E50A2"></span><span class="mnd-mich" style="font-size:22px;color:var(--t-strong);text-transform:uppercase">¿Cómo funciona?</span></div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    <div class="r-2 r-stack-xs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
       <div class="mnd-step-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:28px 24px"><div class="mnd-mich" style="font-size:26px;color:#1E50A2">01</div><h3 style="margin:16px 0 0;font:700 16px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Inviertes</h3><p style="margin:10px 0 0;font:400 13.5px/1.6 'Open Sans',sans-serif;color:var(--t-2)">Compras un auto con Mendiautos, solo o junto a otros inversionistas.</p></div>
       <div class="mnd-step-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:28px 24px"><div class="mnd-mich" style="font-size:26px;color:#1E50A2">02</div><h3 style="margin:16px 0 0;font:700 16px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Preparamos</h3><p style="margin:10px 0 0;font:400 13.5px/1.6 'Open Sans',sans-serif;color:var(--t-2)">Alistamos y publicamos el vehículo. Los gastos se registran y se descuentan.</p></div>
       <div class="mnd-step-card mnd-reveal" style="background:var(--c-card);border:1px solid var(--ln);border-radius:16px;padding:28px 24px"><div class="mnd-mich" style="font-size:26px;color:#1E50A2">03</div><h3 style="margin:16px 0 0;font:700 16px/1.3 'Open Sans',sans-serif;color:var(--t-strong)">Vendemos</h3><p style="margin:10px 0 0;font:400 13.5px/1.6 'Open Sans',sans-serif;color:var(--t-2)">Nuestra red vende el auto al mejor precio del mercado.</p></div>
@@ -278,7 +280,7 @@
     </div>
   </section>
 
-  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+  <footer class="r-px" style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
     <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:34px;display:block"></a>
     <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
     <span style="font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)">© 2026 Mendiautos</span>
@@ -289,7 +291,7 @@
   <div class="mnd-menu-flash"></div>
   <div class="mnd-menu-inner">
     <div class="mnd-menu-top">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" style-hover="color:#1E50A2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
       <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
       <span style="width:90px"></span>
     </div>

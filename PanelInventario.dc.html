@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -39,7 +41,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <a href="MendiautosHome.dc.html" style="display:flex;align-items:center;gap:12px;flex:1"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></a>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -48,9 +50,9 @@
     </div>
   </header>
 
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
-  <main style="padding:34px 34px 80px">
+  <main class="r-px" style="padding:34px 34px 80px">
     <span style="display:block;width:44px;height:2px;background:#1E50A2"></span>
     <h1 class="mnd-mich" style="margin:16px 0 0;font-size:clamp(26px,3.2vw,38px);line-height:1.05;color:var(--t-strong);text-transform:uppercase">Panel de inventario</h1>
     <p style="margin:14px 0 0;max-width:560px;font:400 15px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Cambia cualquier vehículo de <b style="color:#2fa86a">Disponible</b> a <b style="color:#2f6fd0">Vendido</b> con un clic. El cambio se refleja en las páginas de Autos disponibles y Vendidos.</p>
@@ -105,7 +107,7 @@ class Component extends DCLogic {
       const desc=(this._edits[c.id]&&this._edits[c.id].desc!=null)?this._edits[c.id].desc:(c.descripcion||'SUV turbo, único dueño, mantenimientos al día. Ideal para ciudad y carretera.');
       const precio=(this._edits[c.id]&&this._edits[c.id].precio!=null)?this._edits[c.id].precio:c.precio;
       const wrap=document.createElement('div');
-      const row=document.createElement('div'); row.className='mnd-row';
+      const row=document.createElement('div'); row.className='mnd-row r-invrow';
       row.innerHTML='<div style="display:flex;align-items:center;gap:16px">'
         +'<div style="width:64px;height:48px;border-radius:8px;flex:none;background:repeating-linear-gradient(45deg,#17130f 0 12px,#211b16 12px 24px)"></div>'
         +'<div><div style="font:700 15px/1.2 \'Open Sans\',sans-serif;color:var(--t-strong)">'+c.marca+' '+c.modelo+' '+(c.version||'')+'</div>'
@@ -115,7 +117,7 @@ class Component extends DCLogic {
         +'<button class="mnd-toggle">'+(est==='disponible'?'Marcar vendido':'Volver a disponible')+'</button>';
       const panel=document.createElement('div'); panel.className='mnd-edit-panel'; panel.style.marginTop='0';
       panel.innerHTML='<div style="border:1px solid var(--ln);border-top:0;border-radius:0 0 12px 12px;padding:20px;background:var(--c-card);margin-top:-6px">'
-        +'<div style="display:grid;grid-template-columns:1fr 200px;gap:16px">'
+        +'<div class="r-stack-sm" style="display:grid;grid-template-columns:1fr 200px;gap:16px">'
         +'<div><label class="mnd-elab">Descripción</label><textarea class="mnd-edit-fld mnd-e-desc" rows="3" style="resize:vertical">'+desc.replace(/</g,'&lt;')+'</textarea></div>'
         +'<div><label class="mnd-elab">Precio</label><input class="mnd-edit-fld mnd-e-precio" inputmode="numeric" value="'+this._fmt(precio)+'"></div>'
         +'</div>'

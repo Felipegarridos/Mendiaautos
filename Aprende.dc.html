@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 <title>Aprende | Mendiautos</title>
 <meta name="description" content="Videos que explican cómo comprar, vender, financiar e invertir con Mendiautos.">
 <meta property="og:title" content="Aprende | Mendiautos">
@@ -132,7 +134,7 @@
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
 
-  <header style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
+  <header class="r-px" style="position:sticky;top:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--ln)">
     <button class="mnd-menu-btn" style="display:flex;align-items:center;gap:12px;flex:1;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="display:flex;flex-direction:column;gap:4px"><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span><span style="width:22px;height:2px;background:var(--t-strong)"></span></span><span style="font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;color:var(--t-2)">MENÚ</span></button>
     <a href="MendiautosHome.dc.html" style="flex:0 0 auto"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:36px;display:block"></a>
     <div style="display:flex;align-items:center;gap:20px;flex:1;justify-content:flex-end;color:var(--t-2)">
@@ -141,19 +143,19 @@
       <a href="Login.dc.html" aria-label="Iniciar sesión" style="display:flex;color:inherit"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.6"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke-linecap="round"></path></svg></a>
     </div>
   </header>
-  <div data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" onclick="if(document.referrer&&document.referrer!==location.href){location.href=document.referrer}else if(history.length>1){history.back()}else{location.href='MendiautosHome.dc.html'}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" onmouseover="this.style.color='var(--t-strong)';this.querySelector('svg').style.transform='translateX(-3px)'" onmouseout="this.style.color='var(--t-3)';this.querySelector('svg').style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
+  <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
   <!-- HERO -->
-  <section style="position:relative;padding:60px 34px 30px;background:radial-gradient(120% 120% at 50% 0%,#2b2b30 0%,#141216 55%,var(--bg) 100%)">
+  <section class="r-px" style="position:relative;padding:60px 34px 30px;background:radial-gradient(120% 120% at 50% 0%,#2b2b30 0%,#141216 55%,var(--bg) 100%)">
     <div class="mnd-reveal" style="max-width:720px">
       <div style="display:flex;align-items:center;gap:14px"><span style="width:40px;height:2px;background:#1E50A2"></span><span style="font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--t-3)">Centro de aprendizaje</span></div>
-      <h1 class="mnd-mich" style="margin:20px 0 0;font-size:clamp(32px,4.4vw,52px);line-height:1.02;color:var(--t-strong);text-transform:uppercase">Aprende con Mendiautos</h1>
+      <h1 class="r-display mnd-mich" style="margin:20px 0 0;font-size:clamp(32px,4.4vw,52px);line-height:1.02;color:var(--t-strong);text-transform:uppercase">Aprende con Mendiautos</h1>
       <p style="margin:20px 0 0;font:400 16px/1.7 'Open Sans',sans-serif;color:var(--t-2)">Videos cortos y guías claras para entender cómo invertir, comprar, vender y financiar tu auto con nosotros. Cada tema incluye un <b style="color:var(--t-strong)">Ver más</b> con tablas y gráficas paso a paso.</p>
     </div>
   </section>
 
   <!-- FILTROS -->
-  <section style="padding:16px 34px 6px">
+  <section class="r-px" style="padding:16px 34px 6px">
     <div class="mnd-cats mnd-reveal" style="display:flex;gap:10px;flex-wrap:wrap">
       <button type="button" class="mnd-cat on" data-c="all" style="border:1px solid var(--ln-strong);background:#1E50A2;border-color:#1E50A2;color:#fff;border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Todos</button>
       <button type="button" class="mnd-cat" data-c="inv" style="border:1px solid var(--ln-strong);background:transparent;color:var(--t-2);border-radius:100px;padding:10px 20px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.04em;cursor:pointer">Inversión</button>
@@ -163,14 +165,14 @@
   </section>
 
   <!-- GRID DE VIDEOS -->
-  <section style="padding:20px 34px 40px">
-    <div class="mnd-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px"></div>
+  <section class="r-px" style="padding:20px 34px 40px">
+    <div class="r-2 r-stack-sm mnd-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px"></div>
   </section>
 
   <!-- CTA -->
-  <section style="padding:10px 34px 66px">
-    <div class="mnd-reveal" style="position:relative;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:radial-gradient(120% 130% at 12% 0%,#26262a,#0d0d0f 70%);padding:48px 44px;text-align:center">
-      <h2 class="mnd-mich" style="margin:0;font-size:26px;line-height:1.2;color:#fff;text-transform:uppercase">¿Te quedan dudas?</h2>
+  <section class="r-px" style="padding:10px 34px 66px">
+    <div class="r-px mnd-reveal" style="position:relative;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:radial-gradient(120% 130% at 12% 0%,#26262a,#0d0d0f 70%);padding:48px 44px;text-align:center">
+      <h2 class="r-title mnd-mich" style="margin:0;font-size:26px;line-height:1.2;color:#fff;text-transform:uppercase">¿Te quedan dudas?</h2>
       <p style="margin:14px auto 0;max-width:440px;font:400 14px/1.7 'Open Sans',sans-serif;color:rgba(255,255,255,.7)">Nuestro equipo te explica todo en persona o por WhatsApp, sin compromiso.</p>
       <div style="display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap">
         <a href="Contacto.dc.html" class="mnd-cta" style="background:#1E50A2;color:#fff;border-radius:10px;padding:15px 30px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Hablar con un asesor</a>
@@ -179,7 +181,7 @@
     </div>
   </section>
 
-  <footer style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+  <footer class="r-px" style="background:var(--bg);border-top:1px solid var(--ln);padding:44px 34px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
     <a href="MendiautosHome.dc.html"><img src="assets/logo-word.png" alt="MENDIAUTOS" style="height:34px;display:block"></a>
     <span style="font:400 12px/1 'Open Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--t-3)">Te conducimos al auto de tus sueños</span>
     <span style="font:400 12px/1 'Open Sans',sans-serif;color:var(--t-3)">© 2026 Mendiautos</span>
@@ -192,7 +194,7 @@
         <span class="mnd-m-cat" style="font:600 10px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#1E50A2">Tema</span>
         <button type="button" class="mnd-m-close" style="display:inline-flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg> Cerrar</button>
       </div>
-      <div class="mnd-m-body" style="padding:28px 30px 34px"></div>
+      <div class="r-px mnd-m-body" style="padding:28px 30px 34px"></div>
     </div>
   </div>
 
@@ -201,7 +203,7 @@
   <div class="mnd-menu-flash"></div>
   <div class="mnd-menu-inner">
     <div class="mnd-menu-top">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" onmouseover="this.style.color='#1E50A2'" onmouseout="this.style.color='var(--t-2)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:20px"><button class="mnd-menu-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>CERRAR</button><a href="MendiautosHome.dc.html" style="display:inline-flex;align-items:center;gap:8px;color:var(--t-2);font:700 11px/1 'Open Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .3s ease" style-hover="color:#1E50A2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"></path></svg>Inicio</a></div>
       <a href="MendiautosHome.dc.html" aria-label="Ir al inicio"><img class="mnd-menu-logo" src="assets/logo-word.png" alt="MENDIAUTOS"></a>
       <span style="width:90px"></span>
     </div>
@@ -283,6 +285,7 @@ class Component extends DCLogic {
     this._filter='all';
     try{ const c=new URLSearchParams(location.search).get('c'); if(c && ['inv','cv','cred'].includes(c)) this._filter=c; }catch(e){}
     this._renderGrid();
+    try{ const io=new IntersectionObserver((es)=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('mnd-in'); io.unobserve(en.target);} }),{threshold:.1}); document.querySelectorAll('.mnd-reveal:not(.mnd-vcard)').forEach(el=>{ if(!el.closest('#mnd-menu')) io.observe(el); }); }catch(e){ document.querySelectorAll('.mnd-reveal').forEach(el=>el.classList.add('mnd-in')); }
     document.querySelectorAll('.mnd-cat').forEach(x=>{ const on=x.dataset.c===this._filter; x.classList.toggle('on',on); x.style.background=on?'#1E50A2':'transparent'; x.style.borderColor=on?'#1E50A2':'var(--ln-strong)'; x.style.color=on?'#fff':'var(--t-2)'; });
     document.querySelectorAll('.mnd-cat').forEach(b=>b.onclick=()=>{
       document.querySelectorAll('.mnd-cat').forEach(x=>{ x.classList.remove('on'); x.style.background='transparent'; x.style.borderColor='var(--ln-strong)'; x.style.color='var(--t-2)'; });
