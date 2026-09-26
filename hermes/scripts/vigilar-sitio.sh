@@ -23,6 +23,9 @@ else
   fi
   inventario=$(curl -fsS --max-time 20 "$SITIO/assets/inventario.js" 2> /dev/null | head -c 400) || true
   [[ $inventario == *MND_INVENTARIO* ]] || problemas+=("El catálogo (assets/inventario.js) no se está sirviendo bien.")
+  salud=$(curl -fsS --max-time 20 "$SITIO/api/salud" 2> /dev/null | head -c 200) || true
+  [[ $salud == *'"ok": true'* ]] ||
+    problemas+=("Los formularios del sitio no llegan: el receptor no responde (los clientes ven la opción de escribir por WhatsApp). Revisar: journalctl -u mendiautos-solicitudes -n 30")
   if [[ $SITIO == https://* ]]; then
     host=${SITIO#https://}
     host=${host%%/*}
