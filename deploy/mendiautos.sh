@@ -11,6 +11,8 @@
 #    mendiautos actualizar                trae lo último de GitHub y lo publica
 #    mendiautos revertir                  vuelve a la versión anterior
 #    mendiautos dominio ejemplo.com [correo@ejemplo.com]   activa HTTPS
+#    mendiautos hermes                    instala el asistente de Telegram
+#    catalogo --help                      edita los autos del sitio
 # =============================================================================
 set -euo pipefail
 
@@ -27,11 +29,15 @@ RELEASES=$WEB/releases              # una carpeta por versión publicada
 CURRENT=$WEB/current                # enlace a la versión activa
 ACME=/var/www/letsencrypt           # validación de Let's Encrypt
 STATE=/var/lib/mendiautos
+CATALOGO=$STATE/catalogo            # autos del sitio: los edita el comando catalogo
+RESPALDOS=/var/backups/mendiautos   # copias diarias del catálogo
 SITE=/etc/nginx/sites-available/mendiautos
 SITE_LINK=/etc/nginx/sites-enabled/mendiautos
 SNIP_SITIO=/etc/nginx/snippets/mendiautos-sitio.conf
 SNIP_CABECERAS=/etc/nginx/snippets/mendiautos-cabeceras.conf
 BIN=/usr/local/bin/mendiautos
+BIN_CATALOGO=/usr/local/bin/catalogo
+SUDOERS_CATALOGO=/etc/sudoers.d/mendiautos-catalogo
 MANTENER=5                          # versiones anteriores que se conservan
 
 # ----------------------------------------------------------------- mensajes
@@ -59,7 +65,7 @@ requiere_root() {
 }
 
 cargar_conf() {
-  REPO=$REPO_POR_DEFECTO RAMA=$RAMA_POR_DEFECTO DOMINIO="" CORREO="" AUTO=1
+  REPO=$REPO_POR_DEFECTO RAMA=$RAMA_POR_DEFECTO DOMINIO="" CORREO="" AUTO=1 SITIO=""
   # shellcheck disable=SC1090
   [ -f "$CONF" ] && . "$CONF"
   return 0
@@ -69,8 +75,8 @@ guardar_conf() {
   umask 022
   {
     echo "# Configuración de mendiautos.sh (se puede editar)"
-    printf 'REPO=%q\nRAMA=%q\nDOMINIO=%q\nCORREO=%q\nAUTO=%q\n' \
-      "$REPO" "$RAMA" "$DOMINIO" "$CORREO" "$AUTO"
+    printf 'REPO=%q\nRAMA=%q\nDOMINIO=%q\nCORREO=%q\nAUTO=%q\nSITIO=%q\n' \
+      "$REPO" "$RAMA" "$DOMINIO" "$CORREO" "$AUTO" "$SITIO"
   } > "$CONF"
 }
 
@@ -121,7 +127,7 @@ instalar_paquetes() {
   info "Instalando paquetes (nginx, git, firewall, fail2ban, actualizaciones automáticas)…"
   DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 -q update > /dev/null
   apt_instalar nginx git curl ca-certificates openssl iproute2 ufw fail2ban \
-    python3-systemd unattended-upgrades
+    python3-systemd unattended-upgrades python3 python3-pil sudo
   systemctl enable --now nginx > /dev/null 2>&1 || true
   ok "Paquetes instalados"
 }
@@ -297,7 +303,7 @@ construir_version() {
   mkdir -p "$dst"
   git -C "$REPO_DIR" archive --format=tar HEAD | tar -x -C "$dst"
   # Solo lo público: fuera scripts de despliegue, borradores y archivos ocultos.
-  rm -rf "$dst/deploy" "$dst/scraps"
+  rm -rf "$dst/deploy" "$dst/scraps" "$dst/hermes"
   find "$dst" -mindepth 1 -maxdepth 1 \( -name '.*' -o -name '*.md' \) -exec rm -rf {} +
   # La portada del sitio es MendiautosHome.dc.html (index.html es su copia).
   [ -f "$dst/MendiautosHome.dc.html" ] && cp -f "$dst/MendiautosHome.dc.html" "$dst/index.html"
@@ -330,11 +336,116 @@ limpiar_versiones() {
 
 publicar() {
   mkdir -p "$RELEASES" "$STATE"
+  preparar_catalogo
   construir_version
   configurar_nginx
   activar_version "$VERSION_NUEVA"
   rm -f "$STATE/omitir"
+  actualizar_asistente
   ok "Publicada la versión $(basename "$VERSION_NUEVA")"
+}
+
+# Si el asistente de Telegram está instalado, recibe la skill y las reglas de
+# esta versión del repositorio (no hace falta reiniciarlo).
+actualizar_asistente() {
+  id -u hermes > /dev/null 2>&1 || return 0
+  [ -f "$REPO_DIR/hermes/instalar.sh" ] || return 0
+  bash "$REPO_DIR/hermes/instalar.sh" --solo-archivos > /dev/null 2>&1 ||
+    aviso "No pude actualizar los archivos del asistente (prueba: mendiautos hermes --solo-archivos)."
+}
+
+# --------------------------------------------------------------- catálogo
+# Los autos viven fuera de las versiones publicadas, en $CATALOGO: ni una
+# versión nueva desde GitHub ni una exportación de la herramienta de diseño
+# pisan lo que se cargó por Telegram. Solo el usuario del sistema «catalogo»
+# escribe ahí; los demás (el asistente incluido) pasan por el comando
+# catalogo, que valida cada dato antes de publicarlo.
+asegurar_paquetes_catalogo() {
+  local falta=() p
+  for p in python3 python3-pil sudo git; do
+    dpkg -s "$p" > /dev/null 2>&1 || falta+=("$p")
+  done
+  [ ${#falta[@]} -eq 0 ] && return 0
+  info "Instalando ${falta[*]}…"
+  apt_instalar "${falta[@]}" 2> /dev/null || {
+    DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 -q update > /dev/null
+    apt_instalar "${falta[@]}"
+  }
+}
+
+preparar_catalogo() {
+  asegurar_paquetes_catalogo
+  getent group catalogo > /dev/null || groupadd --system catalogo
+  id -u catalogo > /dev/null 2>&1 ||
+    useradd --system --gid catalogo --home-dir "$CATALOGO" --no-create-home \
+      --shell /usr/sbin/nologin --comment "Catalogo de Mendiautos" catalogo
+  getent group editores-catalogo > /dev/null || groupadd --system editores-catalogo
+  install -d -m 0755 "$STATE"
+  install -d -m 0755 -o catalogo -g catalogo "$CATALOGO"
+  install -d -m 0750 -o catalogo -g catalogo "$RESPALDOS"
+  # El comando usa el Python del sistema en modo aislado (-I: ignora PYTHON*).
+  sed '1s|^#!.*|#!/usr/bin/python3 -I|' "$REPO_DIR/deploy/catalogo.py" > "$BIN_CATALOGO.tmp"
+  chmod 0755 "$BIN_CATALOGO.tmp"
+  mv -f "$BIN_CATALOGO.tmp" "$BIN_CATALOGO"
+  # Los del grupo editores-catalogo (el usuario del asistente) pueden correr
+  # ese comando como «catalogo», y nada más.
+  cat > "$SUDOERS_CATALOGO.tmp" <<EOF
+# Generado por mendiautos.sh: los editores del catálogo solo pueden usar el
+# comando catalogo, que corre como el usuario catalogo.
+%editores-catalogo ALL=(catalogo) NOPASSWD: $BIN_CATALOGO
+EOF
+  chmod 0440 "$SUDOERS_CATALOGO.tmp"
+  if visudo -cqf "$SUDOERS_CATALOGO.tmp" > /dev/null 2>&1; then
+    mv -f "$SUDOERS_CATALOGO.tmp" "$SUDOERS_CATALOGO"
+  else
+    rm -f "$SUDOERS_CATALOGO.tmp"
+    aviso "No pude validar la regla de sudo del catálogo; el asistente no podrá editarlo."
+  fi
+  if [ ! -f "$CATALOGO/inventario.json" ]; then
+    "$BIN_CATALOGO" iniciar --desde "$REPO_DIR/assets/inventario.js" > /dev/null
+    ok "Catálogo creado en $CATALOGO con los autos del repositorio"
+  fi
+  configurar_mantenimiento_catalogo
+  [ -n "$SITIO" ] || recordar_sitio
+}
+
+configurar_mantenimiento_catalogo() {
+  cat > /etc/systemd/system/mendiautos-catalogo.service <<EOF
+[Unit]
+Description=Mendiautos: revisar, limpiar y respaldar el catálogo de autos
+
+[Service]
+Type=oneshot
+ExecStart=$BIN_CATALOGO mantenimiento
+EOF
+  cat > /etc/systemd/system/mendiautos-catalogo.timer <<'EOF'
+[Unit]
+Description=Mendiautos: mantenimiento diario del catálogo (3:40 a. m. en Colombia)
+
+[Timer]
+OnCalendar=*-*-* 08:40:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now mendiautos-catalogo.timer > /dev/null 2>&1 || true
+}
+
+# Dirección pública del sitio; el comando catalogo la usa para los enlaces.
+url_sitio() {
+  if [ -n "$DOMINIO" ] && [ -s "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
+    echo "https://$DOMINIO"
+  else
+    echo "http://${DOMINIO:-$(ip_publica)}"
+  fi
+}
+
+recordar_sitio() {
+  SITIO=$(url_sitio)
+  guardar_conf
 }
 
 # ------------------------------------------------------------------ nginx
@@ -373,6 +484,27 @@ location ^~ /.well-known/acme-challenge/ {
 # Archivos y carpetas ocultos (.git, .env, .version…)
 location ~ /\\. {
     return 404;
+}
+
+# Catálogo de autos: lo edita el comando catalogo, fuera de las versiones.
+# Si todavía no existe, se sirve el inventario que trae el repositorio.
+location = /assets/inventario.js {
+    root $CATALOGO;
+    expires -1;
+    try_files /inventario.js @inventario_del_repositorio;
+}
+location @inventario_del_repositorio {
+    expires -1;
+    try_files \$uri =404;
+}
+# Fotos de los autos: solo los JPG que genera el comando (nombre = huella).
+location ^~ /catalogo/fotos/ {
+    root $STATE;
+    if (\$uri !~ "^/catalogo/fotos/[a-z0-9-]+/[0-9a-f]{16}(-m)?\\.jpg\$") {
+        return 404;
+    }
+    expires 30d;
+    try_files \$uri =404;
 }
 
 # Librerías con la versión en la ruta: no cambian nunca.
@@ -600,6 +732,7 @@ cmd_instalar() {
   if [ -n "$DOMINIO" ]; then
     obtener_certificado && configurar_nginx || true
   fi
+  recordar_sitio
   resumen
 }
 
@@ -680,6 +813,7 @@ cmd_dominio() {
   else
     ok "Por ahora el sitio sigue disponible por HTTP; repite este comando cuando el DNS apunte aquí."
   fi
+  recordar_sitio
 }
 
 cmd_estado() {
@@ -699,21 +833,42 @@ cmd_estado() {
   echo "nginx:         $(systemctl is-active nginx 2>/dev/null || true)"
   echo "Auto-update:   $(systemctl is-active mendiautos-actualizar.timer 2>/dev/null || true)"
   echo "Versiones:     $(find "$RELEASES" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l) guardadas en $RELEASES"
+  if [ -x "$BIN_CATALOGO" ] && [ -f "$CATALOGO/inventario.json" ]; then
+    echo "Catálogo:      $("$BIN_CATALOGO" validar 2>&1 | tail -n 1)"
+    echo "Último cambio: $("$BIN_CATALOGO" historial -n 1 2>/dev/null | sed -n '2s/^ *//p')"
+    echo "Respaldos:     $(find "$RESPALDOS" -name 'catalogo-*.tar.gz' 2>/dev/null | wc -l) en $RESPALDOS"
+  else
+    echo "Catálogo:      (todavía no existe; se crea al publicar)"
+  fi
+  echo "Asistente:     $(estado_hermes)"
+}
+
+estado_hermes() {
+  local e
+  id -u hermes > /dev/null 2>&1 || { echo "no instalado (mendiautos hermes)"; return 0; }
+  e=$(systemctl is-active hermes-gateway 2>/dev/null || true)
+  [ "$e" = active ] || e=$(systemctl --user -M hermes@ is-active hermes-gateway 2>/dev/null || true)
+  echo "Hermes (usuario hermes): ${e:-sin servicio}"
+}
+
+cmd_hermes() {
+  requiere_root
+  cargar_conf
+  [ -f "$REPO_DIR/hermes/instalar.sh" ] || error "Falta hermes/instalar.sh; primero: mendiautos actualizar"
+  [ -x "$BIN_CATALOGO" ] || error "Primero publica el sitio: mendiautos instalar"
+  INFORMADO=1
+  exec bash "$REPO_DIR/hermes/instalar.sh" "$@"
 }
 
 resumen() {
-  local url
-  if [ -n "$DOMINIO" ] && [ -s "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
-    url="https://$DOMINIO"
-  else
-    url="http://${DOMINIO:-$(ip_publica)}"
-  fi
   echo
-  ok "Listo. Tu sitio está publicado en: $url"
+  ok "Listo. Tu sitio está publicado en: $SITIO"
   echo "    Ver estado:        mendiautos estado"
   echo "    Publicar ya:       mendiautos actualizar"
   echo "    Volver atrás:      mendiautos revertir"
   [ -n "$DOMINIO" ] || echo "    Activar HTTPS:     mendiautos dominio tudominio.com tu@correo.com"
+  echo "    Ver el catálogo:   catalogo listar"
+  echo "    Asistente:         mendiautos hermes   (lo maneja por Telegram)"
 }
 
 ayuda() {
@@ -726,6 +881,10 @@ Comandos:
   revertir                    vuelve a la versión anterior
   dominio D [correo]          configura el dominio y HTTPS (Let's Encrypt)
   estado                      muestra lo que está publicado
+  hermes [opciones]           instala o reconfigura el asistente de Telegram
+                              (mendiautos hermes --help)
+
+El catálogo de autos se edita con el comando «catalogo» (catalogo --help).
 EOF
 }
 
@@ -740,6 +899,7 @@ main() {
     revertir|rollback) cmd_revertir "$@" ;;
     dominio|https|domain) cmd_dominio "$@" ;;
     estado|status) cmd_estado "$@" ;;
+    hermes|asistente) cmd_hermes "$@" ;;
     ayuda|help|-h|--help) ayuda ;;
     *) error "Comando desconocido: $cmd (usa: mendiautos ayuda)" ;;
   esac

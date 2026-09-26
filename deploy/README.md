@@ -46,6 +46,21 @@ sitio como «No seguro», algo que ahuyenta a quien va a dejar sus datos.
   publica lo nuevo. Basta con subir los cambios a GitHub.
 - **Inmediato:** `ssh root@2.28.140.187 "mendiautos actualizar"`
 
+## 4. Catálogo de autos y asistente de Telegram
+
+Los autos que muestra el sitio no viven en las páginas sino en un catálogo
+aparte, en la VPS (`/var/lib/mendiautos/catalogo`). La instalación lo crea con
+los autos de `assets/inventario.js` y desde ahí se edita con el comando
+`catalogo` (por SSH) o con el asistente de Telegram:
+
+```powershell
+ssh -t root@2.28.140.187 "mendiautos hermes"
+```
+
+Todo sobre el asistente está en [`hermes/README.md`](../hermes/README.md).
+Los cambios del catálogo se ven al instante y **no** se pierden al publicar
+versiones nuevas desde GitHub.
+
 ## Comandos útiles (dentro de la VPS o con `ssh root@IP "…"`)
 
 | Comando | Qué hace |
@@ -55,6 +70,8 @@ sitio como «No seguro», algo que ahuyenta a quien va a dejar sus datos.
 | `mendiautos revertir` | Vuelve a la versión anterior (se guardan las últimas 5) |
 | `mendiautos dominio D [correo]` | Configura el dominio y HTTPS |
 | `mendiautos instalar --rama R` | Vuelve a instalar o cambia de rama |
+| `mendiautos hermes` | Instala o configura el asistente de Telegram |
+| `catalogo listar` / `catalogo --help` | Ver y editar los autos del sitio |
 
 ## Qué configura el script
 
@@ -69,13 +86,16 @@ sitio como «No seguro», algo que ahuyenta a quien va a dejar sus datos.
 | SSH | Desactiva el ingreso por contraseña **solo** si confirma que entraste con llave en esa misma sesión |
 | Sistema | Actualizaciones de seguridad automáticas (`unattended-upgrades`) |
 | Versiones | Cada publicación va a una carpeta nueva y el cambio es instantáneo; `revertir` vuelve atrás |
+| Catálogo | Fuera de las versiones, editable solo con `catalogo` (usuario del sistema propio); historial para deshacer y respaldo diario (14 días) |
 
 Dónde queda cada cosa:
 
 - Sitio publicado: `/var/www/mendiautos/current`, un enlace a `releases/<fecha>-<commit>`.
 - Configuración: `/etc/mendiautos.conf` y `/etc/nginx/sites-available/mendiautos`.
 - Copia del repositorio: `/opt/mendiautos/repo`.
-- Registros: `journalctl -u mendiautos-actualizar` y `/var/log/nginx/`.
+- Catálogo de autos: `/var/lib/mendiautos/catalogo`; respaldos en `/var/backups/mendiautos`.
+- Registros: `journalctl -u mendiautos-actualizar`, `journalctl -u mendiautos-catalogo`
+  (mantenimiento diario del catálogo) y `/var/log/nginx/`.
 
 ## Verificar después de publicar
 
@@ -107,6 +127,11 @@ Dónde queda cada cosa:
   perderá la adaptación a celulares.
 - `index.html` se genera en cada publicación a partir de
   `MendiautosHome.dc.html`: edita la portada en ese archivo.
+- Las páginas con autos (inicio, disponibles, vendidos, ficha, comparar y el
+  panel) los dibujan desde `assets/inventario.js` con `assets/catalogo.js`.
+  Si las vuelves a exportar desde la herramienta de diseño, conserva esas dos
+  líneas del `<head>` y el código que llena las listas; si no, volverán los
+  autos de ejemplo (detalles en `hermes/README.md`).
 - Los formularios de contacto, «Vende tu auto» y el inicio de sesión solo
   muestran un mensaje de confirmación: **no envían los datos a ningún lado**.
   La solicitud de crédito sí abre WhatsApp. Los paneles de inventario y
