@@ -11,6 +11,9 @@
 #    mendiautos actualizar                trae lo último de GitHub y lo publica
 #    mendiautos revertir                  vuelve a la versión anterior
 #    mendiautos dominio ejemplo.com [correo@ejemplo.com]   activa HTTPS
+#    mendiautos hermes                    instala el asistente de Telegram
+#    catalogo --help                      edita los autos del sitio
+#    solicitudes pendientes               lo que llegó por los formularios
 # =============================================================================
 set -euo pipefail
 
@@ -27,11 +30,20 @@ RELEASES=$WEB/releases              # una carpeta por versión publicada
 CURRENT=$WEB/current                # enlace a la versión activa
 ACME=/var/www/letsencrypt           # validación de Let's Encrypt
 STATE=/var/lib/mendiautos
+CATALOGO=$STATE/catalogo            # autos del sitio: los edita el comando catalogo
+RESPALDOS=/var/backups/mendiautos   # copias diarias del catálogo
 SITE=/etc/nginx/sites-available/mendiautos
 SITE_LINK=/etc/nginx/sites-enabled/mendiautos
 SNIP_SITIO=/etc/nginx/snippets/mendiautos-sitio.conf
 SNIP_CABECERAS=/etc/nginx/snippets/mendiautos-cabeceras.conf
 BIN=/usr/local/bin/mendiautos
+BIN_CATALOGO=/usr/local/bin/catalogo
+SUDOERS_CATALOGO=/etc/sudoers.d/mendiautos-catalogo
+SOLICITUDES=$STATE/solicitudes      # formularios del sitio: los recibe el comando solicitudes
+BIN_SOLICITUDES=/usr/local/bin/solicitudes
+SUDOERS_SOLICITUDES=/etc/sudoers.d/mendiautos-solicitudes
+TOKEN_SOLICITUDES=/etc/mendiautos/solicitudes.token   # clave del asistente de clientes
+PUERTO_SOLICITUDES=8781             # receptor (solo en 127.0.0.1; nginx le pasa /api/)
 MANTENER=5                          # versiones anteriores que se conservan
 
 # ----------------------------------------------------------------- mensajes
@@ -59,7 +71,10 @@ requiere_root() {
 }
 
 cargar_conf() {
-  REPO=$REPO_POR_DEFECTO RAMA=$RAMA_POR_DEFECTO DOMINIO="" CORREO="" AUTO=1
+  REPO=$REPO_POR_DEFECTO RAMA=$RAMA_POR_DEFECTO DOMINIO="" CORREO="" AUTO=1 SITIO=""
+  # Días que se guardan los documentos (cédulas, extractos) y las solicitudes.
+  RETENER_DOCUMENTOS=90 RETENER_SOLICITUDES=730
+  WEBHOOK_WHATSAPP=""               # puerto del WhatsApp oficial de clientes (lo pone mendiautos hermes)
   # shellcheck disable=SC1090
   [ -f "$CONF" ] && . "$CONF"
   return 0
@@ -69,8 +84,10 @@ guardar_conf() {
   umask 022
   {
     echo "# Configuración de mendiautos.sh (se puede editar)"
-    printf 'REPO=%q\nRAMA=%q\nDOMINIO=%q\nCORREO=%q\nAUTO=%q\n' \
-      "$REPO" "$RAMA" "$DOMINIO" "$CORREO" "$AUTO"
+    printf 'REPO=%q\nRAMA=%q\nDOMINIO=%q\nCORREO=%q\nAUTO=%q\nSITIO=%q\n' \
+      "$REPO" "$RAMA" "$DOMINIO" "$CORREO" "$AUTO" "$SITIO"
+    printf 'RETENER_DOCUMENTOS=%q\nRETENER_SOLICITUDES=%q\nWEBHOOK_WHATSAPP=%q\n' \
+      "$RETENER_DOCUMENTOS" "$RETENER_SOLICITUDES" "$WEBHOOK_WHATSAPP"
   } > "$CONF"
 }
 
@@ -121,7 +138,7 @@ instalar_paquetes() {
   info "Instalando paquetes (nginx, git, firewall, fail2ban, actualizaciones automáticas)…"
   DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 -q update > /dev/null
   apt_instalar nginx git curl ca-certificates openssl iproute2 ufw fail2ban \
-    python3-systemd unattended-upgrades
+    python3-systemd unattended-upgrades python3 python3-pil sudo
   systemctl enable --now nginx > /dev/null 2>&1 || true
   ok "Paquetes instalados"
 }
@@ -297,7 +314,7 @@ construir_version() {
   mkdir -p "$dst"
   git -C "$REPO_DIR" archive --format=tar HEAD | tar -x -C "$dst"
   # Solo lo público: fuera scripts de despliegue, borradores y archivos ocultos.
-  rm -rf "$dst/deploy" "$dst/scraps"
+  rm -rf "$dst/deploy" "$dst/scraps" "$dst/hermes"
   find "$dst" -mindepth 1 -maxdepth 1 \( -name '.*' -o -name '*.md' \) -exec rm -rf {} +
   # La portada del sitio es MendiautosHome.dc.html (index.html es su copia).
   [ -f "$dst/MendiautosHome.dc.html" ] && cp -f "$dst/MendiautosHome.dc.html" "$dst/index.html"
@@ -330,11 +347,244 @@ limpiar_versiones() {
 
 publicar() {
   mkdir -p "$RELEASES" "$STATE"
+  preparar_catalogo
+  preparar_solicitudes
   construir_version
   configurar_nginx
   activar_version "$VERSION_NUEVA"
   rm -f "$STATE/omitir"
+  actualizar_asistente
   ok "Publicada la versión $(basename "$VERSION_NUEVA")"
+}
+
+# Si los asistentes (equipo y clientes) están instalados, reciben las skills,
+# reglas y herramientas de esta versión del repositorio.
+actualizar_asistente() {
+  if id -u hermes > /dev/null 2>&1 && [ -f "$REPO_DIR/hermes/instalar.sh" ]; then
+    bash "$REPO_DIR/hermes/instalar.sh" --solo-archivos > /dev/null 2>&1 ||
+      aviso "No pude actualizar los archivos del asistente (prueba: mendiautos hermes --solo-archivos)."
+  fi
+  if id -u hermes-clientes > /dev/null 2>&1 && [ -f "$REPO_DIR/hermes/clientes/instalar.sh" ]; then
+    bash "$REPO_DIR/hermes/clientes/instalar.sh" --solo-archivos > /dev/null 2>&1 ||
+      aviso "No pude actualizar el asistente de clientes (prueba: mendiautos hermes --clientes --solo-archivos)."
+  fi
+  return 0
+}
+
+# --------------------------------------------------------------- catálogo
+# Los autos viven fuera de las versiones publicadas, en $CATALOGO: ni una
+# versión nueva desde GitHub ni una exportación de la herramienta de diseño
+# pisan lo que se cargó por Telegram. Solo el usuario del sistema «catalogo»
+# escribe ahí; los demás (el asistente incluido) pasan por el comando
+# catalogo, que valida cada dato antes de publicarlo.
+asegurar_paquetes_catalogo() {
+  local falta=() p
+  for p in python3 python3-pil sudo git; do
+    dpkg -s "$p" > /dev/null 2>&1 || falta+=("$p")
+  done
+  [ ${#falta[@]} -eq 0 ] && return 0
+  info "Instalando ${falta[*]}…"
+  apt_instalar "${falta[@]}" 2> /dev/null || {
+    DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 -q update > /dev/null
+    apt_instalar "${falta[@]}"
+  }
+}
+
+preparar_catalogo() {
+  asegurar_paquetes_catalogo
+  getent group catalogo > /dev/null || groupadd --system catalogo
+  id -u catalogo > /dev/null 2>&1 ||
+    useradd --system --gid catalogo --home-dir "$CATALOGO" --no-create-home \
+      --shell /usr/sbin/nologin --comment "Catalogo de Mendiautos" catalogo
+  getent group editores-catalogo > /dev/null || groupadd --system editores-catalogo
+  install -d -m 0755 "$STATE"
+  install -d -m 0755 -o catalogo -g catalogo "$CATALOGO"
+  install -d -m 0750 -o catalogo -g catalogo "$RESPALDOS"
+  # El comando usa el Python del sistema en modo aislado (-I: ignora PYTHON*).
+  sed '1s|^#!.*|#!/usr/bin/python3 -I|' "$REPO_DIR/deploy/catalogo.py" > "$BIN_CATALOGO.tmp"
+  chmod 0755 "$BIN_CATALOGO.tmp"
+  mv -f "$BIN_CATALOGO.tmp" "$BIN_CATALOGO"
+  # Los del grupo editores-catalogo (el usuario del asistente) pueden correr
+  # ese comando como «catalogo», y nada más.
+  cat > "$SUDOERS_CATALOGO.tmp" <<EOF
+# Generado por mendiautos.sh: los editores del catálogo solo pueden usar el
+# comando catalogo, que corre como el usuario catalogo.
+%editores-catalogo ALL=(catalogo) NOPASSWD: $BIN_CATALOGO
+EOF
+  chmod 0440 "$SUDOERS_CATALOGO.tmp"
+  if visudo -cqf "$SUDOERS_CATALOGO.tmp" > /dev/null 2>&1; then
+    mv -f "$SUDOERS_CATALOGO.tmp" "$SUDOERS_CATALOGO"
+  else
+    rm -f "$SUDOERS_CATALOGO.tmp"
+    aviso "No pude validar la regla de sudo del catálogo; el asistente no podrá editarlo."
+  fi
+  if [ ! -f "$CATALOGO/inventario.json" ]; then
+    "$BIN_CATALOGO" iniciar --desde "$REPO_DIR/assets/inventario.js" > /dev/null
+    ok "Catálogo creado en $CATALOGO con los autos del repositorio"
+  fi
+  configurar_mantenimiento_catalogo
+  [ -n "$SITIO" ] || recordar_sitio
+}
+
+configurar_mantenimiento_catalogo() {
+  cat > /etc/systemd/system/mendiautos-catalogo.service <<EOF
+[Unit]
+Description=Mendiautos: revisar, limpiar y respaldar el catálogo de autos
+
+[Service]
+Type=oneshot
+ExecStart=$BIN_CATALOGO mantenimiento
+EOF
+  cat > /etc/systemd/system/mendiautos-catalogo.timer <<'EOF'
+[Unit]
+Description=Mendiautos: mantenimiento diario del catálogo (3:40 a. m. en Colombia)
+
+[Timer]
+OnCalendar=*-*-* 08:40:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now mendiautos-catalogo.timer > /dev/null 2>&1 || true
+}
+
+# ------------------------------------------------------------ solicitudes
+# Los formularios del sitio (contacto, vende tu auto, crédito…) llegan por
+# /api/solicitud al receptor (deploy/solicitudes.py), que corre como el usuario
+# del sistema «solicitudes»: solo él lee los datos de los clientes. El asistente
+# del equipo los consulta con el comando solicitudes, que oculta lo sensible.
+preparar_solicitudes() {
+  local nuevo=0
+  getent group solicitudes > /dev/null || groupadd --system solicitudes
+  id -u solicitudes > /dev/null 2>&1 ||
+    useradd --system --gid solicitudes --home-dir "$SOLICITUDES" --no-create-home \
+      --shell /usr/sbin/nologin --comment "Solicitudes de clientes de Mendiautos" solicitudes
+  getent group editores-solicitudes > /dev/null || groupadd --system editores-solicitudes
+  install -d -m 0750 -o solicitudes -g solicitudes "$SOLICITUDES"
+  # Clave para que el asistente de clientes (WhatsApp) registre interesados.
+  install -d -m 0755 /etc/mendiautos
+  [ -s "$TOKEN_SOLICITUDES" ] || (umask 077 && openssl rand -hex 32 > "$TOKEN_SOLICITUDES")
+  chown root:solicitudes "$TOKEN_SOLICITUDES"
+  chmod 0640 "$TOKEN_SOLICITUDES"
+  sed '1s|^#!.*|#!/usr/bin/python3 -I|' "$REPO_DIR/deploy/solicitudes.py" > "$BIN_SOLICITUDES.tmp"
+  chmod 0755 "$BIN_SOLICITUDES.tmp"
+  if cmp -s "$BIN_SOLICITUDES.tmp" "$BIN_SOLICITUDES"; then
+    rm -f "$BIN_SOLICITUDES.tmp"
+  else
+    mv -f "$BIN_SOLICITUDES.tmp" "$BIN_SOLICITUDES"
+    nuevo=1
+  fi
+  cat > "$SUDOERS_SOLICITUDES.tmp" <<EOF
+# Generado por mendiautos.sh: el equipo (el usuario del asistente) consulta y
+# atiende las solicitudes solo con el comando solicitudes.
+%editores-solicitudes ALL=(solicitudes) NOPASSWD: $BIN_SOLICITUDES
+EOF
+  chmod 0440 "$SUDOERS_SOLICITUDES.tmp"
+  if visudo -cqf "$SUDOERS_SOLICITUDES.tmp" > /dev/null 2>&1; then
+    mv -f "$SUDOERS_SOLICITUDES.tmp" "$SUDOERS_SOLICITUDES"
+  else
+    rm -f "$SUDOERS_SOLICITUDES.tmp"
+    aviso "No pude validar la regla de sudo de las solicitudes; el asistente no podrá consultarlas."
+  fi
+  configurar_receptor "$nuevo"
+}
+
+configurar_receptor() {
+  local unidad=/etc/systemd/system/mendiautos-solicitudes.service antes="" i
+  [[ $RETENER_DOCUMENTOS =~ ^[0-9]+$ ]] || RETENER_DOCUMENTOS=90
+  [[ $RETENER_SOLICITUDES =~ ^[0-9]+$ ]] || RETENER_SOLICITUDES=730
+  [ -f "$unidad" ] && antes=$(cat "$unidad")
+  cat > "$unidad" <<EOF
+# Generado por mendiautos.sh.
+[Unit]
+Description=Mendiautos: receptor de los formularios del sitio
+After=network.target
+
+[Service]
+Type=simple
+User=solicitudes
+Group=solicitudes
+UMask=0027
+ExecStart=$BIN_SOLICITUDES servir --host 127.0.0.1 --puerto $PUERTO_SOLICITUDES
+Restart=always
+RestartSec=5
+# Solo puede escribir en su carpeta de datos.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=$SOLICITUDES
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+MemoryMax=512M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  cat > /etc/systemd/system/mendiautos-solicitudes-limpiar.service <<EOF
+[Unit]
+Description=Mendiautos: borrar documentos y solicitudes viejas (retención)
+
+[Service]
+Type=oneshot
+ExecStart=$BIN_SOLICITUDES limpiar --dias-documentos $RETENER_DOCUMENTOS --dias-solicitudes $RETENER_SOLICITUDES
+EOF
+  cat > /etc/systemd/system/mendiautos-solicitudes-limpiar.timer <<'EOF'
+[Unit]
+Description=Mendiautos: retención diaria de solicitudes (3:50 a. m. en Colombia)
+
+[Timer]
+OnCalendar=*-*-* 08:50:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl daemon-reload
+  systemctl enable mendiautos-solicitudes > /dev/null 2>&1 || true
+  systemctl enable --now mendiautos-solicitudes-limpiar.timer > /dev/null 2>&1 || true
+  # Si el receptor no arranca, el sitio se publica igual (los formularios
+  # ofrecen WhatsApp) y el aviso de abajo lo cuenta.
+  if [ "$1" = 1 ] || [ "$antes" != "$(cat "$unidad")" ] || ! systemctl is-active --quiet mendiautos-solicitudes; then
+    systemctl restart mendiautos-solicitudes || true
+  fi
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    curl -fsS --max-time 2 "http://127.0.0.1:$PUERTO_SOLICITUDES/api/salud" > /dev/null 2>&1 && return 0
+    sleep 0.5
+  done
+  aviso "El receptor de formularios no responde; el sitio ofrecerá WhatsApp en su lugar. Revisa: journalctl -u mendiautos-solicitudes -n 30"
+}
+
+# Dirección pública del sitio; el comando catalogo la usa para los enlaces.
+url_sitio() {
+  if [ -n "$DOMINIO" ] && [ -s "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
+    echo "https://$DOMINIO"
+  else
+    echo "http://${DOMINIO:-$(ip_publica)}"
+  fi
+}
+
+recordar_sitio() {
+  SITIO=$(url_sitio)
+  guardar_conf
 }
 
 # ------------------------------------------------------------------ nginx
@@ -375,6 +625,47 @@ location ~ /\\. {
     return 404;
 }
 
+# Catálogo de autos: lo edita el comando catalogo, fuera de las versiones.
+# Si todavía no existe, se sirve el inventario que trae el repositorio.
+location = /assets/inventario.js {
+    root $CATALOGO;
+    expires -1;
+    try_files /inventario.js @inventario_del_repositorio;
+}
+location @inventario_del_repositorio {
+    expires -1;
+    try_files \$uri =404;
+}
+# Fotos de los autos: solo los JPG que genera el comando (nombre = huella).
+location ^~ /catalogo/fotos/ {
+    root $STATE;
+    if (\$uri !~ "^/catalogo/fotos/[a-z0-9-]+/[0-9a-f]{16}(-m)?\\.jpg\$") {
+        return 404;
+    }
+    expires 30d;
+    try_files \$uri =404;
+}
+
+# Formularios del sitio → receptor de solicitudes (deploy/solicitudes.py).
+# nginx recibe el envío completo antes de pasarlo (protege al receptor).
+location = /api/solicitud {
+    limit_req zone=mendiautos_formularios burst=5 nodelay;
+    limit_req_status 429;
+    client_max_body_size 46m;
+    client_body_timeout 120s;
+    proxy_pass http://127.0.0.1:$PUERTO_SOLICITUDES;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header Connection "";
+    proxy_read_timeout 120s;
+}
+location = /api/salud {
+    proxy_pass http://127.0.0.1:$PUERTO_SOLICITUDES;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+}
+
 # Librerías con la versión en la ruta: no cambian nunca.
 location ^~ /vendor/ {
     include $SNIP_CABECERAS;
@@ -407,6 +698,28 @@ escuchar() {
   return 0
 }
 
+# Límite de envíos de formularios por IP (el receptor aplica otro por hora).
+zona_formularios() {
+  echo "limit_req_zone \$binary_remote_addr zone=mendiautos_formularios:1m rate=10r/m;"
+}
+
+# WhatsApp oficial de clientes (Cloud API): Meta avisa de cada mensaje a esta
+# dirección, que solo existe con HTTPS y si el asistente de clientes está activo.
+bloque_webhook() {
+  [[ ${WEBHOOK_WHATSAPP:-} =~ ^[0-9]{2,5}$ ]] || return 0
+  cat <<EOF
+
+    location = /whatsapp/webhook {
+        proxy_pass http://127.0.0.1:$WEBHOOK_WHATSAPP;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        client_max_body_size 3m;
+    }
+EOF
+}
+
 escribir_sitio() {
   local http2_listen="" http2_dir="" default="default_server" www="" otros
   otros=$(grep -rlE 'listen[^;]*default_server' /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null |
@@ -421,6 +734,8 @@ escribir_sitio() {
     grep -q "DNS:www.$DOMINIO" <(openssl x509 -noout -ext subjectAltName -in "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" 2>/dev/null) && www="www.$DOMINIO"
     cat > "$SITE" <<EOF
 # Generado por mendiautos.sh — no editar a mano (se reescribe al publicar).
+$(zona_formularios)
+
 # HTTP: solo validación de certificados y redirección a HTTPS.
 server {
 $(escuchar "80 $default")
@@ -450,6 +765,7 @@ $http2_dir
 
     add_header Strict-Transport-Security "max-age=31536000" always;
     include $SNIP_SITIO;
+$(bloque_webhook)
 }
 EOF
     if [ -n "$www" ]; then
@@ -470,6 +786,8 @@ EOF
   else
     cat > "$SITE" <<EOF
 # Generado por mendiautos.sh — no editar a mano (se reescribe al publicar).
+$(zona_formularios)
+
 server {
 $(escuchar "80 $default")
     server_name ${DOMINIO:+$DOMINIO www.$DOMINIO} _;
@@ -600,6 +918,7 @@ cmd_instalar() {
   if [ -n "$DOMINIO" ]; then
     obtener_certificado && configurar_nginx || true
   fi
+  recordar_sitio
   resumen
 }
 
@@ -680,6 +999,7 @@ cmd_dominio() {
   else
     ok "Por ahora el sitio sigue disponible por HTTP; repite este comando cuando el DNS apunte aquí."
   fi
+  recordar_sitio
 }
 
 cmd_estado() {
@@ -699,21 +1019,64 @@ cmd_estado() {
   echo "nginx:         $(systemctl is-active nginx 2>/dev/null || true)"
   echo "Auto-update:   $(systemctl is-active mendiautos-actualizar.timer 2>/dev/null || true)"
   echo "Versiones:     $(find "$RELEASES" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l) guardadas en $RELEASES"
+  if [ -x "$BIN_CATALOGO" ] && [ -f "$CATALOGO/inventario.json" ]; then
+    echo "Catálogo:      $("$BIN_CATALOGO" validar 2>&1 | tail -n 1)"
+    echo "Último cambio: $("$BIN_CATALOGO" historial -n 1 2>/dev/null | sed -n '2s/^ *//p')"
+    echo "Respaldos:     $(find "$RESPALDOS" -name 'catalogo-*.tar.gz' 2>/dev/null | wc -l) en $RESPALDOS"
+  else
+    echo "Catálogo:      (todavía no existe; se crea al publicar)"
+  fi
+  if [ -x "$BIN_SOLICITUDES" ]; then
+    echo "Formularios:   receptor $(systemctl is-active mendiautos-solicitudes 2>/dev/null || true) · $(
+      "$BIN_SOLICITUDES" listar -n 1 2>/dev/null | head -n 1 | sed 's/ (.*//; s/:$//' || true)"
+    echo "Retención:     documentos $RETENER_DOCUMENTOS días, solicitudes $RETENER_SOLICITUDES días"
+  else
+    echo "Formularios:   (el receptor se instala al publicar)"
+  fi
+  estado_asistentes
+}
+
+estado_asistentes() {
+  if id -u hermes > /dev/null 2>&1; then
+    echo "Asistente:     equipo $(systemctl is-active mendiautos-hermes 2>/dev/null || true) (servicio mendiautos-hermes)"
+  else
+    echo "Asistente:     no instalado (mendiautos hermes)"
+  fi
+  if id -u hermes-clientes > /dev/null 2>&1; then
+    echo "Clientes:      WhatsApp oficial $(systemctl is-active mendiautos-clientes 2>/dev/null || true) (servicio mendiautos-clientes)"
+  fi
+  return 0
+}
+
+cmd_hermes() {
+  requiere_root
+  cargar_conf
+  [ -f "$REPO_DIR/hermes/instalar.sh" ] || error "Falta hermes/instalar.sh; primero: mendiautos actualizar"
+  [ -x "$BIN_CATALOGO" ] || error "Primero publica el sitio: mendiautos instalar"
+  [ -x "$BIN_SOLICITUDES" ] || { cmd_publicar; cargar_conf; }
+  INFORMADO=1
+  exec bash "$REPO_DIR/hermes/instalar.sh" "$@"
+}
+
+# Rehace la configuración de nginx (la usa el instalador del asistente de
+# clientes al activar o quitar el WhatsApp oficial).
+cmd_nginx() {
+  requiere_root
+  cargar_conf
+  configurar_nginx
+  ok "nginx actualizado"
 }
 
 resumen() {
-  local url
-  if [ -n "$DOMINIO" ] && [ -s "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
-    url="https://$DOMINIO"
-  else
-    url="http://${DOMINIO:-$(ip_publica)}"
-  fi
   echo
-  ok "Listo. Tu sitio está publicado en: $url"
+  ok "Listo. Tu sitio está publicado en: $SITIO"
   echo "    Ver estado:        mendiautos estado"
   echo "    Publicar ya:       mendiautos actualizar"
   echo "    Volver atrás:      mendiautos revertir"
   [ -n "$DOMINIO" ] || echo "    Activar HTTPS:     mendiautos dominio tudominio.com tu@correo.com"
+  echo "    Ver el catálogo:   catalogo listar"
+  echo "    Formularios:       solicitudes pendientes"
+  echo "    Asistente:         mendiautos hermes   (lo maneja por Telegram)"
 }
 
 ayuda() {
@@ -726,6 +1089,12 @@ Comandos:
   revertir                    vuelve a la versión anterior
   dominio D [correo]          configura el dominio y HTTPS (Let's Encrypt)
   estado                      muestra lo que está publicado
+  hermes [opciones]           instala o reconfigura el asistente de Telegram
+                              (mendiautos hermes --help)
+  nginx                       rehace la configuración de nginx
+
+El catálogo de autos se edita con el comando «catalogo» (catalogo --help).
+Lo que llega por los formularios del sitio: «solicitudes» (solicitudes --help).
 EOF
 }
 
@@ -740,6 +1109,8 @@ main() {
     revertir|rollback) cmd_revertir "$@" ;;
     dominio|https|domain) cmd_dominio "$@" ;;
     estado|status) cmd_estado "$@" ;;
+    hermes|asistente) cmd_hermes "$@" ;;
+    nginx) cmd_nginx "$@" ;;
     ayuda|help|-h|--help) ayuda ;;
     *) error "Comando desconocido: $cmd (usa: mendiautos ayuda)" ;;
   esac
