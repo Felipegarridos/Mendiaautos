@@ -451,7 +451,7 @@ class Component extends DCLogic {
       const sds=document.querySelector('.mnd-sim-desc-saldo'); if(sds) sds.textContent=fmt(monto);
       const cuota=num(cuotaInp?cuotaInp.value:0)||cuotaOf(monto,this._simPlazo);
       const cta=document.querySelector('.mnd-sim-cta');
-      if(cta){ const p=new URLSearchParams({precio:Math.round(precio),inicial:Math.round(inicial),monto:Math.round(monto),plazo:this._simPlazo,cuota:Math.round(cuota),tasa:ea,tipo:'auto'}); cta.setAttribute('href','SolicitudCredito.dc.html?'+p.toString()); }
+      if(cta){ const p=new URLSearchParams({precio:Math.round(precio),inicial:Math.round(inicial),monto:Math.round(monto),plazo:this._simPlazo,cuota:Math.round(cuota),tasa:ea,tipo:'auto',auto:(this._auto&&this._auto.id)||''}); cta.setAttribute('href','SolicitudCredito.dc.html?'+p.toString()); }
     };
     if(slider) slider.addEventListener('input',()=>{ this._simInicial=Math.round(precio*(+slider.value)/100); sync({fromSlider:true}); });
     if(iniNum){ iniNum.addEventListener('input',()=>{ this._simInicial=num(iniNum.value); sync({fromIniText:true}); }); iniNum.addEventListener('blur',()=>{ iniNum.value=fmt(this._simInicial); }); }
