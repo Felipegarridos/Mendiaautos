@@ -124,6 +124,13 @@ nunca inventa datos y nunca publica sin «Publicar».
 4. Portada y destacados
 5. Informes
 
+## Estado (28/09/2026)
+
+Hecho en la fase 2 (ver `hermes/README.md`): todo lo de arriba. Decisiones
+tomadas: IA con **Gemini**, audios transcritos **en el servidor**, el reel de
+Instagram se ve como en festivalviajes.com.ar (la tarjeta oficial de
+Instagram, en la ficha del auto, debajo del precio).
+
 ## Lo que falta
 
 Las claves y tokens **no se envían por chat**: el cliente los pega
@@ -131,24 +138,18 @@ directamente en la VPS durante la instalación.
 
 ### Por chat, al desarrollador
 
-- [ ] Merge de la PR #1 (la fase 2 va en una PR aparte).
-- [ ] Captura o video corto de la parte de festivalviajes.com.ar que quieren
-      copiar (dónde y cómo se ve el video de Instagram).
 - [ ] Enlaces de YouTube de los 4 videos de servicios (públicos o «no listados»,
-      con «permitir insertar» activo).
-- [ ] Un auto real de prueba: datos, 5 o más fotos y el enlace de su reel de
-      Instagram (la cuenta debe ser pública).
+      con «permitir insertar» activo). También los puede poner el gerente por
+      el asistente.
+- [ ] El auto real de prueba: datos y 5 o más fotos (el reel ya llegó).
 - [ ] ID de Telegram de Nelson, y nombre e ID del vendedor 1 (cada uno le
       escribe a @userinfobot y copia su «Id»).
-- [ ] Qué proveedor de IA se usa (solo el nombre).
-- [ ] Audios: Groq (rápido y más preciso, pide otra clave) o en el servidor
-      (gratis, más lento).
 
 ### En la VPS
 
-- [ ] Instalar el asistente (`mendiautos hermes`) y pegar la clave de IA y el
-      token del bot creado con @BotFather. La clave de Groq, si se eligió, se
-      pega al instalar la fase 2.
+- [ ] Instalar el asistente: `ssh -t root@2.28.140.187 "mendiautos hermes"`.
+      Pide el equipo, la clave de Gemini y el token del bot de @BotFather.
+- [ ] Registrar al equipo: `mendiautos equipo agregar <ID> <nombre> <rol>`.
 - [ ] Nelson, Felipe y el vendedor 1 le escriben «/start» al bot una vez (un
       bot de Telegram no puede escribirle primero a nadie).
 - [ ] Credenciales de Meta para el WhatsApp de clientes (fase 1): ver
@@ -156,12 +157,13 @@ directamente en la VPS durante la instalación.
 
 ### Decisiones por defecto (si no se dice otra cosa)
 
-- PanelInventario, CargarAuto y PanelMedios se retiran del sitio: son de
-  demostración y no cambian el catálogo real.
+- PanelInventario, CargarAuto y PanelMedios se retiraron del sitio.
 - «Autos vendidos» arranca vacío; las ventas anteriores se pueden cargar
   después por chat.
 - Retención: documentos 90 días y solicitudes 730 días.
 - WhatsApp del equipo: no se activa, porque todo va por Telegram.
+- Los 9 autos de ejemplo del diseño siguen publicados hasta que se borren o
+  se reemplacen por los reales.
 
 ### Antes de abrir el sitio al público
 

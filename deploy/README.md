@@ -55,11 +55,30 @@ los autos de `assets/inventario.js` y desde ahí se edita con el comando
 
 ```powershell
 ssh -t root@2.28.140.187 "mendiautos hermes"
+ssh root@2.28.140.187 "mendiautos equipo agregar 943010561 Felipe administrador"
 ```
 
-Todo sobre el asistente está en [`hermes/README.md`](../hermes/README.md).
+Todo sobre el asistente y el equipo está en [`hermes/README.md`](../hermes/README.md).
 Los cambios del catálogo se ven al instante y **no** se pierden al publicar
 versiones nuevas desde GitHub.
+
+- Un auto nuevo es un **borrador**: `assets/inventario.js` (lo que descarga el
+  sitio) solo trae los autos disponibles y vendidos, sin datos internos. Cada
+  borrador tiene una vista previa en `DetalleAuto.dc.html?previa=<clave>`, que
+  nginx sirve desde `/catalogo/previas/` solo con la clave exacta.
+- La portada del inicio (textos y foto o video de fondo) y los videos de
+  YouTube de «Otros servicios» están en `sitio.json` → `assets/sitio.js`. La
+  foto o el video van a `/catalogo/medios/`; el video se convierte con ffmpeg
+  (que se instala solo) a un MP4 liviano, sin audio ni ubicación.
+- El reel de Instagram de cada auto y los videos de YouTube se ven con marcos
+  (iframes) de `www.instagram.com` y `www.youtube-nocookie.com`, permitidos en
+  la `Content-Security-Policy`. YouTube solo se carga cuando la persona toca
+  el video. La política de tratamiento de datos debe mencionarlos.
+- Las **visitas** se cuentan en el propio servidor: nginx guarda el registro
+  del sitio en `/var/log/nginx/mendiautos.access.log` y cada noche (0:20 a. m.)
+  `mendiautos-visitas` ([`visitas.py`](visitas.py)) guarda solo totales por
+  día en `/var/lib/mendiautos/visitas` (sin IPs ni cookies). Los usan los
+  informes del asistente.
 
 ## 5. Formularios del sitio (solicitudes)
 
@@ -105,7 +124,8 @@ solicitudes atender S-1024 --nota "Lo llamó Laura"
 | `mendiautos revertir` | Vuelve a la versión anterior (se guardan las últimas 5) |
 | `mendiautos dominio D [correo]` | Configura el dominio y HTTPS |
 | `mendiautos instalar --rama R` | Vuelve a instalar o cambia de rama |
-| `mendiautos hermes` | Instala o configura el asistente del equipo (Telegram/WhatsApp) |
+| `mendiautos hermes` | Instala o configura el asistente del equipo (Telegram) |
+| `mendiautos equipo` | Quién usa el asistente y con qué rol (`agregar <ID> <nombre> <rol>`, `quitar <ID>`) |
 | `mendiautos hermes --clientes` | Instala o configura el asistente de WhatsApp para clientes |
 | `mendiautos nginx` | Rehace la configuración de nginx |
 | `catalogo listar` / `catalogo --help` | Ver y editar los autos del sitio |
@@ -124,7 +144,9 @@ solicitudes atender S-1024 --nota "Lo llamó Laura"
 | SSH | Desactiva el ingreso por contraseña **solo** si confirma que entraste con llave en esa misma sesión |
 | Sistema | Actualizaciones de seguridad automáticas (`unattended-upgrades`) |
 | Versiones | Cada publicación va a una carpeta nueva y el cambio es instantáneo; `revertir` vuelve atrás |
-| Catálogo | Fuera de las versiones, editable solo con `catalogo` (usuario del sistema propio); historial para deshacer y respaldo diario (14 días) |
+| Catálogo | Fuera de las versiones, editable solo con `catalogo` (usuario del sistema propio); borradores que vencen a los 7 días sin cambios, historial para deshacer y respaldo diario (14 días) |
+| Portada y vistas previas | `/assets/sitio.js`, `/catalogo/medios/` y `/catalogo/previas/` desde el catálogo, con nombres fijos que nginx valida |
+| Visitas | Registro propio de nginx y conteo nocturno `mendiautos-visitas` (solo totales por día; se guardan 400 días) |
 | Formularios | Receptor `mendiautos-solicitudes` (solo en 127.0.0.1:8781, servicio endurecido de systemd) detrás de nginx en `/api/solicitud`; límite de envíos por IP; retención diaria |
 | WhatsApp de clientes | Solo con dominio y HTTPS, y si el asistente de clientes está activo: nginx publica `/whatsapp/webhook` hacia 127.0.0.1:8090 |
 
@@ -133,7 +155,9 @@ Dónde queda cada cosa:
 - Sitio publicado: `/var/www/mendiautos/current`, un enlace a `releases/<fecha>-<commit>`.
 - Configuración: `/etc/mendiautos.conf` y `/etc/nginx/sites-available/mendiautos`.
 - Copia del repositorio: `/opt/mendiautos/repo`.
-- Catálogo de autos: `/var/lib/mendiautos/catalogo`; respaldos en `/var/backups/mendiautos`.
+- Catálogo de autos y portada: `/var/lib/mendiautos/catalogo`; respaldos en `/var/backups/mendiautos`.
+- Equipo del asistente: `/etc/mendiautos/equipo.json` (lo escribe `mendiautos equipo`).
+- Visitas por día: `/var/lib/mendiautos/visitas`.
 - Solicitudes de los formularios: `/var/lib/mendiautos/solicitudes`; clave interna
   del asistente de clientes en `/etc/mendiautos/`.
 - Registros: `journalctl -u mendiautos-actualizar`, `journalctl -u mendiautos-catalogo`
@@ -169,9 +193,13 @@ Dónde queda cada cosa:
   `<head>` las líneas de `site.css` y `site.js` y las clases `r-*`, o se
   perderá la adaptación a celulares.
 - `index.html` se genera en cada publicación a partir de
-  `MendiautosHome.dc.html`: edita la portada en ese archivo.
-- Las páginas con autos (inicio, disponibles, vendidos, ficha, comparar y el
-  panel) los dibujan desde `assets/inventario.js` con `assets/catalogo.js`.
+  `MendiautosHome.dc.html`: edita el diseño del inicio en ese archivo. Los
+  textos y el fondo del bloque principal los cambia el asistente
+  (`assets/sitio.js`); sin cambios, se ve el diseño original.
+- Las páginas con autos (inicio, disponibles, vendidos, ficha y comparar) los
+  dibujan desde `assets/inventario.js` con `assets/catalogo.js`. La ficha,
+  además, carga `assets/previa.js` (vista previa de borradores) y
+  `assets/videos.js` (el reel de Instagram del auto).
   Si las vuelves a exportar desde la herramienta de diseño, conserva esas dos
   líneas del `<head>` y el código que llena las listas; si no, volverán los
   autos de ejemplo (detalles en `hermes/README.md`).
@@ -183,5 +211,6 @@ Dónde queda cada cosa:
   mostrar «¡Gracias!» **sin enviar nada**.
 - El menú cuenta las marcas del catálogo real (en `assets/site.js`, con
   `assets/inventario.js`), así que no hay que editar los números a mano.
-- El inicio de sesión solo muestra un mensaje; los paneles de inventario y
-  medios guardan los cambios solo en el navegador de quien los usa.
+- El inicio de sesión solo muestra un mensaje. Los paneles de demostración
+  (PanelInventario, CargarAuto y PanelMedios) se retiraron: el catálogo se
+  maneja con el asistente.

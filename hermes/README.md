@@ -7,50 +7,82 @@ viven separados: el de clientes no puede ver nada del equipo.
 
 | | Asistente del equipo | Asistente de clientes |
 |---|---|---|
-| Quién le escribe | Solo las personas autorizadas del equipo | Cualquier cliente |
-| Por dónde | Telegram (y, si lo activas, un WhatsApp del equipo) | El WhatsApp oficial de Mendiautos (Cloud API de Meta) |
-| Qué hace | Mantiene el catálogo del sitio y avisa y ayuda a atender las solicitudes de los formularios | Responde sobre autos, ventas, créditos y servicios, y deja los interesados al equipo |
+| Quién le escribe | Las personas del equipo, cada una con su rol | Cualquier cliente |
+| Por dónde | Telegram, en chat privado | El WhatsApp oficial de Mendiautos (Cloud API de Meta) |
+| Qué hace | Sube y corrige autos, fotos y videos; vendidos; portada y destacados del inicio; informes; solicitudes de clientes | Responde sobre autos, ventas, créditos y servicios, y deja los interesados al equipo |
 | Instalación | `mendiautos hermes` | `mendiautos hermes --clientes` |
+
+Los dos usan **Gemini** (Google AI Studio) con la misma clave. Lo acordado con
+el cliente está en [`docs/requerimientos-asistente.md`](../docs/requerimientos-asistente.md).
 
 ## Cómo funciona
 
 ```
 Formularios del sitio ─▶ receptor (usuario «solicitudes») ─▶ /var/lib/mendiautos/solicitudes
                                   ▲                                   │
-   Asistente de clientes ─────────┘ registrar_interes                 │ cada minuto
-   (WhatsApp oficial, sin terminal,                                   ▼
+   Asistente de clientes ─────────┘ registrar_interes                 │ cada minuto, al gerente
+   (WhatsApp oficial, sin terminal,                                   ▼ y al administrador
     solo 4 herramientas)                 Asistente del equipo ◀── avisos de ventas
-                                         (Telegram / WhatsApp)
-                                           │  solo los comandos «catalogo» y «solicitudes»
+                                         (Telegram, 3 herramientas propias)
+                                           │  catalogo / solicitudes con --por <ID de quien escribe>
                                            ▼
                           catalogo ─▶ /var/lib/mendiautos/catalogo ─▶ el sitio (al instante)
 ```
 
-- Las páginas dibujan los autos desde `assets/inventario.js`, que en el
-  servidor genera el comando `catalogo` fuera de las versiones publicadas: ni
-  una versión nueva desde GitHub ni una exportación nueva de las páginas pisan
-  lo que se cargó por chat.
+- Las páginas dibujan los autos desde `assets/inventario.js` y la portada del
+  inicio desde `assets/sitio.js`. En el servidor los genera el comando
+  `catalogo` fuera de las versiones publicadas: ni una versión nueva desde
+  GitHub ni una exportación nueva de las páginas pisan lo que se cargó por chat.
+- Un auto nuevo es un **borrador**: no sale en el sitio (ni siquiera en
+  `inventario.js`) hasta que alguien dice «Publicar». Mientras tanto se ve con
+  un enlace de vista previa que solo tiene quien lo pidió.
 - Los formularios del sitio llegan al receptor (ver `deploy/README.md`,
-  sección 5). El asistente del equipo los consulta con el comando
-  `solicitudes`, que oculta los datos sensibles.
+  sección 5). El asistente los consulta con el comando `solicitudes`, que
+  oculta los datos sensibles.
+
+### Permisos por persona
+
+El equipo y sus roles están en `/etc/mendiautos/equipo.json` y se manejan con
+`mendiautos equipo` (ver abajo).
+
+| | Administrador y gerente | Vendedor |
+|---|---|---|
+| Subir autos, fotos y el reel de Instagram | Sí | Sí, y corrige solo los que él subió |
+| Publicar | Sí | Sí, sin aprobación |
+| Marcar vendido / volver a poner en venta | Sí | No |
+| Portada del inicio y 5 destacados | Sí | No |
+| Solicitudes de clientes e informes | Sí | No |
+| Comandos «/» de Telegram (modelo, reinicio…) | Sí | Solo `/new` y `/stop` |
+
+Esto lo hace cumplir el sistema, no solo una instrucción al asistente:
+
+- El modelo **no tiene terminal, archivos, internet ni memoria**. Solo tiene
+  tres herramientas de la extensión `plugin/mendiautos` (`catalogo`,
+  `solicitudes` y `menu`) y los botones de Telegram (`clarify`).
+- La extensión lee de Hermes el ID de Telegram de quien escribe (el modelo no
+  lo puede cambiar), busca su rol y se lo pasa a los comandos con `--por`. Los
+  comandos vuelven a revisar el permiso: por `sudo`, un cambio sin `--por` o
+  de alguien que no está en el equipo se rechaza.
+- Solo se publica un auto si la persona **escribió o tocó «Publicar»** (vale
+  también por audio). Vender, borrar, quitar fotos y poner un video esperan a
+  que la persona confirme («sí», «confirmo») en un mensaje posterior.
+- Las fotos y videos solo pueden venir del caché de lo que llegó por el chat.
 
 ## Qué necesitas
 
 1. El sitio instalado en la VPS (`mendiautos instalar`, ver `deploy/README.md`).
-2. Una clave de API de un proveedor de IA: OpenRouter, Anthropic, OpenAI, Nous
-   Portal u otro de los que soporta Hermes. Para el equipo conviene un modelo
-   que vea imágenes (fotos de autos); para clientes, uno rápido y económico.
-   Los dos asistentes pueden usar la misma clave.
-3. Asistente del equipo: un bot de Telegram (en Telegram abre **@BotFather**,
-   envía `/newbot` y guarda el token) y el ID numérico de cada persona (cada
-   una le escribe a **@userinfobot** y te pasa su «Id»).
-4. Opcional, WhatsApp del equipo: un número dedicado al asistente (una SIM
-   aparte, no el WhatsApp de ventas ni uno personal).
-5. Asistente de clientes: el dominio con HTTPS y las credenciales de Meta (ver
-   más abajo).
+2. Una **clave de Gemini**: en https://aistudio.google.com/apikey, con la cuenta
+   de Google de la empresa, «Create API key». Mejor en un proyecto con
+   facturación activa: el plan gratuito tiene pocos mensajes por minuto y
+   Google puede usar esos datos para mejorar sus productos.
+3. Un **bot de Telegram**: en Telegram abre **@BotFather**, envía `/newbot`,
+   ponle un nombre (por ejemplo «Mendiautos Equipo») y un usuario que termine
+   en «bot». Te da un token (123456789:AAH…).
+4. El **ID de Telegram** de cada persona: cada una le escribe a **@userinfobot**
+   y copia su «Id» (un número).
 
-Las claves y tokens los pegas tú en la VPS durante la instalación (no se
-muestran en pantalla). No los envíes por chat ni por correo.
+La clave y el token se pegan en la VPS durante la instalación (no se muestran
+en pantalla). No los envíes por chat ni por correo.
 
 ## Asistente del equipo
 
@@ -67,123 +99,107 @@ El `-t` permite responder las preguntas. El comando:
 1. Crea el usuario `hermes` (sin contraseña ni acceso por SSH) y lo autoriza a
    usar **solo** los comandos `catalogo` y `solicitudes`.
 2. Instala Hermes para ese usuario (tarda unos minutos).
-3. Copia las skills `catalogo-mendiautos` y `ventas-mendiautos`, las reglas
-   (`AGENTS.md`) y la personalidad (`SOUL.md`) de esta carpeta.
-4. Te pide el modelo de IA con el asistente propio de Hermes, luego el token
-   del bot (sin mostrarlo en pantalla) y los IDs autorizados.
-5. Programa las tareas automáticas (ver «Avisos automáticos»).
-6. Deja el asistente como servicio (`mendiautos-hermes`), que arranca con el
-   servidor.
+3. Copia la extensión de Mendiautos, las reglas (`AGENTS.md`), la personalidad
+   (`SOUL.md`) y las tareas automáticas.
+4. Pregunta el equipo si está vacío (ID, nombre y rol de cada persona).
+5. Pide la clave de Gemini y el token del bot, sin mostrarlos.
+6. Prepara la transcripción de audios en el servidor (descarga el modelo de
+   voz una vez, unos cientos de MB).
+7. Programa las tareas automáticas y deja el asistente como servicio
+   (`mendiautos-hermes`), que arranca con el servidor.
 
-Para volver a correrlo sin preguntas:
-`mendiautos hermes --token <TOKEN> --usuarios 111111111,222222222`.
-Ojo: así el token queda en el historial de la consola.
+Al final, **cada persona del equipo le escribe «/start» al bot una vez**: un
+bot de Telegram no puede escribirle primero a nadie, y sin eso no le llegan los
+avisos ni los informes.
 
-### Un canal de ventas y otro de catálogo
+Opciones útiles:
 
-Al principio todos los avisos llegan al chat privado de la primera persona
-autorizada. Lo recomendado es tener dos grupos de Telegram, con el bot y el
-equipo en ambos:
+| Comando | Para qué |
+|---|---|
+| `mendiautos hermes --clave-gemini` | Cambiar la clave de Gemini |
+| `mendiautos hermes --modelo gemini-3.5-flash` | Elegir otro modelo de Gemini |
+| `mendiautos hermes --otro-proveedor` | Usar otro proveedor de IA (asistente de Hermes) |
+| `mendiautos hermes --audios base` | Modelo de voz más liviano (por defecto `small`; `medium` entiende mejor, pero es más lento) |
+| `mendiautos hermes --token NUEVO` | Cambiar el token del bot |
 
-1. Crea los grupos, por ejemplo «Mendiautos · Ventas» y «Mendiautos ·
-   Catálogo», y agrega el bot a los dos.
-2. Haz al bot **administrador** de cada grupo (o, antes de agregarlo,
-   desactiva su modo privacidad en @BotFather: *Bot Settings → Group Privacy →
-   Turn off*). Si no, el bot no lee los mensajes del grupo.
-3. En el grupo de ventas escríbele: «@TuBot que los avisos de ventas lleguen
-   aquí». En el del catálogo: «@TuBot que los avisos del catálogo lleguen
-   aquí».
+### El equipo
 
-En los grupos el asistente solo responde cuando lo mencionan (`@TuBot …`) o le
-contestan un mensaje; así el equipo puede conversar sin que intervenga. Por
-chat privado responde siempre.
+```bash
+mendiautos equipo                                   # quién está y con qué rol
+mendiautos equipo agregar 943010561 Felipe administrador
+mendiautos equipo agregar 123456789 Nelson gerente
+mendiautos equipo agregar 987654321 Carlos vendedor
+mendiautos equipo quitar 987654321
+```
 
-Si prefieres dar los grupos por su ID (números que empiezan por `-100`):
-`mendiautos hermes --canal-ventas -1001234567890 --canal-catalogo -1009876543210`.
-
-### Avisos automáticos
-
-Son tareas sin IA (no gastan tokens): un script cuyo texto llega al chat.
-
-| Tarea | Qué avisa | Cuándo | Canal |
-|---|---|---|---|
-| `avisos-ventas-telegram` | Cada solicitud nueva de los formularios (o del WhatsApp de clientes), con el enlace para escribirle al cliente y sus fotos | Cada minuto | Ventas |
-| `avisos-ventas-whatsapp` | Lo mismo, al WhatsApp del equipo (si está activo) | Cada minuto | Ventas |
-| `resumen-ventas` | Lo que llegó en el día y lo que sigue pendiente | 7:30 a. m. | Ventas |
-| `vigilar-sitio` | Si el sitio, el catálogo o los formularios fallan, si el certificado HTTPS está por vencer o si el disco se llena | Cada 30 min | Catálogo |
-| `resumen-catalogo` | Vendidos, nuevos, autos sin fotos o sin precio | Lunes 8:00 a. m. | Catálogo |
-
-Cada solicitud se avisa una vez por canal. Si un aviso no llega (Telegram
-caído), se repite en el siguiente minuto; y lo pendiente siempre sale en el
-resumen de la mañana.
+Cada cambio se aplica solo: quién puede escribirle al bot, quién puede usar
+los comandos «/», a quién le llegan los avisos e informes y a quién los avisos
+de sus borradores. El asistente se reinicia (tarda unos segundos).
 
 ### Uso diario
 
-Escríbele como a un compañero. Catálogo:
+Al saludar («hola») o con /start, el asistente muestra el **menú con botones**,
+que queda fijo abajo del chat. También se le puede escribir o dictar por audio
+lo que sea: «se vendió el Onix».
 
-| Mensaje | Qué hace |
+| Botón | Qué hace |
 |---|---|
-| «Llegó un Kia Picanto 2021, 35 mil km, mecánico, 42 millones» | Lo agrega; si faltan datos, pregunta |
-| *(fotos)* «Estas son del Picanto» | Sube las fotos; la primera es la portada |
-| «Prepara el BMW X3 pero no lo publiques aún» | Lo deja oculto hasta que digas «publícalo» |
-| «Bájale 2 millones al Duster» | Calcula y actualiza el precio |
-| «Se vendió la Frontier» | Pasa a «Autos vendidos» |
-| «¿Qué autos no tienen fotos?» / «Deshaz lo último» | Resumen / revierte el último cambio |
-
-Ventas:
-
-| Mensaje | Qué hace |
-|---|---|
-| «¿Qué hay pendiente?» | Lista las solicitudes nuevas y en curso |
-| «Muéstrame la 1024» / «las fotos del auto de la 1030» | La solicitud completa (sin datos privados) y sus fotos |
-| «La 1024 la tomo yo» | La deja «en curso» con tu nombre |
-| «Atendí la 1024, le mandé la oferta» | La marca atendida con esa nota |
-| «Descarta la 1025, era spam» | La marca descartada |
-| «¿Cuántas llegaron esta semana?» | Resumen de los últimos 7 días |
+| 🚗 Subir auto | Flujo guiado: toma los datos del mensaje o audio, confirma cada uno con ✓, pide lo que falta en orden («no aplica» donde corresponde), propone la descripción, pide de 5 a 15 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
+| ✏️ Editar auto | Cambia cualquier dato: «cámbiale el precio a 95 millones» |
+| 📸 Fotos y videos | Agrega fotos, cambia el orden («la 3 de primera», «orden 2,1,4,3»), quita fotos o pone el reel de Instagram |
+| ✅ Marcar vendido | Muestra marca, modelo, año, precio, color y placa para confirmar; queda en «Autos vendidos» con la fecha |
+| 🏠 Portada | Texto corto, título y foto o video (hasta 20 MB) del bloque principal del inicio |
+| 📊 Informe | El informe de la semana o del mes |
+| 📥 Solicitudes | Lo que llegó por los formularios: ver, tomar, atender, descartar |
+| ⭐ Destacados | Los 5 autos del inicio; si hay 5, pregunta cuál sale |
+| 📝 Mis borradores | (vendedor) Retomar un auto a medio subir |
 
 Consejos:
 
-- Envía las fotos de los autos como **foto**, no como archivo. Las fotos HEIC
-  de iPhone enviadas como archivo no se pueden procesar.
-- Cada aviso de ventas trae un enlace «Escribirle» que abre WhatsApp con el
-  cliente y un saludo listo. El asistente no les escribe a los clientes: lo
-  hace una persona del equipo.
-- Eliminar un auto pide confirmación. Si se vendió, es mejor «vender»: queda
-  en «Autos vendidos» y da confianza a los clientes.
+- Envía las fotos como **foto**, no como archivo (las HEIC de iPhone enviadas
+  como archivo no se pueden procesar). La primera es la portada del auto.
+- Un borrador sin cambios en 7 días se borra solo; el día anterior le llega un
+  aviso a quien lo subió.
+- «Deshaz lo último» deshace el último cambio de quien lo pide (se puede
+  repetir). Los cambios de precio quedan en el historial.
+- Para quitar un auto que se vendió, márcalo vendido: queda en «Autos
+  vendidos» y da confianza a los clientes.
 
-### WhatsApp del equipo (opcional)
+### Avisos e informes automáticos
 
-Además de Telegram, el equipo puede hablarle al asistente por WhatsApp. Se
-vincula un número dedicado con un QR, como WhatsApp Web:
+Son tareas sin IA (no gastan tokens): un script cuyo texto llega al chat.
 
-```powershell
-ssh -t root@2.28.140.187 "mendiautos hermes --whatsapp --whatsapp-usuarios 573001234567,573111234567"
-```
+| Tarea | Qué avisa | Cuándo | A quién |
+|---|---|---|---|
+| `avisos-ventas-<ID>` | Cada solicitud nueva de los formularios (o del WhatsApp de clientes), con el enlace para escribirle y sus fotos | Cada minuto | Gerente y administrador, cada uno por su chat |
+| `resumen-ventas` | Lo que llegó en el día y lo que sigue pendiente | 7:30 a. m. | Gerente y administrador |
+| `informe-semanal` | Autos que entraron y vendidos, total en inventario, solicitudes recibidas y atendidas, visitas y autos más vistos, días promedio en inventario, autos sin fotos o incompletos | Sábados 8:00 a. m. (la semana que terminó el viernes) | Gerente y administrador |
+| `informe-mensual` | Lo mismo, del mes anterior | Día 1, 8:00 a. m. | Gerente y administrador |
+| `borradores-<ID>` | Los borradores de esa persona que se borran al día siguiente | 9:00 a. m. | Cada persona |
+| `vigilar-sitio` | Si el sitio, el catálogo o los formularios fallan, si el certificado HTTPS está por vencer o si el disco se llena | Cada 30 min | Administrador |
 
-- Los números autorizados van con indicativo (57) y sin `+` ni espacios. A
-  desconocidos no les contesta.
-- Cuando aparezca el QR, en el celular del número del asistente: WhatsApp →
-  Ajustes → Dispositivos vinculados → Vincular un dispositivo. Si el asistente
-  de Hermes pregunta el modo, elige «bot».
-- Para un grupo de WhatsApp: agrega el número del asistente al grupo y
-  escríbele «@asistente que los avisos de ventas lleguen aquí».
-- **Advertencia**: WhatsApp no permite oficialmente este tipo de puentes y
-  podría bloquear el número. Por eso debe ser un número aparte, nunca el de
-  ventas. Si WhatsApp lo desvincula, repite el comando para escanear otro QR.
+Las visitas se cuentan en el propio servidor (sin Google Analytics ni cookies):
+cada noche se leen los registros de nginx y se guardan solo totales por día
+(`mendiautos-visitas`, ver `deploy/README.md`).
+
+### Audios
+
+Los audios se transcriben en el servidor (faster-whisper, en español) antes de
+llegar al modelo; el asistente responde siempre con texto. Si algo no se
+entiende, repite lo que entendió y pide confirmar. El modelo de voz se
+descarga una vez desde Hugging Face.
 
 ## Asistente de clientes (WhatsApp oficial)
 
 Atiende a cualquier persona que escriba al WhatsApp oficial de Mendiautos:
-busca autos del catálogo y comparte fichas y fotos, explica cómo vender el
-auto, los créditos y los servicios, y cuando el cliente quiere avanzar le pide
-nombre, celular y autorización de datos y deja una solicitud: el equipo la
-recibe en el canal de ventas como «WhatsApp (asistente de clientes)».
+busca autos del catálogo y comparte fichas, fotos y el reel del recorrido,
+explica cómo vender el auto, los créditos y los servicios, y cuando el cliente
+quiere avanzar le pide nombre, celular y autorización de datos y deja una
+solicitud: el equipo la recibe como «WhatsApp (asistente de clientes)».
 
 ### Qué necesitas (pendiente)
 
-1. **El dominio con HTTPS.** Meta solo entrega los mensajes a una dirección
-   `https://`. Cuando tengas acceso al DNS del dominio:
-   `ssh root@2.28.140.187 "mendiautos dominio tudominio.com tu@correo.com"`.
+1. **El dominio con HTTPS**: listo (`mendiautos.co`).
 2. **Una cuenta de Meta Business** (business.facebook.com), idealmente
    verificada, y una app en developers.facebook.com con el producto WhatsApp.
 3. **El número del WhatsApp oficial** registrado en esa app. Puede ser un
@@ -202,10 +218,11 @@ ssh -t root@2.28.140.187 "mendiautos hermes --clientes"
 ```
 
 Crea el usuario `hermes-clientes` (sin ningún permiso especial), instala otro
-Hermes para él, te pide el modelo de IA y las tres credenciales de Meta, genera
-el token de verificación del webhook y publica `https://tudominio.com/whatsapp/webhook`
-en nginx. Si falta algo (dominio, credenciales), lo instala todo pero lo deja
-apagado y te dice qué falta; vuelve a correr el comando cuando lo tengas.
+Hermes para él con Gemini (usa la clave del asistente del equipo si ya está),
+te pide las tres credenciales de Meta, genera el token de verificación del
+webhook y publica `https://mendiautos.co/whatsapp/webhook` en nginx. Si falta
+algo, lo instala todo pero lo deja apagado y te dice qué falta; vuelve a correr
+el comando cuando lo tengas.
 
 Al final muestra la **URL de devolución de llamada** y el **token de
 verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook →
@@ -214,9 +231,10 @@ verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook �
 ### Qué puede y qué no
 
 - Solo tiene cuatro herramientas: buscar autos publicados, ver la ficha de un
-  auto (con sus fotos), la información del negocio y registrar un interesado.
-  No tiene terminal, archivos, internet ni memoria, no ve las solicitudes ni
-  las conversaciones de otros clientes y no puede cambiar el catálogo.
+  auto (con sus fotos y su reel), la información del negocio y registrar un
+  interesado. No tiene terminal, archivos, internet ni memoria, no ve las
+  solicitudes ni las conversaciones de otros clientes, no ve borradores y no
+  puede cambiar el catálogo.
 - No inventa precios ni promete descuentos, créditos ni citas: dice que un
   asesor lo confirma. No pide cédula, ingresos ni documentos por chat.
 - Solo responde a quien le escribe, dentro de las 24 horas que permite Meta.
@@ -224,15 +242,16 @@ verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook �
   equipo desde su WhatsApp.
 - La información que da del negocio (dirección, horario, servicios, créditos)
   está en `clientes/empresa.json`: corrígela ahí y publica.
-- Costos: el del proveedor de IA por cada mensaje. Meta hoy no cobra las
-  respuestas a quien escribió primero (dentro de las 24 horas); revisa su tabla
-  de precios vigente.
+- Costos: el de Gemini por cada mensaje. Meta hoy no cobra las respuestas a
+  quien escribió primero (dentro de las 24 horas); revisa su tabla de precios
+  vigente.
 
 ## Seguridad
 
-- El asistente del equipo solo responde a las personas autorizadas. Corre como
-  un usuario sin privilegios cuya única puerta al sitio son los comandos
-  `catalogo` y `solicitudes`, que validan todo antes de publicar o guardar.
+- El asistente del equipo solo responde a las personas del equipo (a
+  desconocidos no les contesta). Corre como un usuario sin privilegios cuya
+  única puerta al sitio son los comandos `catalogo` y `solicitudes`, que validan
+  todo y revisan el rol de quien pide cada cambio.
 - El asistente de clientes corre como otro usuario, sin permisos, en un
   servicio de systemd que no le deja ver al asistente del equipo ni las
   solicitudes; solo puede mandar fotos del catálogo.
@@ -240,24 +259,26 @@ verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook �
   como instrucciones. Los datos sensibles de un crédito no pasan por los chats:
   salen como «(privado)». Los documentos solo los descarga el administrador
   (`solicitudes documentos S-… --destino …`).
-- Las fotos se re-codifican: se les quita la ubicación GPS y los datos del
-  celular. Del catálogo, de la placa solo se publica el último dígito.
-- Cada cambio del catálogo queda en el historial (`catalogo historial`) y se
-  puede deshacer. Además hay un respaldo diario en `/var/backups/mendiautos`
-  (se guardan 14). Cada solicitud guarda quién la atendió y cuándo.
-- Los comandos peligrosos del asistente del equipo (borrar carpetas, etc.)
-  piden aprobación por chat. Si no entiendes lo que pide, responde «no».
+- Las fotos y el video de la portada se re-codifican: se les quita la ubicación
+  GPS y los datos del celular (y el audio al video). De la placa solo se
+  publica el último dígito.
+- Cada cambio del catálogo y de la portada queda en el historial con quién lo
+  pidió (`catalogo historial`) y se puede deshacer. Además hay un respaldo
+  diario en `/var/backups/mendiautos` (se guardan 14). Cada solicitud guarda
+  quién la atendió y cuándo.
 - Si el token del bot de Telegram se filtra: en @BotFather usa `/revoke`, y
-  luego `ssh -t root@IP "mendiautos hermes --token NUEVO"`. Si se filtra el de
-  Meta, revócalo en Business Manager y vuelve a correr
+  luego `ssh -t root@IP "mendiautos hermes --token NUEVO"`. Si se filtra la
+  clave de Gemini, bórrala en AI Studio y `mendiautos hermes --clave-gemini`.
+  Si se filtra el token de Meta, revócalo en Business Manager y vuelve a correr
   `mendiautos hermes --clientes --token-meta NUEVO`.
-- No agregues el bot del equipo a grupos abiertos.
+- Cuando alguien sale del equipo: `mendiautos equipo quitar <ID>`.
 
 ## Administración (en la VPS)
 
 | Comando | Qué hace |
 |---|---|
-| `mendiautos estado` | Estado del sitio, del catálogo, de los formularios y de los asistentes |
+| `mendiautos estado` | Estado del sitio, del catálogo, de los formularios, del equipo y de los asistentes |
+| `mendiautos equipo` | Quién usa el asistente y con qué rol |
 | `mendiautos hermes` | Instala o completa el asistente del equipo |
 | `mendiautos hermes --reiniciar` / `--actualizar` / `--detener` | Reinicia, actualiza Hermes o apaga el asistente del equipo |
 | `mendiautos hermes --clientes` | Instala o completa el asistente de clientes |
@@ -267,20 +288,31 @@ verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook �
 | `catalogo --help` | El catálogo a mano, sin asistente |
 | `solicitudes --help` | Las solicitudes a mano, sin asistente |
 
-Las skills, reglas y herramientas se actualizan solas cada vez que se publica
-una versión nueva del sitio desde GitHub.
+La extensión, las reglas y las tareas se actualizan solas cada vez que se
+publica una versión nueva del sitio desde GitHub.
 
 ### El catálogo a mano
 
-El mismo comando que usa el asistente sirve por SSH:
+El mismo comando que usa el asistente sirve por SSH (como root no hace falta
+`--por`):
 
 ```bash
-catalogo listar
-catalogo agregar marca=Kia modelo=Picanto anio=2021 precio=42000000 km=35000 transmision=mecanica
+catalogo listar                         # disponibles; también --borradores, --vendidos, --todos
+catalogo agregar marca=Kia modelo=Picanto anio=2021      # queda como borrador
+catalogo faltan picanto                 # lo que le falta para publicarse
+catalogo editar picanto "precio=42 millones" km=35000 hp="no aplica"
 catalogo foto agregar picanto /root/fotos/*.jpg
-catalogo vender picanto
+catalogo previa picanto                 # enlace de vista previa
+catalogo publicar picanto
+catalogo vender picanto --confirmar
+catalogo reactivar picanto km=36000 precio=41000000
+catalogo destacar picanto --en-lugar-de duster
+catalogo portada textos texto=Kia "titulo=Picanto | 2021" auto=picanto
+catalogo portada video /root/video.mp4  # o portada foto …; portada original
+catalogo servicios video posventa https://youtu.be/…
+catalogo informe --mes
 catalogo deshacer
-catalogo campos        # todos los datos que se pueden cargar
+catalogo campos                         # todos los datos y los obligatorios
 ```
 
 ### Recuperar un respaldo del catálogo
@@ -296,16 +328,17 @@ systemctl start mendiautos-hermes
 ## Si algo falla
 
 - **El bot no responde**: `systemctl status mendiautos-hermes` y
-  `journalctl -u mendiautos-hermes -n 50`. Revisa que el token y los IDs estén
-  bien (`mendiautos hermes` los vuelve a pedir si faltan) y que tu proveedor de
-  IA tenga saldo.
-- **No llegan los avisos de ventas**: `solicitudes pendientes` muestra si hay
-  solicitudes; `mendiautos estado` dice si el receptor está activo. En un
-  grupo, revisa que el bot siga siendo administrador.
-- **«no tiene permiso para editar el catálogo» o «para ver las solicitudes»**:
-  `mendiautos hermes` y luego `mendiautos hermes --reiniciar`.
-- **Una foto no se sube**: las fotos que llegan por Telegram se borran del
-  caché a las 24 horas; reenvíalas.
+  `journalctl -u mendiautos-hermes -n 50`. Revisa el token, que la persona esté
+  en `mendiautos equipo` y que la clave de Gemini tenga saldo o cupo.
+- **«no está registrado en el equipo»**: `mendiautos equipo agregar …`.
+- **No llegan los avisos o los informes**: la persona debe haberle escrito
+  «/start» al bot al menos una vez. `solicitudes pendientes` muestra si hay
+  solicitudes; `mendiautos estado` dice si el receptor está activo.
+- **No entiende los audios**: `journalctl -u mendiautos-hermes -n 50`. La
+  primera vez descarga el modelo de voz; si el servidor tiene poca memoria,
+  `mendiautos hermes --audios base`.
+- **Una foto no se sube**: lo que llega por Telegram se borra del caché a las
+  24 horas; reenvíalas.
 - **El sitio muestra datos viejos**: recarga la página. `catalogo validar`
   revisa el catálogo y regenera lo que haga falta.
 - **El asistente de clientes no contesta**: `journalctl -u mendiautos-clientes -n 50`.
@@ -315,25 +348,22 @@ systemctl start mendiautos-hermes
 ## Si vuelves a exportar las páginas
 
 Las páginas que muestran autos tienen conectado el catálogo: en el `<head>`
-cargan `assets/inventario.js` y `assets/catalogo.js`, y sus listas de autos
-están vacías en el diseño y se llenan al abrirse. Las que tienen formularios
-cargan `assets/solicitudes.js`. Si vuelves a exportar alguna desde la
-herramienta de diseño, esos enlaces se pierden: la página volverá a mostrar los
-autos de ejemplo o su formulario dejará de enviar. Avísale a quien mantiene el
+cargan `assets/inventario.js` y `assets/catalogo.js` (y la ficha,
+`assets/previa.js` y `assets/videos.js`; el inicio, `assets/sitio.js`). Sus
+listas de autos, la portada y el reel se llenan al abrirse. Las que tienen
+formularios cargan `assets/solicitudes.js`, y «Otros servicios»,
+`assets/sitio.js` y `assets/videos.js`. Si vuelves a exportar alguna desde la
+herramienta de diseño, esos enlaces se pierden: avísale a quien mantiene el
 sitio antes de reemplazarlas.
-
-`PanelInventario.dc.html` es un panel de demostración: sus cambios quedan solo
-en el navegador de quien lo usa y **no** modifican el catálogo real.
 
 ## Archivos de esta carpeta
 
 | Archivo | Para qué |
 |---|---|
 | `instalar.sh` | Lo que corre `mendiautos hermes` (asistente del equipo) |
-| `skills/catalogo-mendiautos/SKILL.md` | Procedimientos con el catálogo |
-| `skills/ventas-mendiautos/SKILL.md` | Procedimientos con las solicitudes y los avisos |
-| `AGENTS.md` / `SOUL.md` | Reglas y personalidad del asistente del equipo |
-| `scripts/` | Tareas automáticas sin IA (avisos, resúmenes, vigilante) |
+| `plugin/mendiautos/` | La extensión de Hermes: herramientas `catalogo`, `solicitudes` y `menu`, con los permisos por persona |
+| `AGENTS.md` / `SOUL.md` | Procedimientos, reglas y personalidad del asistente del equipo |
+| `scripts/` | Tareas automáticas sin IA (avisos, informes, borradores, vigilante) |
 | `clientes/instalar.sh` | Lo que corre `mendiautos hermes --clientes` |
 | `clientes/mcp_clientes.py` | Las cuatro herramientas del asistente de clientes |
 | `clientes/empresa.json` | La información del negocio que da a los clientes |

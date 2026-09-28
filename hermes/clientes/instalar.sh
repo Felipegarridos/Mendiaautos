@@ -15,6 +15,7 @@ set -euo pipefail
 
 AQUI=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 USUARIO=hermes-clientes
+MODELO_POR_DEFECTO=gemini-3.5-flash
 CASA=/home/$USUARIO
 HH=$CASA/.hermes
 HERMES=$CASA/.local/bin/hermes
@@ -53,6 +54,8 @@ mendiautos hermes --clientes — asistente de WhatsApp para clientes (WhatsApp o
                                         (pide lo que falte; usa ssh -t)
   mendiautos hermes --clientes --reiniciar | --actualizar | --detener
   mendiautos hermes --clientes --solo-archivos   actualiza reglas y herramientas
+  mendiautos hermes --clientes --otro-proveedor  otro proveedor de IA (por defecto,
+                                        Gemini con la clave del asistente del equipo)
 
 Credenciales de Meta (developers.facebook.com → tu app → WhatsApp → Configuración
 de la API), también se pueden dar sin preguntas:
@@ -188,22 +191,46 @@ EOF
 modelo_actual() {
   local m
   m=$(como_usuario "$HERMES" config get model.default 2>&1 | tail -n 1) || true
-  [[ -n $m && $m != *"not set"* && $m != *rror* ]] && printf '%s' "$m"
+  [[ -n $m && $m != *"not set"* && $m != *rror* && $m != None ]] && printf '%s' "$m"
 }
 
+# Gemini, con la misma clave del asistente del equipo si ya está (los dos
+# asistentes pueden usarla). --otro-proveedor abre el asistente de Hermes.
 configurar_modelo() {
-  if [ -z "$(modelo_actual)" ] && [ -t 0 ]; then
+  local clave="" equipo_env=/home/hermes/.hermes/.env
+  if [ "$OTRO_PROVEEDOR" = 1 ]; then
+    [ -t 0 ] || error "--otro-proveedor necesita responder preguntas (ssh -t)."
     echo
-    echo "Modelo de IA del asistente de clientes"
-    echo "  Elige proveedor y pega la clave de API (puede ser la misma del asistente del equipo)."
-    echo "  Conviene un modelo rápido y económico: responde a cada mensaje de los clientes."
+    echo "Modelo de IA del asistente de clientes: conviene uno rápido y económico."
     como_usuario "$HERMES" model || true
+  elif [ -z "$(modelo_actual)" ] || [ "$(como_usuario "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" = gemini ]; then
+    if [ -z "$(valor_env GEMINI_API_KEY)" ]; then
+      clave=$(sed -n 's/^GEMINI_API_KEY=//p' "$equipo_env" 2> /dev/null | tail -n 1 | tr -d "'\"")
+      if [ -n "$clave" ]; then
+        ok "Uso la misma clave de Gemini del asistente del equipo"
+      elif [ -t 0 ]; then
+        echo
+        echo "Clave de Gemini (Google AI Studio, https://aistudio.google.com/apikey)"
+        read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
+        echo
+        clave=${clave// /}
+      fi
+      if [ -n "$clave" ]; then
+        [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
+        poner_env GEMINI_API_KEY "$clave"
+      fi
+    fi
+    if [ -n "$(valor_env GEMINI_API_KEY)" ]; then
+      como_usuario "$HERMES" config set model.provider gemini > /dev/null
+      [[ $(modelo_actual) == gemini* ]] || como_usuario "$HERMES" config set model.default "$MODELO_POR_DEFECTO" > /dev/null
+    fi
   fi
-  if [ -n "$(modelo_actual)" ]; then
+  if [ -n "$(modelo_actual)" ] && { [ "$(como_usuario "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" != gemini ] ||
+                                    [ -n "$(valor_env GEMINI_API_KEY)" ]; }; then
     ok "Modelo de IA: $(modelo_actual)"
     return 0
   fi
-  aviso "Falta elegir el modelo de IA: ssh -t root@IP \"mendiautos hermes --clientes\""
+  aviso "Falta la clave de Gemini: ssh -t root@IP \"mendiautos hermes --clientes\""
   return 1
 }
 
@@ -347,13 +374,14 @@ instrucciones_meta() {
 
 # --------------------------------------------------------------- comandos
 main() {
-  NUMERO_ID="" TOKEN_META="" APP_SECRET=""
+  NUMERO_ID="" TOKEN_META="" APP_SECRET="" OTRO_PROVEEDOR=0
   local accion=instalar
   while [ $# -gt 0 ]; do
     case $1 in
       --numero-id) NUMERO_ID=${2:-}; shift 2 ;;
       --token-meta) TOKEN_META=${2:-}; shift 2 ;;
       --app-secret) APP_SECRET=${2:-}; shift 2 ;;
+      --otro-proveedor) OTRO_PROVEEDOR=1; shift ;;
       --solo-archivos) accion=archivos; shift ;;
       --reiniciar) accion=reiniciar; shift ;;
       --actualizar) accion=actualizar; shift ;;

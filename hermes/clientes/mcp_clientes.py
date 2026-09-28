@@ -68,7 +68,7 @@ def sitio():
 
 
 def autos():
-    """Autos publicados (sin los ocultos), leídos del mismo archivo que usa el sitio."""
+    """Autos publicados (disponibles y vendidos), leídos del mismo archivo que usa el sitio."""
     try:
         mtime = INVENTARIO.stat().st_mtime
     except OSError:
@@ -78,7 +78,7 @@ def autos():
         m = re.search(r'window\.MND_INVENTARIO\s*=\s*(\[.*\])\s*;?\s*$', INVENTARIO.read_text(encoding='utf-8'), re.S)
         lista = json.loads(m.group(1)) if m else []
         _cache['autos'] = [a for a in lista if isinstance(a, dict) and a.get('id') and a.get('marca')
-                           and a.get('modelo') and a.get('estado') != 'oculto']
+                           and a.get('modelo') and (a.get('estado') or 'disponible') in ('disponible', 'vendido')]
         _cache['mtime'] = mtime
     return _cache['autos']
 
@@ -266,6 +266,8 @@ def ver_auto(args):
         d = re.sub(r'\s+', ' ', str(a['descripcion'])).strip()
         res.append('Descripción: ' + d[:700] + ('…' if len(d) > 700 else ''))
     res.append(f'Ficha en el sitio: {enlace(a)}')
+    if isinstance(a.get('video'), str) and re.match(r'^https://www\.(instagram|youtube)\.com/', a['video']):
+        res.append(f'Video del recorrido: {a["video"]}')
     fotos = fotos_locales(a)
     if fotos:
         res.append('Fotos (para enviarlas en tu respuesta, escribe una línea MEDIA:<ruta> por foto):')
