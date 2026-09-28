@@ -6,6 +6,8 @@
 <script src="./support.js"></script>
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js" defer></script>
+<script src="assets/inventario.js"></script>
+<script src="assets/catalogo.js"></script>
 </head>
 <body>
 <x-dc>
@@ -13,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
-<script src="assets/inventario.js"></script>
+
 <style>
   *{box-sizing:border-box}
   :root{--bg:#0c0c0e;--c-card:#161619;--c-input:#161619;--t-strong:#fff;--t-1:rgba(255,255,255,.8);--t-2:rgba(255,255,255,.58);--t-3:rgba(255,255,255,.42);--ln:rgba(255,255,255,.09);--ln-strong:rgba(255,255,255,.2)}
@@ -93,6 +95,7 @@ class Component extends DCLogic {
   _estado(c){ return this._overrides[c.id]||c.estado; }
   _fmt(n){ return '$'+Math.round(n).toLocaleString('es-CO'); }
   _render(){
+    const esc=(v)=>window.MND_CATALOGO?MND_CATALOGO.esc(v):String(v);
     const list=document.querySelector('.mnd-list'); list.innerHTML='';
     const cars=this._base.map(c=>({...c,estado:this._estado(c)}));
     const disp=cars.filter(c=>c.estado==='disponible').length, vend=cars.filter(c=>c.estado==='vendido').length;
@@ -110,8 +113,8 @@ class Component extends DCLogic {
       const row=document.createElement('div'); row.className='mnd-row r-invrow';
       row.innerHTML='<div style="display:flex;align-items:center;gap:16px">'
         +'<div style="width:64px;height:48px;border-radius:8px;flex:none;background:repeating-linear-gradient(45deg,#17130f 0 12px,#211b16 12px 24px)"></div>'
-        +'<div><div style="font:700 15px/1.2 \'Open Sans\',sans-serif;color:var(--t-strong)">'+c.marca+' '+c.modelo+' '+(c.version||'')+'</div>'
-        +'<div style="margin-top:5px;font:400 12px/1 \'Open Sans\',sans-serif;color:var(--t-3)">'+c.anio+' · '+c.km.toLocaleString('es-CO')+' km · '+this._fmt(precio)+'</div></div></div>'
+        +'<div><div style="font:700 15px/1.2 \'Open Sans\',sans-serif;color:var(--t-strong)">'+esc(c.marca+' '+c.modelo+' '+(c.version||''))+'</div>'
+        +'<div style="margin-top:5px;font:400 12px/1 \'Open Sans\',sans-serif;color:var(--t-3)">'+esc(c.anio)+' · '+(+c.km||0).toLocaleString('es-CO')+' km · '+this._fmt(precio)+'</div></div></div>'
         +'<span class="mnd-badge '+(est==='disponible'?'disp':'vend')+'">'+(est==='disponible'?'Disponible':'Vendido')+'</span>'
         +'<button class="mnd-edit-btn">Editar</button>'
         +'<button class="mnd-toggle">'+(est==='disponible'?'Marcar vendido':'Volver a disponible')+'</button>';
@@ -130,7 +133,7 @@ class Component extends DCLogic {
         const np=+(panel.querySelector('.mnd-e-precio').value.replace(/[^0-9]/g,''))||precio;
         this._edits[c.id]={desc:nd,precio:np}; this._writeEdits();
         panel.querySelector('.mnd-e-ok').style.display='inline';
-        const dsub=row.querySelector('.mnd-row>div>div>div:last-child'); if(dsub) dsub.textContent=c.anio+' · '+c.km.toLocaleString('es-CO')+' km · '+this._fmt(np);
+        const dsub=row.querySelector('.mnd-row>div>div>div:last-child'); if(dsub) dsub.textContent=c.anio+' · '+(+c.km||0).toLocaleString('es-CO')+' km · '+this._fmt(np);
       };
       wrap.appendChild(row); wrap.appendChild(panel);
       list.appendChild(wrap);

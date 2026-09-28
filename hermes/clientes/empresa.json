@@ -1,0 +1,40 @@
+{
+  "_nota": "Información que el asistente de WhatsApp da a los clientes (herramienta info_mendiautos). Edítala aquí y publica: se actualiza sola. {{SITIO}} se reemplaza por la dirección del sitio.",
+  "secciones": {
+    "ubicacion": {
+      "titulo": "Ubicación y horario",
+      "palabras": ["direccion", "donde", "sala", "vitrina", "horario", "hora", "abren", "visitar"],
+      "texto": "Sala de exposición: Cra. 36 #52-141, Cabecera del Llano, Bucaramanga, Santander.\nMapa: https://www.google.com/maps/place/MENDIAUTOS/@7.112294,-73.1078731,16z\nHorario: lunes a viernes de 8:00 a. m. a 6:00 p. m.; sábados de 9:00 a. m. a 5:00 p. m.; domingos y festivos cerrado."
+    },
+    "contacto": {
+      "titulo": "Contacto",
+      "palabras": ["telefono", "celular", "whatsapp", "llamar", "asesor", "redes", "instagram", "facebook", "tiktok", "pagina", "web"],
+      "texto": "WhatsApp y teléfono de ventas: +57 311 8058 132 (https://wa.me/573118058132).\nSitio web: {{SITIO}}\nInstagram: @mendiautos · Facebook: facebook.com/mendiautos · TikTok: @mendiautoscol\nUn asesor responde en el horario de atención."
+    },
+    "comprar": {
+      "titulo": "Comprar un auto",
+      "palabras": ["comprar", "inventario", "disponibles", "peritaje", "garantia", "busca", "buscar", "comparar", "usado"],
+      "texto": "Autos disponibles: {{SITIO}}/AutosDisponibles.dc.html\nCada auto pasa por un peritaje mecánico y legal antes de venderse, e incluye garantía mecánica, acompañamiento posventa y trámites de traspaso.\nSi el auto que buscas no está publicado, en «Busca tu auto» nos cuentas qué necesitas y lo buscamos por ti: {{SITIO}}/BuscaTuAuto.dc.html\nPara comparar autos lado a lado: {{SITIO}}/ComparaAutos.dc.html\nSe puede pagar de contado o con crédito; para ver un auto en la sala conviene agendar con un asesor."
+    },
+    "vender": {
+      "titulo": "Vender tu auto",
+      "palabras": ["vender", "venta", "avaluo", "consignacion", "consignar", "compran", "oferta", "permuta"],
+      "texto": "Hay tres formas de vender tu auto con Mendiautos ({{SITIO}}/VendeTuAuto.dc.html):\n1. Compra inmediata: te compramos el auto directamente. Hacemos el avalúo, te damos una oferta transparente y el pago es rápido y seguro. {{SITIO}}/CompraInmediata.dc.html\n2. Consignación física: dejas el auto en nuestra vitrina y lo vendemos por ti. {{SITIO}}/ConsignacionFisica.dc.html\n3. Consignación virtual: tomamos fotos y publicamos el auto en nuestro catálogo sin que lo dejes en vitrina. {{SITIO}}/ConsignacionVirtual.dc.html\nEn cada página hay un formulario con los datos del auto; la oferta final se da después de revisar el vehículo."
+    },
+    "credito": {
+      "titulo": "Créditos",
+      "palabras": ["credito", "financiar", "financiacion", "cuota", "banco", "tasa", "plazo", "inicial", "libre inversion", "documentos"],
+      "texto": "Mendiautos gestiona créditos de vehículo y de libre inversión con bancos aliados: comparamos ofertas de varios bancos para buscar la mejor tasa.\nPasos: 1) simula la cuota en {{SITIO}}/Creditos.dc.html; 2) envía la solicitud con tus datos en {{SITIO}}/SolicitudCredito.dc.html; 3) un asesor la gestiona con los bancos; 4) al aprobarse, firmas y te llevas el auto, con los trámites incluidos.\nPlazos de 12 a 72 meses. La tasa y la aprobación las define el banco después del estudio de crédito; la cuota del simulador es aproximada.\nDocumentos que suelen pedir: cédula (ambos lados), desprendibles de pago o extractos de los últimos 3 meses, certificado laboral y, si eres independiente, declaración de renta o RUT. Esos documentos se envían en el formulario de solicitud del sitio, no por este chat."
+    },
+    "servicios": {
+      "titulo": "Otros servicios",
+      "palabras": ["servicio", "tramite", "traspaso", "transito", "fotografia", "fotos", "acompanamiento", "posventa", "mantenimiento", "pintura", "latoneria", "electrico", "viaje"],
+      "texto": "Más información y solicitud: {{SITIO}}/OtrosServicios.dc.html\n- Acompañamiento posventa: mantenimientos, pintura y latonería, servicio eléctrico, alistamiento para viajes y apoyo en emergencias mecánicas.\n- Trámites de tránsito: traspaso, traslado de cuenta y duplicado de la tarjeta de propiedad.\n- Fotografía profesional del vehículo: 16 fotos, video en alta resolución, texto con la información del auto y valor estimado de venta.\n- Acompañamiento de compra: te asesoramos en la búsqueda, la inspección y la negociación de un auto que quieras comprar."
+    },
+    "nosotros": {
+      "titulo": "Sobre Mendiautos",
+      "palabras": ["quienes", "empresa", "historia", "confianza", "desde", "nosotros"],
+      "texto": "Mendiautos es un concesionario multimarca de autos usados en Bucaramanga, fundado en 2018. Ha vendido más de 1.000 vehículos. Todos los autos se peritan antes de venderse, con garantía mecánica, financiación a la medida y trámites sin complicaciones. {{SITIO}}/SobreNosotros.dc.html"
+    }
+  }
+}

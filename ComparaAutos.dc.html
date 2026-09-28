@@ -6,6 +6,8 @@
 <script src="./support.js"></script>
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js" defer></script>
+<script src="assets/inventario.js"></script>
+<script src="assets/catalogo.js"></script>
 <title>Comparar autos | Mendiautos</title>
 <meta name="description" content="Compara hasta 3 vehículos de nuestro inventario lado a lado: precio, año, kilometraje y más.">
 <meta property="og:title" content="Comparar autos | Mendiautos">
@@ -19,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
-<script src="assets/inventario.js"></script>
+
 <style>
   *{box-sizing:border-box}
   :root{--bg:#0c0c0e;--c-card:#161619;--c-circle:#1c1c20;--t-strong:#fff;--t-1:rgba(255,255,255,.8);--t-2:rgba(255,255,255,.58);--t-3:rgba(255,255,255,.55);--ln:rgba(255,255,255,.09);--ln-strong:rgba(255,255,255,.2)}
@@ -254,6 +256,7 @@ class Component extends DCLogic {
     });
   }
   _renderTable(){
+    const esc=(v)=>window.MND_CATALOGO?MND_CATALOGO.esc(v):String(v);
     const wrap=document.querySelector('.mnd-compare-wrap');
     const cars=this._sel.map(id=>this._inv.find(c=>c.id===id)).filter(Boolean);
     if(cars.length<1){ wrap.innerHTML='<div style="padding:40px;text-align:center;font:400 14px/1.6 \'Open Sans\',sans-serif;color:var(--t-3)">Selecciona al menos un auto para comparar.</div>'; return; }
@@ -262,14 +265,14 @@ class Component extends DCLogic {
       {k:'Condición', f:c=>c.condicion||'—'},
       {k:'Precio', f:c=>this._fmt(c.precio)},
       {k:'Año', f:c=>c.anio, best:'max', raw:c=>c.anio},
-      {k:'Kilometraje', f:c=>c.km.toLocaleString('es-CO')+' km', best:'min', raw:c=>c.km},
+      {k:'Kilometraje', f:c=>(window.MND_CATALOGO?MND_CATALOGO.km(c.km):c.km+' km')||'—', best:'min', raw:c=>+c.km||0},
       {k:'Combustible', f:c=>c.combustible},
       {k:'Cilindraje', f:c=>c.cilindraje||'—'},
       {k:'Autonomía (eléctrico)', f:c=>c.autonomia||'—'},
       {k:'Transmisión', f:c=>c.transmision},
       {k:'Carrocería', f:c=>c.carroceria},
       {k:'Tracción', f:c=>c.traccion},
-      {k:'Potencia', f:c=>c.hp+' HP', best:'max', raw:c=>c.hp},
+      {k:'Potencia', f:c=>c.hp?c.hp+' HP':'—', best:'max', raw:c=>+c.hp||0},
       {k:'Garantía', f:c=>c.garantia||'—'}
     ];
     const cols='minmax(120px,160px) repeat('+cars.length+',minmax(150px,1fr))';
@@ -277,10 +280,11 @@ class Component extends DCLogic {
     // header row
     h+='<div style="background:var(--c-card);border-bottom:1px solid var(--ln)"></div>';
     cars.forEach(c=>{
+      const foto=(window.MND_CATALOGO&&MND_CATALOGO.fotos(c)[0])||'';
       h+='<div style="background:var(--c-card);border-left:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:18px">'
-        +'<div style="height:96px;border-radius:10px;background:repeating-linear-gradient(45deg,#17130f 0 14px,#211b16 14px 28px);margin-bottom:14px"></div>'
-        +'<div class="mnd-mich" style="font-size:14px;color:var(--t-strong);line-height:1.3">'+c.marca+' '+c.modelo+'</div>'
-        +'<a href="DetalleAuto.dc.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font:700 10px/1 \'Open Sans\',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#1E50A2">Ver ficha →</a></div>';
+        +'<div style="position:relative;overflow:hidden;height:96px;border-radius:10px;background:repeating-linear-gradient(45deg,#17130f 0 14px,#211b16 14px 28px);margin-bottom:14px">'+(foto?'<img src="'+esc(foto)+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'')+'</div>'
+        +'<div class="mnd-mich" style="font-size:14px;color:var(--t-strong);line-height:1.3">'+esc(c.marca+' '+c.modelo)+'</div>'
+        +'<a href="DetalleAuto.dc.html?id='+encodeURIComponent(c.id)+'" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font:700 10px/1 \'Open Sans\',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#1E50A2">Ver ficha →</a></div>';
     });
     rows.forEach((r,ri)=>{
       let bestVal=null;
@@ -288,7 +292,7 @@ class Component extends DCLogic {
       h+='<div class="mnd-crow" style="padding:15px 18px;'+(ri%2?'background:var(--c-card);':'')+'font:600 11px/1.2 \'Open Sans\',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-3);display:flex;align-items:center">'+r.k+'</div>';
       cars.forEach(c=>{
         const isBest = r.raw && cars.length>1 && r.raw(c)===bestVal;
-        h+='<div class="mnd-crow" style="padding:15px 18px;border-left:1px solid var(--ln);'+(ri%2?'background:var(--c-card);':'')+'font:600 14px/1.3 \'Open Sans\',sans-serif;color:var(--t-strong);display:flex;align-items:center;gap:8px" class="'+(isBest?'mnd-best':'')+'"><span class="'+(isBest?'mnd-best':'')+'">'+r.f(c)+'</span>'+(isBest?'<span style="font:700 8px/1 \'Open Sans\',sans-serif;letter-spacing:.06em;background:rgba(30,80,162,.14);color:#1E50A2;padding:4px 6px;border-radius:4px;text-transform:uppercase">Mejor</span>':'')+'</div>';
+        h+='<div class="mnd-crow" style="padding:15px 18px;border-left:1px solid var(--ln);'+(ri%2?'background:var(--c-card);':'')+'font:600 14px/1.3 \'Open Sans\',sans-serif;color:var(--t-strong);display:flex;align-items:center;gap:8px" class="'+(isBest?'mnd-best':'')+'"><span class="'+(isBest?'mnd-best':'')+'">'+esc(r.f(c)==null?'—':r.f(c))+'</span>'+(isBest?'<span style="font:700 8px/1 \'Open Sans\',sans-serif;letter-spacing:.06em;background:rgba(30,80,162,.14);color:#1E50A2;padding:4px 6px;border-radius:4px;text-transform:uppercase">Mejor</span>':'')+'</div>';
       });
     });
     h+='</div>';
