@@ -163,7 +163,7 @@ instalar_hermes() {
     ok "Hermes ya está instalado ($(como_hermes "$HERMES" --version 2> /dev/null | head -n 1))"
     return 0
   fi
-  apt_instalar git curl ca-certificates xz-utils
+  apt_instalar git curl ca-certificates xz-utils libatomic1   # libatomic1: el Node.js que trae Hermes
   info "Instalando Hermes Agent para el usuario $USUARIO (tarda unos minutos)…"
   if ! curl -fsSL "$INSTALADOR" | como_hermes bash -s -- --non-interactive --skip-browser > "$REGISTRO" 2>&1; then
     tail -n 15 "$REGISTRO" >&2
@@ -209,30 +209,48 @@ configurar_hermes() {
   local cfg=$HH/config.yaml audios
   [ -f "$cfg" ] || como_hermes touch "$cfg"
   # El modelo de voz que ya se eligió (--audios) se conserva; si no, el predeterminado.
-  audios=${AUDIOS:-$(python3 -c 'import sys, yaml; print(((yaml.safe_load(open(sys.argv[1])) or {}).get("stt") or {}).get("local", {}).get("model") or "")' \
+  # Solo cuenta si lo puso este instalador (stt.provider: local): Hermes siembra «base».
+  audios=${AUDIOS:-$(python3 -c '
+import sys, yaml
+stt = (yaml.safe_load(open(sys.argv[1])) or {}).get("stt")
+stt = stt if isinstance(stt, dict) else {}
+local = stt.get("local") if isinstance(stt.get("local"), dict) else {}
+print(local.get("model") or "" if stt.get("provider") == "local" else "")' \
     "$cfg" 2> /dev/null | grep -Ex 'tiny|base|small|medium' || true)}
   python3 - "$cfg" "$TRABAJO" "$SIN_HERRAMIENTAS" "${audios:-$AUDIOS_POR_DEFECTO}" "$(ids_de administrador gerente)" \
-    "${MEDIOS_PERMITIDOS[@]}" <<'EOF'
+    "${MEDIOS_PERMITIDOS[@]}" <<'EOF' || { aviso "No pude escribir la configuración de Hermes ($cfg)."; return 1; }
 import sys, yaml
 ruta, trabajo, sin, audios, jefes = sys.argv[1:6]
 medios = sys.argv[6:]
 with open(ruta, encoding='utf-8') as f:
     cfg = yaml.safe_load(f) or {}
-cfg.setdefault('terminal', {})['cwd'] = trabajo
+
+
+def seccion(d, clave):
+    # Las versiones nuevas de Hermes siembran config.yaml con secciones vacías («gateway:»).
+    v = d.get(clave)
+    if not isinstance(v, dict):
+        v = d[clave] = {}
+    return v
+
+
+seccion(cfg, 'terminal')['cwd'] = trabajo
 cfg['timezone'] = 'America/Bogota'
-cfg.setdefault('approvals', {})['mode'] = 'manual'
-agente = cfg.setdefault('agent', {})
+seccion(cfg, 'approvals')['mode'] = 'manual'
+agente = seccion(cfg, 'agent')
 agente['disabled_toolsets'] = yaml.safe_load(sin)
 agente['image_input_mode'] = 'native'           # las fotos llegan al modelo como imagen
-cfg.setdefault('platform_toolsets', {})['telegram'] = ['clarify', 'mendiautos', 'no_mcp']
-cfg['platform_toolsets']['whatsapp'] = ['clarify', 'mendiautos', 'no_mcp']
-plugins = cfg.setdefault('plugins', {})
+herramientas = seccion(cfg, 'platform_toolsets')
+herramientas['telegram'] = ['clarify', 'mendiautos', 'no_mcp']
+herramientas['whatsapp'] = ['clarify', 'mendiautos', 'no_mcp']
+plugins = seccion(cfg, 'plugins')
 activos = [p for p in (plugins.get('enabled') or []) if p != 'mendiautos'] + ['mendiautos']
 plugins['enabled'] = activos
-pasarela = cfg.setdefault('gateway', {})
+pasarela = seccion(cfg, 'gateway')
 pasarela['strict'] = True
 pasarela['media_delivery_allow_dirs'] = medios
-tg = cfg.setdefault('telegram', {})
+pasarela['trust_recent_files'] = False           # solo se envían archivos de esas carpetas y de la caché
+tg = seccion(cfg, 'telegram')
 tg['require_mention'] = True                     # en grupos, solo si lo mencionan
 tg['unauthorized_dm_behavior'] = 'ignore'        # a quien no es del equipo no le contesta
 lista = [x for x in jefes.split(',') if x]
@@ -241,9 +259,16 @@ if lista:
     tg['user_allowed_commands'] = ['new', 'stop']
 else:
     tg.pop('allow_admin_from', None)
-cfg.setdefault('cron', {})['wrap_response'] = False   # avisos e informes llegan limpios, sin encabezado técnico
-cfg['stt'] = {'enabled': True, 'echo_transcripts': True, 'provider': 'local',
-              'local': {'model': audios, 'language': 'es'}}
+# Hermes actual esconde herramientas tras un buscador (tool_search/tool_call): aquí son pocas
+# y deben verse directo. Tampoco se ofrece la entrevista de perfil ni los consejos de Hermes.
+seccion(seccion(cfg, 'tools'), 'tool_search')['enabled'] = 'off'
+bienvenida = seccion(cfg, 'onboarding')
+bienvenida['profile_build'] = 'off'
+seccion(bienvenida, 'seen').update(profile_build_offered=True, busy_input_prompt=True, tool_progress_prompt=True)
+seccion(cfg, 'cron')['wrap_response'] = False   # avisos e informes llegan limpios, sin encabezado técnico
+voz = seccion(cfg, 'stt')
+voz.update(enabled=True, echo_transcripts=True, provider='local', language='es')
+seccion(voz, 'local').update(model=audios, language='es')
 with open(ruta + '.tmp', 'w', encoding='utf-8') as f:
     yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
 EOF
@@ -292,6 +317,7 @@ configurar_telegram() {
     poner_env TELEGRAM_HOME_CHANNEL "${admin:-${todos%%,*}}"
   fi
   if telegram_activo; then
+    instalar_extra telegram || { aviso "No pude instalar el soporte de Telegram de Hermes (detalle: $REGISTRO)."; return 1; }
     ok "Telegram: bot configurado; equipo: $(equipo | awk -F '\t' '{printf "%s%s (%s)", (NR > 1 ? ", " : ""), $2, $3}')"
     return 0
   fi
@@ -382,61 +408,131 @@ probar_clave_gemini() {
 }
 
 # Gemini: se pide la clave de Google AI Studio y se configura directo (el
-# asistente interactivo de Hermes no acepta claves del plan gratuito).
+# asistente interactivo de Hermes no acepta claves del plan gratuito). Hermes
+# siembra config.yaml con un modelo de ejemplo de otro proveedor: ese no cuenta.
+# Solo se usa otro proveedor si se eligió con --otro-proveedor.
+OTRO=$HH/.mendiautos-otro-proveedor
+
+poner_modelo_gemini() {  # poner_modelo_gemini MODELO
+  local cfg=$HH/config.yaml
+  python3 - "$cfg" "$1" <<'EOF' || return 1
+import sys, yaml
+ruta, modelo = sys.argv[1:3]
+with open(ruta, encoding='utf-8') as f:
+    cfg = yaml.safe_load(f) or {}
+anterior = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
+# La clave va en .env (GEMINI_API_KEY); no se arrastran la URL ni la clave de otro proveedor.
+cfg['model'] = {k: v for k, v in anterior.items() if k not in ('provider', 'default', 'base_url', 'api_key', 'api_mode')}
+cfg['model'].update(provider='gemini', default=modelo)
+with open(ruta + '.tmp', 'w', encoding='utf-8') as f:
+    yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
+EOF
+  chown "$USUARIO:$USUARIO" "$cfg.tmp"
+  chmod 0600 "$cfg.tmp"
+  mv -f "$cfg.tmp" "$cfg"
+}
+
 configurar_modelo() {
-  local clave=""
+  local clave="" proveedor actual
   if [ "$OTRO_PROVEEDOR" = 1 ]; then
     [ -t 0 ] || error "--otro-proveedor necesita responder preguntas: ssh -t root@IP \"mendiautos hermes --otro-proveedor\""
     echo
     echo "Modelo de IA: elige proveedor y modelo, y pega la clave. Recomendado: uno que vea imágenes."
     como_hermes "$HERMES" model || true
-  elif [ "$(como_hermes "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" = gemini ] ||
-       [ -z "$(modelo_actual)" ] || [ "$PEDIR_CLAVE" = 1 ] || [ -n "$MODELO" ]; then
-    if { [ -z "$(valor_env GEMINI_API_KEY)" ] || [ "$PEDIR_CLAVE" = 1 ]; } && [ -t 0 ]; then
-      echo
-      echo "Clave de Gemini (Google AI Studio)"
-      echo "  1. Entra a https://aistudio.google.com/apikey con la cuenta de Google de la empresa."
-      echo "  2. «Create API key» y cópiala. Mejor en un proyecto con facturación activa: el plan"
-      echo "     gratuito tiene pocos mensajes por minuto y Google puede usar esos datos."
-      read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
-      echo
-      clave=${clave// /}
-    fi
-    if [ -n "$clave" ]; then
-      [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
-      probar_clave_gemini "$clave" || error "Google rechazó la clave. Revísala en https://aistudio.google.com/apikey"
-      poner_env GEMINI_API_KEY "$clave"
-    fi
-    if [ -n "$(valor_env GEMINI_API_KEY)" ]; then
-      como_hermes "$HERMES" config set model.provider gemini > /dev/null
-      como_hermes "$HERMES" config set model.default "${MODELO:-$(modelo_actual | grep -E '^gemini' || echo "$MODELO_POR_DEFECTO")}" > /dev/null
-    fi
+    touch "$OTRO"
   fi
-  if [ -n "$(modelo_actual)" ] && { [ "$(como_hermes "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" != gemini ] ||
-                                    [ -n "$(valor_env GEMINI_API_KEY)" ]; }; then
-    ok "Modelo de IA: $(modelo_actual)"
-    return 0
+  if [ -f "$OTRO" ] && [ "$PEDIR_CLAVE" = 0 ] && [ -z "$MODELO" ]; then
+    proveedor=$(como_hermes "$HERMES" config get model.provider 2> /dev/null | tail -n 1)
+    if [ -n "$(modelo_actual)" ] && [[ $proveedor != auto && $proveedor != *"not set"* ]]; then
+      ok "Modelo de IA: $(modelo_actual) ($proveedor)"
+      return 0
+    fi
+    aviso "Falta elegir el modelo de IA: ssh -t root@IP \"mendiautos hermes --otro-proveedor\" (o --clave-gemini para volver a Gemini)"
+    return 1
   fi
-  aviso "Falta la clave de Gemini. Corre: ssh -t root@IP \"mendiautos hermes\""
-  return 1
+  if { [ -z "$(valor_env GEMINI_API_KEY)" ] || [ "$PEDIR_CLAVE" = 1 ]; } && [ -t 0 ]; then
+    echo
+    echo "Clave de Gemini (Google AI Studio)"
+    echo "  1. Entra a https://aistudio.google.com/apikey con la cuenta de Google de la empresa."
+    echo "  2. «Create API key» y cópiala. Mejor en un proyecto con facturación activa: el plan"
+    echo "     gratuito tiene pocos mensajes por minuto y Google puede usar esos datos."
+    read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
+    echo
+    clave=${clave// /}
+  fi
+  if [ -n "$clave" ]; then
+    [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
+    probar_clave_gemini "$clave" || error "Google rechazó la clave. Revísala en https://aistudio.google.com/apikey"
+    poner_env GEMINI_API_KEY "$clave"
+  fi
+  if [ -z "$(valor_env GEMINI_API_KEY)" ]; then
+    aviso "Falta la clave de Gemini. Corre: ssh -t root@IP \"mendiautos hermes\""
+    return 1
+  fi
+  # El modelo: --modelo, o el de Gemini que ya estaba, o el predeterminado.
+  actual=$(modelo_actual)
+  [ "$(como_hermes "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" = gemini ] && [[ $actual == gemini* ]] || actual=""
+  poner_modelo_gemini "${MODELO:-${actual:-$MODELO_POR_DEFECTO}}" || error "No pude guardar el modelo en $HH/config.yaml"
+  rm -f "$OTRO"
+  ok "Modelo de IA: $(modelo_actual) (Gemini)"
+}
+
+# Hermes actual instala aparte lo de cada plataforma o función (su gestor «pm»);
+# se deja listo aquí para no depender de que el servicio lo instale al arrancar.
+# Hermes 0.19 y anteriores no tienen pm (ya traían Telegram).
+con_pm() { como_hermes "$HERMES" pm --help > /dev/null 2>&1; }
+
+instalar_extra() {  # instalar_extra NOMBRE
+  con_pm || return 0
+  como_hermes "$HERMES" pm install --extra "$1" < /dev/null >> "$REGISTRO" 2>&1
 }
 
 # Deja listo el modelo de voz (se descarga una vez, unos cientos de MB) para
 # que el primer audio no tarde. Si falla, se reintenta solo con el primer audio.
+instalar_voz() {
+  if con_pm; then
+    como_hermes "$HERMES" pm install --extra stt-whisper < /dev/null
+  else
+    como_hermes bash -c "
+      py=\$(head -n 1 '$HERMES' | sed -n 's|^#! *||p' | awk '{print \$1}')
+      [ -x \"\$py\" ] || py=python3
+      \"\$py\" -c 'from tools.lazy_deps import activate_durable_lazy_target as a, ensure
+a(); ensure(\"stt.faster_whisper\", prompt=False)'"
+  fi
+}
+
+# Descarga y carga el modelo con el mismo Python con el que corre Hermes.
+precargar_voz() {
+  como_hermes python3 - "$HERMES" "$1" <<'EOF'
+import json, subprocess, sys
+hermes, modelo = sys.argv[1:3]
+codigo = ('from faster_whisper import WhisperModel\n'
+          f'WhisperModel({modelo!r}, device="cpu", compute_type="int8")\n')
+marca = "runpy.run_module('hermes_cli.main', run_name='__main__', alter_sys=True)"
+cmd = None
+try:
+    salida = subprocess.run([hermes, '--print-runtime-command'], capture_output=True, text=True, timeout=120).stdout
+    cmd = json.loads(salida)
+    i = next(i for i, parte in enumerate(cmd) if marca in parte)
+    cmd[i] = cmd[i].replace(marca, f'exec({codigo!r})')
+except Exception:
+    # Hermes 0.19 y anteriores: el script hermes es Python y su primera línea dice cuál.
+    with open(hermes, encoding='utf-8', errors='replace') as f:
+        primera = f.readline()
+    cmd = [primera[2:].split()[0], '-c', codigo] if primera.startswith('#!') and 'python' in primera else None
+if not cmd:
+    sys.exit('No encontré el Python de Hermes.')
+sys.exit(subprocess.run(cmd).returncode)
+EOF
+}
+
 preparar_audios() {
   local modelo
   modelo=$(como_hermes "$HERMES" config get stt.local.model 2> /dev/null | tail -n 1)
   [[ $modelo =~ ^(tiny|base|small|medium)$ ]] || modelo=$AUDIOS_POR_DEFECTO
   [ -f "$HH/.mendiautos-audios-$modelo" ] && return 0
   info "Preparando la transcripción de audios en el servidor (modelo $modelo; la primera vez tarda)…"
-  if como_hermes bash -c "
-      py=\$(head -n 1 '$HERMES' | sed -n 's|^#! *||p' | awk '{print \$1}')
-      [ -x \"\$py\" ] || py=python3
-      \"\$py\" -c 'from tools.lazy_deps import activate_durable_lazy_target as a, ensure
-a(); ensure(\"stt.faster_whisper\", prompt=False)
-from faster_whisper import WhisperModel
-WhisperModel(\"$modelo\", device=\"cpu\", compute_type=\"int8\")'
-    " >> "$REGISTRO" 2>&1; then
+  if instalar_voz >> "$REGISTRO" 2>&1 && precargar_voz "$modelo" >> "$REGISTRO" 2>&1; then
     touch "$HH/.mendiautos-audios-$modelo"
     ok "Audios: se transcriben en el servidor (español, modelo $modelo)"
   else
@@ -653,11 +749,13 @@ main() {
       local cambio=0
       asegurar_grupos && cambio=1
       if [ -x "$HERMES" ] && [ "$(cat "$HH/.mendiautos-instalador" 2> /dev/null)" != "$(huella)" ]; then
-        configurar_hermes > /dev/null || true
+        # La huella se guarda solo si la configuración quedó aplicada; si no, se reintenta.
+        local aplicada=1
+        configurar_hermes > /dev/null || aplicada=0
         configurar_telegram > /dev/null || true
-        if telegram_activo || whatsapp_activo; then configurar_tareas > /dev/null || true; fi
+        if telegram_activo || whatsapp_activo; then configurar_tareas > /dev/null || aplicada=0; fi
         [ -f "$UNIDAD" ] && escribir_unidad
-        huella > "$HH/.mendiautos-instalador"
+        [ "$aplicada" = 0 ] || huella > "$HH/.mendiautos-instalador"
         cambio=1
       fi
       if [ "$cambio" = 1 ] && systemctl is-active --quiet "$SERVICIO"; then
