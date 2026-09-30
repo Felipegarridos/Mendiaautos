@@ -17,7 +17,6 @@ window.MND_INVENTARIO = [
     "motor": "1.3 Turbo gasolina",
     "cilindraje": "1.300 cc",
     "hp": 156,
-    "velocidad_max": 180,
     "aceleracion": 9.6,
     "autonomia": "—",
     "condicion": "Usado",

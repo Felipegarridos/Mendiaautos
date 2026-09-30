@@ -2,7 +2,10 @@
    Todas las páginas que muestran autos (inicio, disponibles, vendidos, detalle
    y comparar) los dibujan desde window.MND_INVENTARIO, definido en
    assets/inventario.js. En el servidor ese archivo lo reemplaza el catálogo
-   que administra el asistente por Telegram (ver hermes/README.md).
+   que administra el asistente por Telegram (ver hermes/README.md), que solo
+   publica los autos disponibles y vendidos. La portada del inicio sale de
+   window.MND_SITIO (assets/sitio.js) y la vista previa de un borrador, de
+   window.MND_PREVIA (assets/previa.js).
    Todo texto del catálogo se escapa antes de insertarlo en la página. */
 (function () {
   'use strict';
@@ -31,11 +34,11 @@
   function siNo(v) { return v === true ? 'Sí' : v === false ? 'No' : '—'; }
   function texto(v) { return hay(v) ? String(v) : '—'; }
 
-  // Los autos «ocultos» están en preparación: no salen en ninguna página.
+  // Solo salen los autos disponibles y los vendidos (ni borradores ni ocultos).
   function autos() {
     var d = window.MND_INVENTARIO;
     return Array.isArray(d) ? d.filter(function (a) {
-      return a && a.id && a.marca && a.modelo && a.estado !== 'oculto';
+      return a && a.id && a.marca && a.modelo && (!a.estado || a.estado === 'disponible' || a.estado === 'vendido');
     }) : [];
   }
   function disponibles() {
@@ -168,10 +171,15 @@
   }
 
   // ------------------------------------------------------------- pintar
+  // Inicio: los 5 destacados; si faltan, se completan con los últimos publicados.
+  var DESTACADOS = 5;
+  function destacados() {
+    var l = disponibles(), d = l.filter(function (a) { return a.destacado; }).slice(0, DESTACADOS);
+    return d.concat(l.filter(function (a) { return d.indexOf(a) < 0; })).slice(0, DESTACADOS);
+  }
   function pintarInicio(el) {
     if (!el) return;
-    var l = disponibles(), d = l.filter(function (a) { return a.destacado; });
-    d = (d.length ? d : l).slice(0, 12);
+    var d = destacados();
     el.innerHTML = d.length ? d.map(tarjetaInicio).join('') : vacio('Muy pronto publicaremos nuevos autos.');
   }
   // El filtro «Marca» trae botones fijos con logo; se agregan (con sus siglas)
@@ -212,9 +220,20 @@
   }
 
   // ------------------------------------------------------------- detalle
+  // Vista previa de un borrador: DetalleAuto.dc.html?previa=<clave> (la carga assets/previa.js).
+  function previa() {
+    var p = window.MND_PREVIA;
+    return p && p.id && p.marca && p.modelo ? p : null;
+  }
   function autoDeLaPagina() {
-    var id = '';
-    try { id = new URLSearchParams(location.search).get('id') || ''; } catch (e) { /* sin parámetros */ }
+    var id = '', clave = '';
+    if (previa()) return previa();
+    try {
+      var q = new URLSearchParams(location.search);
+      id = q.get('id') || '';
+      clave = q.get('previa') || '';
+    } catch (e) { /* sin parámetros */ }
+    if (clave) return null;          // vista previa vencida o ya publicada: no hay auto que mostrar
     if (id) return buscar(id);
     var l = disponibles();
     return l.filter(function (a) { return a.destacado; })[0] || l[0] || autos()[0] || null;
@@ -230,9 +249,10 @@
       return vacio;
     }
     var h = a.historial || {}, f = fotos(a), partes = String(a.descripcion || '').split(/\n\s*\n/);
-    var vendido = a.estado === 'vendido';
+    var vendido = a.estado === 'vendido', v = video(a.video);
     return {
       existe: true, id: a.id, vendido: vendido, disponible: !vendido,
+      esPrevia: a === previa(), tieneVideo: !!v, videoEtiqueta: v && v.tipo === 'instagram' ? 'Recorrido en video · Instagram' : 'Recorrido en video',
       titulo: titulo(a), nombre: nombre(a), marca: texto(a.marca), modelo: texto(a.modelo),
       version: texto(a.version), anio: texto(a.anio),
       precio: vendido ? 'VENDIDO' : precio(a.precio),
@@ -241,8 +261,9 @@
       combustible: texto(a.combustible), transmision: texto(a.transmision),
       carroceria: texto(a.carroceria), tipoCarroceria: texto(a.tipo_carroceria || a.carroceria),
       traccion: texto(a.traccion), motor: texto(a.motor || a.cilindraje),
-      motorCorto: texto(a.motor_corto || (a.cilindraje ? String(a.cilindraje).replace(/\.(\d)00\s*cc/i, '.$1').replace(/\s*cc/i, '') : '')),
-      hp: texto(a.hp), velocidad: texto(a.velocidad_max),
+      motorCorto: texto(a.motor_corto || (a.cilindraje ? String(a.cilindraje).replace(/\.(\d)00\s*cc/i, '.$1').replace(/\s*cc/i, '') : '') ||
+        (String(a.motor || '').length <= 14 ? a.motor : '')),
+      hp: texto(a.hp), tieneAceleracion: hay(a.aceleracion),
       aceleracion: hay(a.aceleracion) ? String(a.aceleracion).replace('.', ',') + ' s' : '—',
       negociable: siNo(a.negociable), blindado: siNo(a.blindado), unicoDueno: siNo(a.unico_dueno),
       asegurable: siNo(a.asegurable), financiacion: siNo(a.financiacion), permuta: siNo(a.permuta),
@@ -301,11 +322,51 @@
     }).join('');
   }
 
+  // ------------------------------------------------------------- videos
+  // Recorrido de un auto: un reel de Instagram (como la sección de Instagram de
+  // festivalviajes.com.ar) o un video de YouTube. Solo se aceptan esas dos
+  // direcciones; el reproductor lo pone assets/videos.js.
+  function video(url) {
+    var m = /^https:\/\/www\.instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]{5,40})\/$/.exec(url || '');
+    if (m) return { tipo: 'instagram', ruta: m[1], codigo: m[2] };
+    m = /^https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})$/.exec(url || '');
+    return m ? { tipo: 'youtube', codigo: m[1] } : null;
+  }
+  function pintarVideo(a) {
+    var zona = document.querySelector('.mnd-video-auto');
+    var v = a && video(a.video);
+    if (!zona || !v || !window.MND_VIDEOS) return;
+    if (v.tipo === 'instagram') MND_VIDEOS.instagram(zona, v.ruta, v.codigo, nombre(a));
+    else MND_VIDEOS.youtube(zona, v.codigo, 'Recorrido · ' + nombre(a));
+  }
+
+  // ------------------------------------------------------------- portada
+  // Bloque principal del inicio. Lo que no se haya cambiado por el asistente
+  // queda como en el diseño original.
+  var PORTADA = { texto: 'BMW', titulo: 'Serie 7\n2026', video: 'assets/hero-video.mp4' };
+  var MEDIO_VALIDO = /^catalogo\/medios\/[0-9a-f]{16}\.(jpg|mp4)$/;
+  function portada() {
+    var s = window.MND_SITIO && window.MND_SITIO.portada || {};
+    var m = s.medio || {}, foto = m.tipo === 'foto' && MEDIO_VALIDO.test(m.ruta || '');
+    var videoPropio = m.tipo === 'video' && MEDIO_VALIDO.test(m.ruta || '');
+    var auto = s.auto ? buscar(s.auto) : null;
+    return {
+      texto: hay(s.texto) ? String(s.texto) : PORTADA.texto,
+      titulo: hay(s.titulo) ? String(s.titulo) : PORTADA.titulo,
+      esFoto: foto, esVideo: !foto,
+      foto: foto ? m.ruta : '',
+      video: videoPropio ? m.ruta : PORTADA.video,
+      poster: videoPropio && MEDIO_VALIDO.test(m.poster || '') ? m.poster : '',
+      enlace: auto && auto.estado !== 'vendido' ? enlace(auto) : 'AutosDisponibles.dc.html'
+    };
+  }
+
   window.MND_CATALOGO = {
-    autos: autos, disponibles: disponibles, vendidos: vendidos, buscar: buscar,
+    autos: autos, disponibles: disponibles, vendidos: vendidos, buscar: buscar, destacados: destacados,
     esc: esc, precio: precio, km: km, nombre: nombre, titulo: titulo, fotos: fotos, enlace: enlace,
     pintarInicio: pintarInicio, pintarDisponibles: pintarDisponibles, pintarVendidos: pintarVendidos,
     pintarRecomendados: pintarRecomendados, autoDeLaPagina: autoDeLaPagina, detalle: detalle,
-    pintarGaleria: pintarGaleria, pintarLinea: pintarLinea
+    pintarGaleria: pintarGaleria, pintarLinea: pintarLinea, pintarVideo: pintarVideo, video: video,
+    portada: portada, previa: previa
   };
 })();

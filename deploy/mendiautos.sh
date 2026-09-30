@@ -12,6 +12,7 @@
 #    mendiautos revertir                  vuelve a la versión anterior
 #    mendiautos dominio ejemplo.com [correo@ejemplo.com]   activa HTTPS
 #    mendiautos hermes                    instala el asistente de Telegram
+#    mendiautos equipo                    quién usa el asistente y con qué rol
 #    catalogo --help                      edita los autos del sitio
 #    solicitudes pendientes               lo que llegó por los formularios
 # =============================================================================
@@ -43,6 +44,9 @@ SOLICITUDES=$STATE/solicitudes      # formularios del sitio: los recibe el coman
 BIN_SOLICITUDES=/usr/local/bin/solicitudes
 SUDOERS_SOLICITUDES=/etc/sudoers.d/mendiautos-solicitudes
 TOKEN_SOLICITUDES=/etc/mendiautos/solicitudes.token   # clave del asistente de clientes
+EQUIPO=/etc/mendiautos/equipo.json   # quién usa el asistente del equipo y con qué rol
+VISITAS=$STATE/visitas              # visitas por día (sin IPs), para los informes
+BIN_VISITAS=/usr/local/bin/mendiautos-visitas
 PUERTO_SOLICITUDES=8781             # receptor (solo en 127.0.0.1; nginx le pasa /api/)
 MANTENER=5                          # versiones anteriores que se conservan
 
@@ -349,6 +353,7 @@ publicar() {
   mkdir -p "$RELEASES" "$STATE"
   preparar_catalogo
   preparar_solicitudes
+  preparar_visitas
   construir_version
   configurar_nginx
   activar_version "$VERSION_NUEVA"
@@ -379,7 +384,7 @@ actualizar_asistente() {
 # catalogo, que valida cada dato antes de publicarlo.
 asegurar_paquetes_catalogo() {
   local falta=() p
-  for p in python3 python3-pil sudo git; do
+  for p in python3 python3-pil sudo git ffmpeg; do
     dpkg -s "$p" > /dev/null 2>&1 || falta+=("$p")
   done
   [ ${#falta[@]} -eq 0 ] && return 0
@@ -422,6 +427,8 @@ EOF
     "$BIN_CATALOGO" iniciar --desde "$REPO_DIR/assets/inventario.js" > /dev/null
     ok "Catálogo creado en $CATALOGO con los autos del repositorio"
   fi
+  # Pone los datos y los .js del sitio al día con esta versión del comando.
+  "$BIN_CATALOGO" migrar > /dev/null 2>&1 || aviso "El catálogo tiene problemas: catalogo validar"
   configurar_mantenimiento_catalogo
   [ -n "$SITIO" ] || recordar_sitio
 }
@@ -449,6 +456,44 @@ WantedBy=timers.target
 EOF
   systemctl daemon-reload
   systemctl enable --now mendiautos-catalogo.timer > /dev/null 2>&1 || true
+}
+
+# ---------------------------------------------------------------- visitas
+# Cada noche se cuentan las páginas vistas desde el registro de nginx y se
+# guardan solo totales por día (sin IPs ni cookies): los usan los informes.
+preparar_visitas() {
+  install -d -m 0755 "$VISITAS"
+  sed '1s|^#!.*|#!/usr/bin/python3 -I|' "$REPO_DIR/deploy/visitas.py" > "$BIN_VISITAS.tmp"
+  chmod 0755 "$BIN_VISITAS.tmp"
+  mv -f "$BIN_VISITAS.tmp" "$BIN_VISITAS"
+  cat > /etc/systemd/system/mendiautos-visitas.service <<EOF
+[Unit]
+Description=Mendiautos: contar las visitas del día anterior (solo totales)
+
+[Service]
+Type=oneshot
+ExecStart=$BIN_VISITAS
+ProtectSystem=strict
+ReadWritePaths=$VISITAS
+ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
+NoNewPrivileges=true
+EOF
+  cat > /etc/systemd/system/mendiautos-visitas.timer <<'EOF'
+[Unit]
+Description=Mendiautos: conteo diario de visitas (0:20 a. m. en Colombia)
+
+[Timer]
+OnCalendar=*-*-* 05:20:00 UTC
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now mendiautos-visitas.timer > /dev/null 2>&1 || true
 }
 
 # ------------------------------------------------------------ solicitudes
@@ -596,7 +641,7 @@ add_header X-Content-Type-Options "nosniff" always;
 add_header X-Frame-Options "SAMEORIGIN" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; frame-src https://maps.google.com https://www.google.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; frame-src https://maps.google.com https://www.google.com https://www.instagram.com https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
 EOF
   cat > "$SNIP_SITIO" <<EOF
 # Generado por mendiautos.sh — contenido del sitio (se reescribe al publicar).
@@ -614,6 +659,9 @@ gzip_min_length 1024;
 gzip_types text/css application/javascript text/javascript application/json image/svg+xml text/plain text/xml application/xml;
 
 include $SNIP_CABECERAS;
+
+# Registro propio del sitio: de aquí salen los conteos de visitas.
+access_log /var/log/nginx/mendiautos.access.log;
 
 location ^~ /.well-known/acme-challenge/ {
     root $ACME;
@@ -633,6 +681,34 @@ location = /assets/inventario.js {
     try_files /inventario.js @inventario_del_repositorio;
 }
 location @inventario_del_repositorio {
+    expires -1;
+    try_files \$uri =404;
+}
+# Portada del inicio y videos de «Otros servicios» (también los cambia el asistente).
+location = /assets/sitio.js {
+    root $CATALOGO;
+    expires -1;
+    try_files /sitio.js @sitio_del_repositorio;
+}
+location @sitio_del_repositorio {
+    expires -1;
+    try_files \$uri =404;
+}
+# Foto o video de fondo de la portada (nombre = huella: no cambian nunca).
+location ^~ /catalogo/medios/ {
+    root $STATE;
+    if (\$uri !~ "^/catalogo/medios/[0-9a-f]{16}\\.(jpg|mp4)\$") {
+        return 404;
+    }
+    expires 30d;
+    try_files \$uri =404;
+}
+# Vistas previas de borradores: solo con el enlace (clave de 22 caracteres).
+location ^~ /catalogo/previas/ {
+    root $STATE;
+    if (\$uri !~ "^/catalogo/previas/[A-Za-z0-9_-]{22}\\.js\$") {
+        return 404;
+    }
     expires -1;
     try_files \$uri =404;
 }
@@ -1030,6 +1106,8 @@ cmd_estado() {
     echo "Formularios:   receptor $(systemctl is-active mendiautos-solicitudes 2>/dev/null || true) · $(
       "$BIN_SOLICITUDES" listar -n 1 2>/dev/null | head -n 1 | sed 's/ (.*//; s/:$//' || true)"
     echo "Retención:     documentos $RETENER_DOCUMENTOS días, solicitudes $RETENER_SOLICITUDES días"
+    echo "Visitas:       conteo diario $(systemctl is-active mendiautos-visitas.timer 2>/dev/null || true) · $(
+      find "$VISITAS" -name '????-??-??.json' 2>/dev/null | wc -l) días contados"
   else
     echo "Formularios:   (el receptor se instala al publicar)"
   fi
@@ -1037,8 +1115,11 @@ cmd_estado() {
 }
 
 estado_asistentes() {
+  local lista
   if id -u hermes > /dev/null 2>&1; then
     echo "Asistente:     equipo $(systemctl is-active mendiautos-hermes 2>/dev/null || true) (servicio mendiautos-hermes)"
+    lista=$(equipo_py listar | awk -F '\t' '{printf "%s%s (%s)", (NR > 1 ? ", " : ""), $2, $3}')
+    echo "Equipo:        ${lista:-(vacío: mendiautos equipo agregar …)}"
   else
     echo "Asistente:     no instalado (mendiautos hermes)"
   fi
@@ -1056,6 +1137,104 @@ cmd_hermes() {
   [ -x "$BIN_SOLICITUDES" ] || { cmd_publicar; cargar_conf; }
   INFORMADO=1
   exec bash "$REPO_DIR/hermes/instalar.sh" "$@"
+}
+
+# ------------------------------------------------------------------ equipo
+# Quién usa el asistente del equipo por Telegram y con qué rol:
+#   administrador y gerente: todo (vendidos, portada, destacados, informes y
+#   solicitudes); vendedor: sube autos y corrige los que él subió.
+# El asistente y el comando catalogo leen $EQUIPO para hacer cumplir esto.
+equipo_py() {
+  python3 - "$EQUIPO" "$@" <<'EOF'
+import json, os, re, sys, tempfile
+ruta, accion, args = sys.argv[1], sys.argv[2], sys.argv[3:]
+ROLES = {'administrador': 'administrador', 'admin': 'administrador', 'gerente': 'gerente',
+         'vendedor': 'vendedor', 'vendedora': 'vendedor', 'asesor': 'vendedor', 'asesora': 'vendedor'}
+try:
+    datos = json.load(open(ruta, encoding='utf-8'))
+    miembros = [m for m in datos.get('miembros') or [] if isinstance(m, dict)]
+except (OSError, ValueError):
+    miembros = []
+
+def guardar():
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(ruta), prefix='.equipo.')
+    with os.fdopen(fd, 'w', encoding='utf-8') as f:
+        json.dump({'miembros': miembros}, f, ensure_ascii=False, indent=2)
+        f.write('\n')
+    os.chmod(tmp, 0o644)
+    os.replace(tmp, ruta)
+
+def salir(msj):
+    print(msj, file=sys.stderr)
+    sys.exit(2)
+
+if accion == 'listar':
+    for m in miembros:
+        print(f"{m.get('id')}\t{m.get('nombre', '')}\t{m.get('rol', '')}")
+elif accion == 'agregar':
+    if len(args) != 3:
+        salir('Uso: mendiautos equipo agregar <ID de Telegram> <nombre> <administrador|gerente|vendedor>')
+    ident, nombre, rol = args[0].strip(), ' '.join(args[1].split()), ROLES.get(args[2].strip().lower())
+    if not re.fullmatch(r'[0-9]{3,20}', ident):
+        salir(f'«{ident}» no es un ID de Telegram (es un número; cada persona lo ve escribiéndole a @userinfobot).')
+    if not nombre or len(nombre) > 40 or not re.fullmatch(r"[^\W\d_]+(?:[ .'-][^\W\d_]+)*\.?", nombre):
+        salir(f'«{nombre}» no parece un nombre (solo letras, hasta 40).')
+    if not rol:
+        salir('El rol es administrador, gerente o vendedor.')
+    previo = next((m for m in miembros if str(m.get('id')) == ident), None)
+    if previo:
+        previo.update(nombre=nombre, rol=rol)
+    else:
+        miembros.append({'id': ident, 'nombre': nombre, 'rol': rol})
+    guardar()
+    print(f'{"Actualizado" if previo else "Agregado"}: {nombre} ({ident}) como {rol}.')
+elif accion == 'quitar':
+    if len(args) != 1:
+        salir('Uso: mendiautos equipo quitar <ID de Telegram>')
+    antes = len(miembros)
+    miembros = [m for m in miembros if str(m.get('id')) != args[0].strip()]
+    if len(miembros) == antes:
+        salir(f'No hay nadie con el ID {args[0]} en el equipo.')
+    guardar()
+    print(f'Quitado del equipo: {args[0]}.')
+EOF
+}
+
+cmd_equipo() {
+  requiere_root
+  cargar_conf
+  local accion=${1:-listar} id nombre rol
+  [ $# -gt 0 ] && shift
+  case $accion in
+    listar|ver|lista)
+      if [ -z "$(equipo_py listar)" ]; then
+        echo "El equipo está vacío. Agrega a cada persona con su ID de Telegram (se lo da @userinfobot):"
+        echo "  mendiautos equipo agregar 123456789 Nelson gerente"
+        return 0
+      fi
+      echo "Equipo del asistente ($EQUIPO):"
+      while IFS=$'\t' read -r id nombre rol; do
+        printf '  %-14s %-20s %s\n' "$id" "$nombre" "$rol"
+      done < <(equipo_py listar)
+      echo "Cambios: mendiautos equipo agregar <ID> <nombre> <rol> · mendiautos equipo quitar <ID>"
+      return 0
+      ;;
+    agregar|cambiar|poner) equipo_py agregar "$@" || error "No se cambió el equipo." ;;
+    quitar|borrar|sacar) equipo_py quitar "$@" || error "No se cambió el equipo." ;;
+    -h|--help|ayuda)
+      echo "mendiautos equipo                               lista quién usa el asistente"
+      echo "mendiautos equipo agregar <ID> <nombre> <rol>   agrega o cambia (rol: administrador, gerente o vendedor)"
+      echo "mendiautos equipo quitar <ID>                   le quita el acceso"
+      return 0
+      ;;
+    *) error "Uso: mendiautos equipo [agregar <ID> <nombre> <rol> | quitar <ID>]" ;;
+  esac
+  # El asistente toma el cambio: quién puede escribirle, a quién le llegan los
+  # informes y avisos, y quién puede usar los comandos de Telegram.
+  if [ -z "${MENDIAUTOS_SIN_APLICAR:-}" ] && id -u hermes > /dev/null 2>&1 && [ -f "$REPO_DIR/hermes/instalar.sh" ]; then
+    bash "$REPO_DIR/hermes/instalar.sh" --equipo || aviso "No pude aplicar el cambio al asistente (prueba: mendiautos hermes)."
+  fi
 }
 
 # Rehace la configuración de nginx (la usa el instalador del asistente de
@@ -1077,6 +1256,7 @@ resumen() {
   echo "    Ver el catálogo:   catalogo listar"
   echo "    Formularios:       solicitudes pendientes"
   echo "    Asistente:         mendiautos hermes   (lo maneja por Telegram)"
+  echo "    Equipo y roles:    mendiautos equipo"
 }
 
 ayuda() {
@@ -1091,6 +1271,8 @@ Comandos:
   estado                      muestra lo que está publicado
   hermes [opciones]           instala o reconfigura el asistente de Telegram
                               (mendiautos hermes --help)
+  equipo [agregar|quitar]     quién usa el asistente y con qué rol
+                              (administrador, gerente o vendedor)
   nginx                       rehace la configuración de nginx
 
 El catálogo de autos se edita con el comando «catalogo» (catalogo --help).
@@ -1110,6 +1292,7 @@ main() {
     dominio|https|domain) cmd_dominio "$@" ;;
     estado|status) cmd_estado "$@" ;;
     hermes|asistente) cmd_hermes "$@" ;;
+    equipo) cmd_equipo "$@" ;;
     nginx) cmd_nginx "$@" ;;
     ayuda|help|-h|--help) ayuda ;;
     *) error "Comando desconocido: $cmd (usa: mendiautos ayuda)" ;;

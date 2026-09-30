@@ -15,6 +15,7 @@ set -euo pipefail
 
 AQUI=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 USUARIO=hermes-clientes
+MODELO_POR_DEFECTO=gemini-3.5-flash
 CASA=/home/$USUARIO
 HH=$CASA/.hermes
 HERMES=$CASA/.local/bin/hermes
@@ -53,6 +54,8 @@ mendiautos hermes --clientes — asistente de WhatsApp para clientes (WhatsApp o
                                         (pide lo que falte; usa ssh -t)
   mendiautos hermes --clientes --reiniciar | --actualizar | --detener
   mendiautos hermes --clientes --solo-archivos   actualiza reglas y herramientas
+  mendiautos hermes --clientes --otro-proveedor  otro proveedor de IA (por defecto,
+                                        Gemini con la clave del asistente del equipo)
 
 Credenciales de Meta (developers.facebook.com → tu app → WhatsApp → Configuración
 de la API), también se pueden dar sin preguntas:
@@ -123,7 +126,7 @@ instalar_hermes() {
     ok "Hermes ya está instalado para $USUARIO"
     return 0
   fi
-  apt_instalar git curl ca-certificates xz-utils
+  apt_instalar git curl ca-certificates xz-utils libatomic1   # libatomic1: el Node.js que trae Hermes
   info "Instalando Hermes Agent para el usuario $USUARIO (tarda unos minutos)…"
   if ! curl -fsSL "$INSTALADOR" | como_usuario bash -s -- --non-interactive --skip-browser > "$REGISTRO" 2>&1; then
     tail -n 15 "$REGISTRO" >&2
@@ -158,21 +161,38 @@ configurar_hermes() {
   python3 -c 'import yaml' 2> /dev/null || apt_instalar python3-yaml
   local cfg=$HH/config.yaml
   [ -f "$cfg" ] || como_usuario touch "$cfg"
-  python3 - "$cfg" "$TRABAJO" "$LIB/mcp_clientes.py" "$FOTOS_CATALOGO" "$SIN_HERRAMIENTAS" <<'EOF'
+  python3 - "$cfg" "$TRABAJO" "$LIB/mcp_clientes.py" "$FOTOS_CATALOGO" "$SIN_HERRAMIENTAS" <<'EOF' || { aviso "No pude escribir la configuración de Hermes ($cfg)."; return 1; }
 import sys, yaml
 ruta, trabajo, mcp, fotos, sin = sys.argv[1:6]
 with open(ruta, encoding='utf-8') as f:
     cfg = yaml.safe_load(f) or {}
-cfg.setdefault('terminal', {})['cwd'] = trabajo
+
+
+def seccion(d, clave):
+    # Las versiones nuevas de Hermes siembran config.yaml con secciones vacías («gateway:»).
+    v = d.get(clave)
+    if not isinstance(v, dict):
+        v = d[clave] = {}
+    return v
+
+
+seccion(cfg, 'terminal')['cwd'] = trabajo
 cfg['timezone'] = 'America/Bogota'
-agente = cfg.setdefault('agent', {})
+agente = seccion(cfg, 'agent')
 agente['disabled_toolsets'] = yaml.safe_load(sin)
 agente['max_turns'] = 8
-cfg.setdefault('platform_toolsets', {})['whatsapp_cloud'] = ['mendiautos']
-pasarela = cfg.setdefault('gateway', {})
+seccion(cfg, 'platform_toolsets')['whatsapp_cloud'] = ['mendiautos']
+pasarela = seccion(cfg, 'gateway')
 pasarela['strict'] = True
 pasarela['media_delivery_allow_dirs'] = [fotos]
-cfg.setdefault('mcp_servers', {})['mendiautos'] = {
+pasarela['trust_recent_files'] = False           # solo fotos del catálogo y de la caché
+# Hermes actual esconde herramientas tras un buscador (tool_search/tool_call): aquí son pocas
+# y deben verse directo. Tampoco se ofrece la entrevista de perfil ni los consejos de Hermes.
+seccion(seccion(cfg, 'tools'), 'tool_search')['enabled'] = 'off'
+bienvenida = seccion(cfg, 'onboarding')
+bienvenida['profile_build'] = 'off'
+seccion(bienvenida, 'seen').update(profile_build_offered=True, busy_input_prompt=True, tool_progress_prompt=True)
+seccion(cfg, 'mcp_servers')['mendiautos'] = {
     'command': '/usr/bin/python3', 'args': ['-I', mcp], 'timeout': 30, 'connect_timeout': 30,
     'tools': {'resources': False, 'prompts': False},
 }
@@ -188,23 +208,74 @@ EOF
 modelo_actual() {
   local m
   m=$(como_usuario "$HERMES" config get model.default 2>&1 | tail -n 1) || true
-  [[ -n $m && $m != *"not set"* && $m != *rror* ]] && printf '%s' "$m"
+  [[ -n $m && $m != *"not set"* && $m != *rror* && $m != None ]] && printf '%s' "$m"
+}
+
+# Gemini, con la misma clave del asistente del equipo si ya está (los dos
+# asistentes pueden usarla). Hermes siembra config.yaml con un modelo de ejemplo
+# de otro proveedor, que no cuenta: otro proveedor solo con --otro-proveedor.
+OTRO=$HH/.mendiautos-otro-proveedor
+
+poner_modelo_gemini() {  # poner_modelo_gemini MODELO
+  local cfg=$HH/config.yaml
+  python3 - "$cfg" "$1" <<'EOF' || return 1
+import sys, yaml
+ruta, modelo = sys.argv[1:3]
+with open(ruta, encoding='utf-8') as f:
+    cfg = yaml.safe_load(f) or {}
+anterior = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
+cfg['model'] = {k: v for k, v in anterior.items() if k not in ('provider', 'default', 'base_url', 'api_key', 'api_mode')}
+cfg['model'].update(provider='gemini', default=modelo)
+with open(ruta + '.tmp', 'w', encoding='utf-8') as f:
+    yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
+EOF
+  chown "$USUARIO:$USUARIO" "$cfg.tmp"
+  chmod 0600 "$cfg.tmp"
+  mv -f "$cfg.tmp" "$cfg"
 }
 
 configurar_modelo() {
-  if [ -z "$(modelo_actual)" ] && [ -t 0 ]; then
+  local clave="" equipo_env=/home/hermes/.hermes/.env proveedor actual
+  if [ "$OTRO_PROVEEDOR" = 1 ]; then
+    [ -t 0 ] || error "--otro-proveedor necesita responder preguntas (ssh -t)."
     echo
-    echo "Modelo de IA del asistente de clientes"
-    echo "  Elige proveedor y pega la clave de API (puede ser la misma del asistente del equipo)."
-    echo "  Conviene un modelo rápido y económico: responde a cada mensaje de los clientes."
+    echo "Modelo de IA del asistente de clientes: conviene uno rápido y económico."
     como_usuario "$HERMES" model || true
+    touch "$OTRO"
   fi
-  if [ -n "$(modelo_actual)" ]; then
-    ok "Modelo de IA: $(modelo_actual)"
-    return 0
+  if [ -f "$OTRO" ]; then
+    proveedor=$(como_usuario "$HERMES" config get model.provider 2> /dev/null | tail -n 1)
+    if [ -n "$(modelo_actual)" ] && [[ $proveedor != auto && $proveedor != *"not set"* ]]; then
+      ok "Modelo de IA: $(modelo_actual) ($proveedor)"
+      return 0
+    fi
+    aviso "Falta elegir el modelo de IA: ssh -t root@IP \"mendiautos hermes --clientes --otro-proveedor\""
+    return 1
   fi
-  aviso "Falta elegir el modelo de IA: ssh -t root@IP \"mendiautos hermes --clientes\""
-  return 1
+  if [ -z "$(valor_env GEMINI_API_KEY)" ]; then
+    clave=$(sed -n 's/^GEMINI_API_KEY=//p' "$equipo_env" 2> /dev/null | tail -n 1 | tr -d "'\"")
+    if [ -n "$clave" ]; then
+      ok "Uso la misma clave de Gemini del asistente del equipo"
+    elif [ -t 0 ]; then
+      echo
+      echo "Clave de Gemini (Google AI Studio, https://aistudio.google.com/apikey)"
+      read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
+      echo
+      clave=${clave// /}
+    fi
+    if [ -n "$clave" ]; then
+      [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
+      poner_env GEMINI_API_KEY "$clave"
+    fi
+  fi
+  if [ -z "$(valor_env GEMINI_API_KEY)" ]; then
+    aviso "Falta la clave de Gemini: ssh -t root@IP \"mendiautos hermes --clientes\""
+    return 1
+  fi
+  actual=$(modelo_actual)
+  [ "$(como_usuario "$HERMES" config get model.provider 2> /dev/null | tail -n 1)" = gemini ] && [[ $actual == gemini* ]] || actual=""
+  poner_modelo_gemini "${actual:-$MODELO_POR_DEFECTO}" || error "No pude guardar el modelo en $HH/config.yaml"
+  ok "Modelo de IA: $(modelo_actual) (Gemini)"
 }
 
 pedir() {  # pedir VARIABLE "texto" oculto(0|1) patrón valor-dado
@@ -347,13 +418,14 @@ instrucciones_meta() {
 
 # --------------------------------------------------------------- comandos
 main() {
-  NUMERO_ID="" TOKEN_META="" APP_SECRET=""
+  NUMERO_ID="" TOKEN_META="" APP_SECRET="" OTRO_PROVEEDOR=0
   local accion=instalar
   while [ $# -gt 0 ]; do
     case $1 in
       --numero-id) NUMERO_ID=${2:-}; shift 2 ;;
       --token-meta) TOKEN_META=${2:-}; shift 2 ;;
       --app-secret) APP_SECRET=${2:-}; shift 2 ;;
+      --otro-proveedor) OTRO_PROVEEDOR=1; shift ;;
       --solo-archivos) accion=archivos; shift ;;
       --reiniciar) accion=reiniciar; shift ;;
       --actualizar) accion=actualizar; shift ;;

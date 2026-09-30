@@ -529,7 +529,7 @@ def registrar(id_s, accion, nota='', estado=None):
         if estado:
             s['estado'] = estado
         s['historial'].append({'fecha': ahora().isoformat(timespec='seconds'), 'accion': accion,
-                               'nota': texto(nota, 500) if nota else '', 'por': quien_llama()})
+                               'nota': texto(nota, 500) if nota else '', 'por': POR[0] or quien_llama()})
         guardar(r, s)
     return s
 
@@ -619,6 +619,34 @@ def cmd_resumen(a):
         print('  ' + linea(s))
     if len(pendientes) > 12:
         print(f'  … y {len(pendientes) - 12} más (solicitudes listar)')
+
+
+def cmd_informe(a):
+    """Cifras de solicitudes para el informe semanal (o --mes) del gerente y el administrador."""
+    hoy = ahora().date()
+    if a.mes:
+        fin = hoy.replace(day=1) - dt.timedelta(days=1)
+        desde = fin.replace(day=1)
+    else:
+        fin = hoy - dt.timedelta(days=1)
+        desde = fin - dt.timedelta(days=6)
+
+    def en(iso):
+        try:
+            return desde <= dt.datetime.fromisoformat(iso).astimezone(ahora().tzinfo).date() <= fin
+        except (TypeError, ValueError):
+            return False
+    lista = [s for s in todas() if s['tipo'] != 'prueba']
+    recibidas = [s for s in lista if en(s['recibida'])]
+    atendidas = {s['id'] for s in lista for h in s.get('historial') or []
+                 if h.get('accion') in ('atendida', 'estado: atendida') and en(h.get('fecha'))}
+    pendientes = [s for s in lista if s['estado'] in PENDIENTES]
+    por_tipo = {}
+    for s in recibidas:
+        por_tipo[s['tipo']] = por_tipo.get(s['tipo'], 0) + 1
+    print(f'📥 Solicitudes de clientes: {len(recibidas)} recibidas' +
+          (' (' + ', '.join(f'{TIPOS.get(t, t).lower()} {n}' for t, n in sorted(por_tipo.items(), key=lambda x: -x[1])) + ')'
+           if por_tipo else '') + f' · {len(atendidas)} atendidas · {len(pendientes)} pendientes hoy')
 
 
 def cmd_probar(a):
@@ -827,6 +855,9 @@ def es_admin():
     return ES_ADMIN
 
 
+POR = ['']      # nombre de quien pidió el cambio por el asistente (--por)
+
+
 ES_ADMIN = False
 SOLO_ADMIN = {'documentos', 'limpiar', 'servir'}
 
@@ -890,15 +921,21 @@ def construir_parser():
     s = nuevo('atender', 'marca una solicitud como atendida', cmd_atender)
     s.add_argument('id', metavar='S-<n>')
     s.add_argument('--nota', default='', help='qué se hizo (queda en el historial)')
+    s.add_argument('--por', default='', help='quién lo hizo (lo pone el asistente)')
 
     s = nuevo('estado', 'cambia el estado: nueva, en-curso, atendida o descartada', cmd_estado)
     s.add_argument('id', metavar='S-<n>')
     s.add_argument('estado', metavar='estado')
     s.add_argument('--nota', default='')
+    s.add_argument('--por', default='', help='quién lo hizo (lo pone el asistente)')
 
     s = nuevo('nota', 'agrega una nota al historial', cmd_nota)
     s.add_argument('id', metavar='S-<n>')
     s.add_argument('texto')
+    s.add_argument('--por', default='', help='quién la escribe (lo pone el asistente)')
+
+    s = nuevo('informe', 'cifras para el informe: la semana que terminó ayer, o --mes (el mes anterior)', cmd_informe)
+    s.add_argument('--mes', action='store_true')
 
     s = nuevo('resumen', 'resumen del día: recibidas y pendientes', cmd_resumen)
     s.add_argument('--dias', type=int, default=1)
@@ -939,6 +976,8 @@ def main(argv=None):
                                          pwd.getpwuid(os.geteuid()).pw_name == DUENO)
         if args.comando in SOLO_ADMIN and not ES_ADMIN:
             raise Fallo('Este comando es solo para el administrador del servidor.')
+        if getattr(args, 'por', ''):
+            POR[0] = texto(args.por, 40)
         if not (args.comando == 'documentos' and os.geteuid() == 0):  # root copia a donde quiera
             como_dueno(argv)
         args.func(args)

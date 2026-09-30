@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js" defer></script>
 <script src="assets/inventario.js"></script>
+<script src="assets/sitio.js"></script>
 <script src="assets/catalogo.js"></script>
 <title>Mendiautos | Compra y venta de autos en Colombia</title>
 <meta name="description" content="Concesionario multimarca en Bucaramanga. Compra, vende y financia autos usados y nuevos con respaldo y garantía. Te conducimos al auto de tus sueños.">
@@ -190,12 +191,13 @@
 
   <!-- HERO -->
   <section style="position:relative;height:100vh;min-height:600px;background:radial-gradient(120% 90% at 55% 30%,#33302c 0%,#151210 55%,#0a0908 100%);overflow:hidden">
-    <video class="mnd-hero-video" autoplay muted="muted" loop="loop" playsinline preload="auto" disablepictureinpicture style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center"><source src="assets/hero-video.mp4" type="video/mp4"></video>
+    <video class="mnd-hero-video" autoplay muted="muted" loop="loop" playsinline preload="auto" disablepictureinpicture style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center"></video>
+    <img class="mnd-hero-foto" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:none">
     <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,9,8,.72),rgba(10,9,8,.18) 45%,rgba(10,9,8,.35))"></div>
     <div class="r-left" style="position:absolute;left:52px;bottom:96px;max-width:520px">
-      <div style="font:600 15px/1 'Open Sans',sans-serif;letter-spacing:.42em;color:#c9c5c1">BMW</div>
-      <h1 class="r-display" style="margin:14px 0 0;font:600 62px/.98 'Open Sans',sans-serif;letter-spacing:.06em;color:#fff">Serie 7<br>2026</h1>
-      <a href="AutosDisponibles.dc.html" style="display:inline-flex;align-items:center;gap:12px;margin-top:30px;padding:14px 26px;border-radius:100px;background:#fff;color:#0e0c0b;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.16em">VER MÁS <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12h15M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+      <div style="font:600 15px/1 'Open Sans',sans-serif;letter-spacing:.42em;color:#c9c5c1">{{p.texto}}</div>
+      <h1 class="r-display" style="margin:14px 0 0;font:600 62px/.98 'Open Sans',sans-serif;letter-spacing:.06em;color:#fff;white-space:pre-line">{{p.titulo}}</h1>
+      <a href="{{p.enlace}}" style="display:inline-flex;align-items:center;gap:12px;margin-top:30px;padding:14px 26px;border-radius:100px;background:#fff;color:#0e0c0b;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.16em">VER MÁS <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12h15M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
     </div>
     <div class="r-left" style="position:absolute;left:52px;bottom:52px;display:flex;gap:8px"><span style="width:26px;height:3px;background:#1E50A2"></span><span style="width:26px;height:3px;background:rgba(255,255,255,.25)"></span><span style="width:26px;height:3px;background:rgba(255,255,255,.25)"></span><span style="width:26px;height:3px;background:rgba(255,255,255,.25)"></span></div>
     <div style="position:absolute;left:0;right:0;bottom:0;height:160px;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg))"></div>
@@ -409,6 +411,11 @@
   </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:3400}}">class Component extends DCLogic {
+  renderVals(){
+    // Portada: la cambia el asistente (catalogo portada …); sin cambios, la del diseño.
+    const C=window.MND_CATALOGO;
+    return {p: C&&C.portada ? C.portada() : {texto:'BMW',titulo:'Serie 7\n2026',esVideo:true,esFoto:false,video:'assets/hero-video.mp4',poster:'',foto:'',enlace:'AutosDisponibles.dc.html'}};
+  }
   componentDidMount(){
     const saved = (window.__mndTheme) || 'dark';
     this._applyTheme(saved);
@@ -437,8 +444,14 @@
     this._onScroll();
   }
   _setupHeroVideo(){
-    const v=document.querySelector('.mnd-hero-video');
+    // Fondo de la portada: el video o la foto que eligió el equipo (o el video del diseño).
+    const C=window.MND_CATALOGO, p=C&&C.portada ? C.portada() : {esFoto:false,video:'assets/hero-video.mp4',poster:''};
+    const fuera=(sel)=>[...document.querySelectorAll(sel)].find(x=>!x.closest('x-dc'));
+    const v=fuera('.mnd-hero-video'), foto=fuera('.mnd-hero-foto');
+    if(p.esFoto && foto){ foto.src=p.foto; foto.style.display='block'; if(v) v.remove(); return; }
     if(!v) return;
+    if(p.poster) v.poster=p.poster;
+    v.src=p.video;
     v.muted=true; v.defaultMuted=true;
     const tryPlay=()=>{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); };
     if(v.readyState>=2) tryPlay(); else v.addEventListener('loadeddata',tryPlay,{once:true});
