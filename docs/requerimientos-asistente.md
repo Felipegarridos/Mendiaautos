@@ -12,7 +12,7 @@ Canal: **Telegram, en chat privado**.
 |---|---|---|---|
 | Nelson | Gerente | pendiente | Todo |
 | Felipe | Administrador | 943010561 | Todo |
-| Vendedor 1 (nombre pendiente) | Vendedor | pendiente | Subir autos (datos, fotos y enlace de video) y corregir los que él subió. Publica sin aprobación. No ve solicitudes ni informes, no marca vendidos, no cambia la portada ni los destacados |
+| Duban | Vendedor | por confirmar (llegó 943010561, el mismo de Felipe) | Subir autos (datos, fotos y enlace de video) y corregir los que él subió. Publica sin aprobación. No ve solicitudes ni informes, no marca vendidos, no cambia la portada ni los destacados |
 
 Los permisos los hace cumplir el sistema, no solo una instrucción al asistente.
 Los avisos de solicitudes nuevas y los informes llegan solo a Nelson y Felipe.
@@ -142,13 +142,16 @@ directamente en la VPS durante la instalación.
       con «permitir insertar» activo). También los puede poner el gerente por
       el asistente.
 - [ ] El auto real de prueba: datos y 5 o más fotos (el reel ya llegó).
-- [ ] ID de Telegram de Nelson, y nombre e ID del vendedor 1 (cada uno le
-      escribe a @userinfobot y copia su «Id»).
+- [ ] ID de Telegram de Nelson, y confirmar el de Duban (vendedor): llegó
+      943010561, que es el que estaba registrado para Felipe. Cada uno le
+      escribe a @userinfobot y copia su «Id».
 
 ### En la VPS
 
 - [ ] Instalar el asistente: `ssh -t root@2.28.140.187 "mendiautos hermes"`.
-      Pide el equipo, la clave de Gemini y el token del bot de @BotFather.
+      Pide el equipo, la clave de Gemini y el token del bot de @BotFather. El
+      primer intento (30/09, con el instalador de la fase 1) instaló Hermes y
+      se detuvo en la configuración; se vuelve a correr después del merge.
 - [ ] Registrar al equipo: `mendiautos equipo agregar <ID> <nombre> <rol>`.
 - [ ] Nelson, Felipe y el vendedor 1 le escriben «/start» al bot una vez (un
       bot de Telegram no puede escribirle primero a nadie).
