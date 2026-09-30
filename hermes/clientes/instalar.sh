@@ -58,10 +58,12 @@ mendiautos hermes --clientes — asistente de WhatsApp para clientes (WhatsApp o
                                         Gemini con la clave del asistente del equipo)
 
 Credenciales de Meta (developers.facebook.com → tu app → WhatsApp → Configuración
-de la API), también se pueden dar sin preguntas:
-  --numero-id ID        «Identificador del número de teléfono»
-  --token-meta TOKEN    token permanente de un usuario del sistema (Business Manager)
-  --app-secret CLAVE    «Clave secreta de la app» (Configuración → Básica)
+de la API). Las que faltan se preguntan; para cambiar una que ya está:
+  --numero-id [ID]      «Identificador del número de teléfono»
+  --token-meta          token permanente de un usuario del sistema (Business Manager)
+  --app-secret          «Clave secreta de la app» (Configuración → Básica)
+El token y la clave se piden sin mostrarlos: no los escribas en el comando,
+porque quedarían en el historial.
 
 Necesita el sitio con dominio y HTTPS (mendiautos dominio …): Meta solo entrega
 los mensajes a una dirección https://.
@@ -259,9 +261,10 @@ configurar_modelo() {
     elif [ -t 0 ]; then
       echo
       echo "Clave de Gemini (Google AI Studio, https://aistudio.google.com/apikey)"
-      read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
+      echo "  Al pegarla no se ve nada en pantalla: es normal. Pégala una vez y presiona Enter."
+      read -r -s -p "  Clave (Enter sin pegar nada para dejarla pendiente): " clave
       echo
-      clave=${clave// /}
+      clave=${clave//[[:space:]]/}
     fi
     if [ -n "$clave" ]; then
       [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
@@ -278,17 +281,18 @@ configurar_modelo() {
   ok "Modelo de IA: $(modelo_actual) (Gemini)"
 }
 
-pedir() {  # pedir VARIABLE "texto" oculto(0|1) patrón valor-dado
-  local var=$1 texto=$2 oculto=$3 patron=$4 valor=$5
-  if [ -z "$valor" ] && [ -z "$(valor_env "$var")" ] && [ -t 0 ]; then
+pedir() {  # pedir VARIABLE "texto" oculto(0|1) patrón valor-dado [volver-a-pedir(0|1)]
+  local var=$1 texto=$2 oculto=$3 patron=$4 valor=$5 otra_vez=${6:-0}
+  if [ -z "$valor" ] && { [ -z "$(valor_env "$var")" ] || [ "$otra_vez" = 1 ]; } && [ -t 0 ]; then
     if [ "$oculto" = 1 ]; then
-      read -r -s -p "  $texto (no se mostrará; Enter para dejarlo pendiente): " valor
+      echo "  Al pegarlo no se ve nada en pantalla: es normal. Pégalo una vez y presiona Enter."
+      read -r -s -p "  $texto (Enter sin pegar nada para dejarlo como está): " valor
       echo
     else
-      read -r -p "  $texto (Enter para dejarlo pendiente): " valor
+      read -r -p "  $texto (Enter para dejarlo como está): " valor
     fi
   fi
-  valor=${valor// /}
+  valor=${valor//[[:space:]]/}
   if [ -n "$valor" ]; then
     [[ $valor =~ $patron ]] || error "Eso no parece válido para $var."
     poner_env "$var" "$valor"
@@ -302,9 +306,9 @@ configurar_whatsapp_cloud() {
     echo "WhatsApp oficial (Cloud API de Meta)"
     echo "  Los datos están en developers.facebook.com → tu app → WhatsApp → Configuración de la API."
   fi
-  pedir WHATSAPP_CLOUD_PHONE_NUMBER_ID "Identificador del número de teléfono" 0 '^[0-9]{6,20}$' "$NUMERO_ID"
-  pedir WHATSAPP_CLOUD_ACCESS_TOKEN "Token permanente (usuario del sistema)" 1 '^[A-Za-z0-9_-]{40,}$' "$TOKEN_META"
-  pedir WHATSAPP_CLOUD_APP_SECRET "Clave secreta de la app" 1 '^[A-Za-z0-9]{16,64}$' "$APP_SECRET"
+  pedir WHATSAPP_CLOUD_PHONE_NUMBER_ID "Identificador del número de teléfono" 0 '^[0-9]{6,20}$' "$NUMERO_ID" "$PEDIR_NUMERO"
+  pedir WHATSAPP_CLOUD_ACCESS_TOKEN "Token permanente (usuario del sistema)" 1 '^[A-Za-z0-9_-]{40,}$' "$TOKEN_META" "$PEDIR_TOKEN_META"
+  pedir WHATSAPP_CLOUD_APP_SECRET "Clave secreta de la app" 1 '^[A-Za-z0-9]{16,64}$' "$APP_SECRET" "$PEDIR_APP_SECRET"
   # Lo que no es secreto de Meta se genera o se fija aquí.
   [ -n "$(valor_env WHATSAPP_CLOUD_VERIFY_TOKEN)" ] || poner_env WHATSAPP_CLOUD_VERIFY_TOKEN "$(openssl rand -hex 20)"
   poner_env WHATSAPP_CLOUD_WEBHOOK_HOST 127.0.0.1
@@ -393,9 +397,10 @@ probar_webhook() {
   local intento=0
   vt=$(valor_env WHATSAPP_CLOUD_VERIFY_TOKEN)
   reto=prueba$RANDOM
-  # nginx tarda un momento en aplicar la configuración nueva.
-  until [ "${respuesta:-}" = "$reto" ] || [ "$intento" -ge 10 ]; do
-    [ "$intento" -gt 0 ] && sleep 1
+  # nginx tarda un momento en aplicar la configuración nueva, y Hermes, unos
+  # 20 segundos en arrancar y abrir el webhook: se espera hasta un minuto.
+  until [ "${respuesta:-}" = "$reto" ] || [ "$intento" -ge 30 ]; do
+    [ "$intento" -gt 0 ] && sleep 2
     respuesta=$(curl -fsS --max-time 10 "https://$dominio/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=$vt&hub.challenge=$reto" 2> /dev/null || true)
     intento=$((intento + 1))
   done
@@ -418,13 +423,17 @@ instrucciones_meta() {
 
 # --------------------------------------------------------------- comandos
 main() {
-  NUMERO_ID="" TOKEN_META="" APP_SECRET="" OTRO_PROVEEDOR=0
+  NUMERO_ID="" TOKEN_META="" APP_SECRET="" OTRO_PROVEEDOR=0 PEDIR_NUMERO=0 PEDIR_TOKEN_META=0 PEDIR_APP_SECRET=0
   local accion=instalar
   while [ $# -gt 0 ]; do
+    # Sin valor, la opción vuelve a preguntar el dato (sin mostrarlo si es secreto).
     case $1 in
-      --numero-id) NUMERO_ID=${2:-}; shift 2 ;;
-      --token-meta) TOKEN_META=${2:-}; shift 2 ;;
-      --app-secret) APP_SECRET=${2:-}; shift 2 ;;
+      --numero-id)
+        if [ $# -ge 2 ] && [[ $2 != -* ]]; then NUMERO_ID=$2; shift 2; else PEDIR_NUMERO=1; shift; fi ;;
+      --token-meta)
+        if [ $# -ge 2 ] && [[ $2 != -* ]]; then TOKEN_META=$2; shift 2; else PEDIR_TOKEN_META=1; shift; fi ;;
+      --app-secret)
+        if [ $# -ge 2 ] && [[ $2 != -* ]]; then APP_SECRET=$2; shift 2; else PEDIR_APP_SECRET=1; shift; fi ;;
       --otro-proveedor) OTRO_PROVEEDOR=1; shift ;;
       --solo-archivos) accion=archivos; shift ;;
       --reiniciar) accion=reiniciar; shift ;;

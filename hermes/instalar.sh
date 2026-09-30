@@ -48,13 +48,19 @@ ok()    { printf '%s ✓ %s %s\n' "$C_VE" "$C_NO" "$*"; }
 aviso() { printf '%s ! %s %s\n' "$C_AM" "$C_NO" "$*" >&2; }
 error() { printf '%s ✗ %s %s\n' "$C_RO" "$C_NO" "$*" >&2; exit 1; }
 
+# Solo «mendiautos hermes» (con terminal) hace preguntas. «mendiautos equipo» y
+# las actualizaciones automáticas nunca preguntan: con la salida oculta, una
+# pregunta dejaría el comando esperando sin que se vea.
+PREGUNTAR=0
+se_puede_preguntar() { [ "$PREGUNTAR" = 1 ] && [ -t 0 ]; }
+
 uso() {
   cat <<'EOF'
 mendiautos hermes — asistente del equipo: catálogo, portada, informes y solicitudes.
 
   mendiautos hermes                   instala o completa la configuración
                                       (usa ssh -t para responder las preguntas)
-  mendiautos hermes --token T         token del bot de Telegram (sin preguntarlo)
+  mendiautos hermes --token           cambia el token del bot de Telegram (lo pide sin mostrarlo)
   mendiautos hermes --clave-gemini    vuelve a pedir la clave de Gemini
   mendiautos hermes --modelo M        modelo de Gemini (por defecto gemini-3.5-flash)
   mendiautos hermes --otro-proveedor  elegir otro proveedor de IA con el asistente de Hermes
@@ -117,7 +123,7 @@ ids_de() {  # ids_de rol1 rol2… → IDs separados por coma
 
 pedir_equipo() {
   [ -n "$(equipo)" ] && return 0
-  [ -t 0 ] || { aviso "El equipo está vacío: mendiautos equipo agregar <ID> <nombre> <rol>"; return 1; }
+  se_puede_preguntar || { aviso "El equipo está vacío: mendiautos equipo agregar <ID> <nombre> <rol>"; return 1; }
   echo
   echo "Equipo: quién puede usar el asistente"
   echo "  Cada persona le escribe a @userinfobot en Telegram y te pasa su «Id» (un número)."
@@ -295,18 +301,26 @@ whatsapp_activo() { [ "$(valor_env WHATSAPP_ENABLED)" = true ] && [ -n "$(ls -A 
 
 configurar_telegram() {
   local token=$TOKEN todos admin
-  if [ -z "$token" ] && [ -z "$(valor_env TELEGRAM_BOT_TOKEN)" ] && [ -t 0 ]; then
+  if [ -z "$token" ] && { [ -z "$(valor_env TELEGRAM_BOT_TOKEN)" ] || [ "$PEDIR_TOKEN" = 1 ]; } && se_puede_preguntar; then
     echo
     echo "Bot de Telegram"
-    echo "  1. En Telegram, abre @BotFather y envía /newbot."
-    echo "  2. Ponle un nombre (por ejemplo «Mendiautos Equipo») y un usuario que termine en «bot»."
-    echo "  3. BotFather te da un token, algo como 123456789:AAH…"
-    read -r -s -p "  Pega aquí el token (no se mostrará; Enter para omitir): " token
+    if [ "$PEDIR_TOKEN" = 1 ]; then
+      echo "  En @BotFather: /mybots → tu bot → API Token (o «Revoke current token» para uno nuevo)."
+    else
+      echo "  1. En Telegram, abre @BotFather y envía /newbot."
+      echo "  2. Ponle un nombre (por ejemplo «Mendiautos Equipo») y un usuario que termine en «bot»."
+      echo "  3. BotFather te da un token, algo como 123456789:AAH…"
+    fi
+    echo "  Al pegarlo no se ve nada en pantalla: es normal. Pégalo una vez y presiona Enter."
+    read -r -s -p "  Token (Enter sin pegar nada para omitir): " token
     echo
+    token=${token//[[:space:]]/}
+    [ -n "$token" ] || [ "$PEDIR_TOKEN" = 0 ] || aviso "No cambié el token."
   fi
   if [ -n "$token" ]; then
     [[ $token =~ ^[0-9]{5,}:[A-Za-z0-9_-]{30,}$ ]] || error "Eso no parece un token de @BotFather."
     poner_env TELEGRAM_BOT_TOKEN "$token"
+    ok "Token de Telegram recibido y guardado"
   fi
   # Quién puede escribirle: todo el equipo. Los avisos de Hermes van al primer administrador.
   todos=$(ids_de administrador gerente vendedor)
@@ -322,7 +336,7 @@ configurar_telegram() {
     return 0
   fi
   if [ -z "$(valor_env TELEGRAM_BOT_TOKEN)" ]; then
-    aviso "Telegram: falta el token del bot; lo pide «mendiautos hermes» (o: mendiautos hermes --token …)."
+    aviso "Telegram: falta el token del bot; lo pide «mendiautos hermes» (o: mendiautos hermes --token)."
   else
     aviso "Telegram: falta el equipo (mendiautos equipo agregar <ID> <nombre> <rol>)."
   fi
@@ -334,7 +348,7 @@ configurar_telegram() {
 # persona funcionan por Telegram: por WhatsApp el asistente solo conversa.
 configurar_whatsapp() {
   local usuarios=${WA_USUARIOS// /} n lista=() primero
-  if [ -z "$usuarios" ] && [ -z "$(valor_env WHATSAPP_ALLOWED_USERS)" ] && [ -t 0 ]; then
+  if [ -z "$usuarios" ] && [ -z "$(valor_env WHATSAPP_ALLOWED_USERS)" ] && se_puede_preguntar; then
     echo
     echo "WhatsApp del equipo"
     echo "  Números del equipo que podrán escribirle al asistente, con indicativo y sin"
@@ -454,15 +468,16 @@ configurar_modelo() {
     aviso "Falta elegir el modelo de IA: ssh -t root@IP \"mendiautos hermes --otro-proveedor\" (o --clave-gemini para volver a Gemini)"
     return 1
   fi
-  if { [ -z "$(valor_env GEMINI_API_KEY)" ] || [ "$PEDIR_CLAVE" = 1 ]; } && [ -t 0 ]; then
+  if { [ -z "$(valor_env GEMINI_API_KEY)" ] || [ "$PEDIR_CLAVE" = 1 ]; } && se_puede_preguntar; then
     echo
     echo "Clave de Gemini (Google AI Studio)"
     echo "  1. Entra a https://aistudio.google.com/apikey con la cuenta de Google de la empresa."
     echo "  2. «Create API key» y cópiala. Mejor en un proyecto con facturación activa: el plan"
     echo "     gratuito tiene pocos mensajes por minuto y Google puede usar esos datos."
-    read -r -s -p "  Pega aquí la clave (no se mostrará; Enter para dejarla pendiente): " clave
+    echo "  Al pegarla no se ve nada en pantalla: es normal. Pégala una vez y presiona Enter."
+    read -r -s -p "  Clave (Enter sin pegar nada para dejarla pendiente): " clave
     echo
-    clave=${clave// /}
+    clave=${clave//[[:space:]]/}
   fi
   if [ -n "$clave" ]; then
     [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
@@ -710,7 +725,7 @@ aplicar_equipo() {
 
 # --------------------------------------------------------------- comandos
 main() {
-  TOKEN="" WA_USUARIOS="" MODELO="" AUDIOS="" PEDIR_CLAVE=0 OTRO_PROVEEDOR=0
+  TOKEN="" WA_USUARIOS="" MODELO="" AUDIOS="" PEDIR_CLAVE=0 PEDIR_TOKEN=0 OTRO_PROVEEDOR=0
   local accion=instalar servicio=1 whatsapp=0
   if [ "${1:-}" = --clientes ]; then
     shift
@@ -718,7 +733,8 @@ main() {
   fi
   while [ $# -gt 0 ]; do
     case $1 in
-      --token) TOKEN=${2:-}; shift 2 ;;
+      --token)   # sin valor: lo pide sin mostrarlo (un valor escrito aquí queda en el historial)
+        if [ $# -ge 2 ] && [[ $2 != -* ]]; then TOKEN=$2; shift 2; else PEDIR_TOKEN=1; shift; fi ;;
       --modelo) MODELO=${2:-}; shift 2 ;;
       --clave-gemini) PEDIR_CLAVE=1; shift ;;
       --otro-proveedor) OTRO_PROVEEDOR=1; shift ;;
@@ -743,6 +759,10 @@ main() {
   [ "$(id -u)" -eq 0 ] || error "Ejecútalo como root: mendiautos hermes"
   [ -x /usr/local/bin/catalogo ] || error "Falta el comando catalogo. Primero: mendiautos instalar"
   [ -x /usr/local/bin/solicitudes ] || error "Falta el comando solicitudes. Primero: mendiautos actualizar --forzar"
+  if [ "$accion" = instalar ]; then
+    PREGUNTAR=1
+    [ "$PEDIR_TOKEN" = 0 ] || [ -t 0 ] || error "--token pregunta el token sin mostrarlo; usa: ssh -t root@IP \"mendiautos hermes --token\""
+  fi
 
   case $accion in
     archivos)
