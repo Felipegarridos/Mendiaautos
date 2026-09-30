@@ -321,7 +321,11 @@ configurar_telegram() {
     ok "Telegram: bot configurado; equipo: $(equipo | awk -F '\t' '{printf "%s%s (%s)", (NR > 1 ? ", " : ""), $2, $3}')"
     return 0
   fi
-  aviso "Telegram sin configurar: falta el token del bot o el equipo (mendiautos equipo agregar …)."
+  if [ -z "$(valor_env TELEGRAM_BOT_TOKEN)" ]; then
+    aviso "Telegram: falta el token del bot; lo pide «mendiautos hermes» (o: mendiautos hermes --token …)."
+  else
+    aviso "Telegram: falta el equipo (mendiautos equipo agregar <ID> <nombre> <rol>)."
+  fi
   return 1
 }
 
