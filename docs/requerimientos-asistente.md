@@ -53,7 +53,8 @@ La edición de las demás secciones de la página queda fuera por ahora.
   aprueba.
 - Velocidad máxima: no se pide ni se muestra. 0-100: no se pide y se oculta si
   está vacío.
-- Mínimo 5 fotos y máximo 15. Con menos de 5, pide las que faltan y no publica.
+- Mínimo 5 fotos y máximo 20 (cambiado el 02/10/2026; antes 15). Con menos de
+  5, pide las que faltan y no publica.
 - Resumen final con los datos y un enlace de vista previa. Solo se publica con
   la palabra «Publicar»; mientras tanto el auto queda oculto.
 - Borrador sin terminar: se borra a los 7 días (con aviso el día anterior).

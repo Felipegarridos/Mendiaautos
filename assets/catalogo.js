@@ -284,14 +284,33 @@
     var zona = document.querySelector('.mnd-gal-img');
     var tira = document.querySelector('.mnd-gal-tira');
     if (!zona || !tira || !a) return;
-    var f = fotos(a), actual = 0;
+    var f = fotos(a), actual = 0, contador = null;
+    // Con muchas fotos (hasta 20) ayuda saber cuál se está viendo: «3 / 20».
+    if (f.length > 1 && zona.parentNode) {
+      contador = zona.parentNode.querySelector('.mnd-gal-contador');
+      if (!contador) {
+        contador = document.createElement('span');
+        contador.className = 'mnd-gal-contador';
+        contador.style.cssText = 'position:absolute;left:14px;bottom:12px;background:rgba(0,0,0,.55);color:#fff;' +
+          'border-radius:8px;padding:7px 10px;font:700 11px/1 \'Open Sans\',sans-serif;letter-spacing:.08em;pointer-events:none';
+        zona.parentNode.appendChild(contador);
+      }
+    }
     function mostrar(i) {
       if (!f.length) return;
       actual = (i + f.length) % f.length;
       zona.innerHTML = img(f[actual], nombre(a) + ' · foto ' + (actual + 1), '(max-width: 900px) 100vw, 60vw');
       zona.firstChild.removeAttribute('loading');
+      if (contador) contador.textContent = (actual + 1) + ' / ' + f.length;
       var ths = tira.querySelectorAll('.mnd-thumb');
       for (var k = 0; k < ths.length; k++) ths[k].classList.toggle('sel', k === actual);
+      // La miniatura elegida siempre a la vista: la tira se desplaza sola.
+      var t = ths[actual];
+      if (t) {
+        var rt = tira.getBoundingClientRect(), rs = t.getBoundingClientRect();
+        if (rs.left < rt.left) tira.scrollLeft -= rt.left - rs.left;
+        else if (rs.right > rt.right) tira.scrollLeft += rs.right - rt.right;
+      }
     }
     if (f.length) {
       tira.innerHTML = f.map(function (u, i) {

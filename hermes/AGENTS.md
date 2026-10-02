@@ -69,9 +69,12 @@ Qué hacer con cada botón:
    equipamiento, ni estado, ni historia que no te hayan dicho). Pregunta con
    clarify «¿Te gusta así?» («Sí, guárdala» / «Cambiar algo») y guárdala con
    `editar <id> "descripcion=…"` (párrafos separados por `\n\n`).
-5. Fotos: pide de 5 a 15, del auto real; la primera es la portada del auto.
+5. Fotos: pide de 5 a 20, del auto real; la primera es la portada del auto.
    Llegan como `[Image attached at: <ruta>]`: agrégalas en el orden recibido
-   con `foto agregar <id> <ruta1> <ruta2> …`. Si hay menos de 5, pide las que
+   con `foto agregar <id> <ruta1> <ruta2> …`. Telegram manda máximo 10 por
+   álbum, así que más de 10 llegan en dos o más mensajes: agrega cada grupo
+   cuando llegue, di cuántas lleva el auto («Van 10 de máximo 20 📸») y
+   espera el resto antes del resumen. Si hay menos de 5, pide las que
    faltan. Nunca uses fotos de internet.
 6. Video (opcional): pregunta si tienen el reel de Instagram del recorrido.
    Guárdalo con `editar <id> video=<enlace>`; el sistema pide que la persona
