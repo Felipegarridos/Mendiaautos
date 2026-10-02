@@ -14,7 +14,7 @@ El catálogo vive fuera del sitio, en /var/lib/mendiautos/catalogo:
   previas/          vistas previas de borradores: <clave>.js (enlace sin publicar)
 
 Un auto nuevo empieza como borrador: no sale en el sitio hasta que alguien
-dice «Publicar» y tiene todos los datos obligatorios y de 5 a 15 fotos. Un
+dice «Publicar» y tiene todos los datos obligatorios y de 5 a 20 fotos. Un
 borrador sin cambios en 7 días se borra solo.
 
 Cada cambio se valida, se escribe de forma atómica y queda en el historial,
@@ -68,7 +68,7 @@ WEB_MEDIOS = 'catalogo/medios'
 TZ = dt.timezone(dt.timedelta(hours=-5))  # Colombia no tiene horario de verano
 
 LADO_GRANDE, LADO_MEDIANO, LADO_MINIMO, LADO_PORTADA = 1600, 800, 320, 1920
-MIN_FOTOS, MAX_FOTOS = 5, 15              # por auto: para publicar y como tope
+MIN_FOTOS, MAX_FOTOS = 5, 20              # por auto: para publicar y como tope
 MAX_ARCHIVOS = 30                         # por comando
 MAX_BYTES_FOTO = 40 * 1024 * 1024
 MAX_BYTES_TOTAL = 200 * 1024 * 1024

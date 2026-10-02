@@ -149,7 +149,7 @@ lo que sea: «se vendió el Onix».
 
 | Botón | Qué hace |
 |---|---|
-| 🚗 Subir auto | Flujo guiado: toma los datos del mensaje o audio, confirma cada uno con ✓, pide lo que falta en orden («no aplica» donde corresponde), propone la descripción, pide de 5 a 15 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
+| 🚗 Subir auto | Flujo guiado: toma los datos del mensaje o audio, confirma cada uno con ✓, pide lo que falta en orden («no aplica» donde corresponde), propone la descripción, pide de 5 a 20 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
 | ✏️ Editar auto | Cambia cualquier dato: «cámbiale el precio a 95 millones» |
 | 📸 Fotos y videos | Agrega fotos, cambia el orden («la 3 de primera», «orden 2,1,4,3»), quita fotos o pone el reel de Instagram |
 | ✅ Marcar vendido | Muestra marca, modelo, año, precio, color y placa para confirmar; queda en «Autos vendidos» con la fecha |

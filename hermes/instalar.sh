@@ -272,6 +272,10 @@ bienvenida = seccion(cfg, 'onboarding')
 bienvenida['profile_build'] = 'off'
 seccion(bienvenida, 'seen').update(profile_build_offered=True, busy_input_prompt=True, tool_progress_prompt=True)
 seccion(cfg, 'cron')['wrap_response'] = False   # avisos e informes llegan limpios, sin encabezado técnico
+# Un mensaje que llega mientras el asistente trabaja espera su turno en vez de
+# interrumpirlo: Telegram manda las fotos en álbumes de hasta 10, y el segundo
+# álbum no debe cortar al primero mientras se guardan.
+seccion(cfg, 'display')['busy_input_mode'] = 'queue'
 voz = seccion(cfg, 'stt')
 voz.update(enabled=True, echo_transcripts=True, provider='local', language='es')
 seccion(voz, 'local').update(model=audios, language='es')
