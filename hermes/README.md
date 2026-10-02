@@ -112,6 +112,11 @@ Al final, **cada persona del equipo le escribe «/start» al bot una vez**: un
 bot de Telegram no puede escribirle primero a nadie, y sin eso no le llegan los
 avisos ni los informes.
 
+La clave y el token se pegan **solo cuando el instalador los pide** («Clave»,
+«Token»). Al pegarlos no se ve nada en pantalla: es normal; se pega una vez y se
+presiona Enter. Nunca los pegues en la línea de comandos (`root@…:~#`): quedan
+en el historial del servidor. Si pasa, cámbialos (ver «Seguridad»).
+
 Opciones útiles:
 
 | Comando | Para qué |
@@ -120,7 +125,7 @@ Opciones útiles:
 | `mendiautos hermes --modelo gemini-3.5-flash` | Elegir otro modelo de Gemini |
 | `mendiautos hermes --otro-proveedor` | Usar otro proveedor de IA (asistente de Hermes) |
 | `mendiautos hermes --audios base` | Modelo de voz más liviano (por defecto `small`; `medium` entiende mejor, pero es más lento) |
-| `mendiautos hermes --token NUEVO` | Cambiar el token del bot |
+| `mendiautos hermes --token` | Cambiar el token del bot (lo pide sin mostrarlo) |
 
 ### El equipo
 
@@ -266,11 +271,13 @@ verificación** que se pegan en Meta (WhatsApp → Configuración → Webhook �
   pidió (`catalogo historial`) y se puede deshacer. Además hay un respaldo
   diario en `/var/backups/mendiautos` (se guardan 14). Cada solicitud guarda
   quién la atendió y cuándo.
-- Si el token del bot de Telegram se filtra: en @BotFather usa `/revoke`, y
-  luego `ssh -t root@IP "mendiautos hermes --token NUEVO"`. Si se filtra la
-  clave de Gemini, bórrala en AI Studio y `mendiautos hermes --clave-gemini`.
-  Si se filtra el token de Meta, revócalo en Business Manager y vuelve a correr
-  `mendiautos hermes --clientes --token-meta NUEVO`.
+- Si el token del bot de Telegram se filtra (por ejemplo, se pegó en un chat,
+  en una captura o en la línea de comandos): en @BotFather, `/mybots` → el bot →
+  «API Token» → «Revoke current token», y el nuevo se pone con
+  `ssh -t root@IP "mendiautos hermes --token"`. Si se filtra la clave de
+  Gemini, bórrala en AI Studio y `mendiautos hermes --clave-gemini`. Si se
+  filtra el token de Meta, revócalo en Business Manager y
+  `mendiautos hermes --clientes --token-meta`. Los tres se piden sin mostrarlos.
 - Cuando alguien sale del equipo: `mendiautos equipo quitar <ID>`.
 
 ## Administración (en la VPS)
