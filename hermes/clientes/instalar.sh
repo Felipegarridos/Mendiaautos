@@ -267,7 +267,7 @@ configurar_modelo() {
       clave=${clave//[[:space:]]/}
     fi
     if [ -n "$clave" ]; then
-      [[ $clave =~ ^[A-Za-z0-9_-]{30,80}$ ]] || error "Eso no parece una clave de Google AI Studio."
+      [[ $clave =~ ^[A-Za-z0-9._-]{30,200}$ ]] || error "Eso no parece una clave de Google AI Studio."
       poner_env GEMINI_API_KEY "$clave"
     fi
   fi
