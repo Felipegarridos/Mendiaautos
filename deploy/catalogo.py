@@ -1132,15 +1132,23 @@ def destacados_de(datos):
 
 
 def resumen_pendiente(a):
-    """Una línea: lo que le falta a un borrador para publicarse."""
+    """Lo que le falta a un borrador para publicarse: la lista completa, para pedirla de una vez."""
     falta, n = pendientes(a), len(a.get('fotos') or [])
     partes = []
     if falta:
-        partes.append(f'{plural(len(falta), "dato", "datos")} (el siguiente: {minuscula(etiqueta_de(falta[0]))})')
+        nombres = [minuscula(etiqueta_de(alt)) + (' (la propones tú)' if alt == ('descripcion',) else '')
+                   for alt in falta]
+        partes.append(f'{plural(len(falta), "dato", "datos")}: ' + ', '.join(nombres))
     if n < MIN_FOTOS:
         partes.append(f'{MIN_FOTOS - n} {"foto" if MIN_FOTOS - n == 1 else "fotos"} (tiene {n}; mínimo {MIN_FOTOS})')
-    return ('Para publicar faltan: ' + ' y '.join(partes) + '. Detalle: catalogo faltan ' + a['id']) if partes \
-        else 'Tiene todo lo necesario: se publica cuando digan «Publicar» (catalogo publicar ' + a['id'] + ').'
+    if not partes:
+        return 'Tiene todo lo necesario: se publica cuando digan «Publicar» (catalogo publicar ' + a['id'] + ').'
+    verbo = 'falta' if len(partes) == 1 and partes[0].startswith('1 ') else 'faltan'
+    texto = f'Para publicar {verbo} ' + '; y '.join(partes) + '.'
+    if any(alt != ('descripcion',) for alt in falta):
+        texto += ('\nPide todo lo que falta en un solo mensaje (se puede responder en un solo audio y en cualquier '
+                  'orden). Ejemplos de cada dato: catalogo faltan ' + a['id'])
+    return texto
 
 
 # ----------------------------------------------------------------- comandos
@@ -1245,8 +1253,15 @@ def cmd_faltan(a):
     falta = pendientes(auto)
     ayudas = {c[0]: c[3] for c in CAMPOS}
     if falta:
-        print(f'Faltan {plural(len(falta), "dato", "datos")}; pídelos en este orden:')
+        cabeza = f'{"Falta" if len(falta) == 1 else "Faltan"} {plural(len(falta), "dato", "datos")}'
+        if sum(alt != ('descripcion',) for alt in falta) > 1:
+            cabeza += ('. Pídelos todos juntos en un solo mensaje, en este orden (la persona puede contestar en un '
+                       'solo audio y en cualquier orden)')
+        print(cabeza + ':')
         for i, alt in enumerate(falta, 1):
+            if alt == ('descripcion',):
+                print(f'  {i}. Descripción (descripcion): no la pidas; propónla tú con los datos guardados')
+                continue
             na = '' if any(c in SIN_NO_APLICA for c in alt) else ' · acepta «no aplica»'
             print(f'  {i}. {etiqueta_de(alt)} ({"/".join(alt)}): {ayudas[alt[0]]}{na}')
     else:

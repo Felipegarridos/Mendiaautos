@@ -194,6 +194,7 @@ seccion(seccion(cfg, 'tools'), 'tool_search')['enabled'] = 'off'
 bienvenida = seccion(cfg, 'onboarding')
 bienvenida['profile_build'] = 'off'
 seccion(bienvenida, 'seen').update(profile_build_offered=True, busy_input_prompt=True, tool_progress_prompt=True)
+seccion(cfg, 'display')['language'] = 'es'       # los avisos propios de Hermes le llegan al cliente en español
 seccion(cfg, 'mcp_servers')['mendiautos'] = {
     'command': '/usr/bin/python3', 'args': ['-I', mcp], 'timeout': 30, 'connect_timeout': 30,
     'tools': {'resources': False, 'prompts': False},

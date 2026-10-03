@@ -52,7 +52,7 @@ El equipo y sus roles están en `/etc/mendiautos/equipo.json` y se manejan con
 | Marcar vendido / volver a poner en venta | Sí | No |
 | Portada del inicio y 5 destacados | Sí | No |
 | Solicitudes de clientes e informes | Sí | No |
-| Comandos «/» de Telegram (modelo, reinicio…) | Sí | Solo `/new` y `/stop` |
+| Comandos «/» de Telegram (modelo, reinicio…) | Sí | Solo `/menu`, `/new` y `/stop` |
 
 Esto lo hace cumplir el sistema, no solo una instrucción al asistente:
 
@@ -143,13 +143,20 @@ de sus borradores. El asistente se reinicia (tarda unos segundos).
 
 ### Uso diario
 
-Al saludar («hola») o con /start, el asistente muestra el **menú con botones**,
-que queda fijo abajo del chat. También se le puede escribir o dictar por audio
-lo que sea: «se vendió el Onix».
+Al saludar («hola»), con /start o con /menu, el asistente muestra el **menú
+con botones**, que queda fijo abajo del chat. También se le puede escribir o
+dictar por audio lo que sea: «se vendió el Onix».
+
+El botón **Menú** de Telegram (junto al campo de texto) está en español y solo
+tiene tres opciones: `/menu` (ver el menú con botones), `/new` (empezar de
+cero; los borradores no se pierden) y `/stop` (detener lo que está haciendo el
+asistente). Los demás comandos de Hermes siguen funcionando si un
+administrador los escribe. Los avisos propios de Hermes también salen en
+español.
 
 | Botón | Qué hace |
 |---|---|
-| 🚗 Subir auto | Flujo guiado: toma los datos del mensaje o audio, confirma cada uno con ✓, pide lo que falta en orden («no aplica» donde corresponde), propone la descripción, pide de 5 a 20 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
+| 🚗 Subir auto | Flujo guiado: saca todos los datos de un mensaje o audio (aunque vengan en desorden), los guarda de una vez, confirma con ✓ y pide en un solo mensaje todo lo que falta («no aplica» donde corresponde), hasta completarlo; propone la descripción, pide de 5 a 20 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
 | ✏️ Editar auto | Cambia cualquier dato: «cámbiale el precio a 95 millones» |
 | 📸 Fotos y videos | Agrega fotos, cambia el orden («la 3 de primera», «orden 2,1,4,3»), quita fotos o pone el reel de Instagram |
 | ✅ Marcar vendido | Muestra marca, modelo, año, precio, color y placa para confirmar; queda en «Autos vendidos» con la fecha |

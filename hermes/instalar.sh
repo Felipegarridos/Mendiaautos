@@ -242,7 +242,11 @@ def seccion(d, clave):
 
 seccion(cfg, 'terminal')['cwd'] = trabajo
 cfg['timezone'] = 'America/Bogota'
-seccion(cfg, 'approvals')['mode'] = 'manual'
+aprobaciones = seccion(cfg, 'approvals')
+aprobaciones['mode'] = 'manual'
+# /new («empezar de cero») sin la pregunta técnica de Hermes: los borradores
+# quedan guardados en el catálogo, solo se olvida la conversación.
+aprobaciones['destructive_slash_confirm'] = False
 agente = seccion(cfg, 'agent')
 agente['disabled_toolsets'] = yaml.safe_load(sin)
 agente['image_input_mode'] = 'native'           # las fotos llegan al modelo como imagen
@@ -262,7 +266,7 @@ tg['unauthorized_dm_behavior'] = 'ignore'        # a quien no es del equipo no l
 lista = [x for x in jefes.split(',') if x]
 if lista:
     tg['allow_admin_from'] = lista               # comandos «/» (modelo, reinicio…): solo ellos
-    tg['user_allowed_commands'] = ['new', 'stop']
+    tg['user_allowed_commands'] = ['new', 'stop', 'menu']
 else:
     tg.pop('allow_admin_from', None)
 # Hermes actual esconde herramientas tras un buscador (tool_search/tool_call): aquí son pocas
@@ -275,7 +279,14 @@ seccion(cfg, 'cron')['wrap_response'] = False   # avisos e informes llegan limpi
 # Un mensaje que llega mientras el asistente trabaja espera su turno en vez de
 # interrumpirlo: Telegram manda las fotos en álbumes de hasta 10, y el segundo
 # álbum no debe cortar al primero mientras se guardan.
-seccion(cfg, 'display')['busy_input_mode'] = 'queue'
+pantalla = seccion(cfg, 'display')
+pantalla['busy_input_mode'] = 'queue'
+# Avisos de Hermes en español, y en el botón «Menú» de Telegram solo /menu,
+# /new y /stop, descritos en español por la extensión (los demás comandos
+# siguen funcionando si un administrador los escribe).
+pantalla['language'] = 'es'
+menu_tg = seccion(seccion(seccion(seccion(cfg, 'platforms'), 'telegram'), 'extra'), 'command_menu')
+menu_tg.update(priority_mode='replace', priority=['menu', 'new', 'stop'], max_commands=3)
 voz = seccion(cfg, 'stt')
 voz.update(enabled=True, echo_transcripts=True, provider='local', language='es')
 seccion(voz, 'local').update(model=audios, language='es')
