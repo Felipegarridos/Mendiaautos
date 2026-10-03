@@ -38,9 +38,17 @@ Sale con **botones** al saludar. También se puede escribir libremente
 
 La edición de las demás secciones de la página queda fuera por ahora.
 
+El botón «Menú» de Telegram (junto al campo de texto) está en español, con
+solo tres opciones: ver el menú con botones (/menu), empezar de cero (/new) y
+detener lo que está haciendo el asistente (/stop) (ajustado el 03/10/2026:
+antes mostraba unos 60 comandos de Hermes en inglés).
+
 ## Subir auto
 
-- Acepta varios datos en un mismo mensaje o audio y pregunta solo lo que falte.
+- Acepta varios datos en un mismo mensaje o audio y pregunta solo lo que falte,
+  **todo en un solo mensaje** (no de a uno), hasta completar el auto. Si en un
+  audio vienen varios autos, crea un borrador por cada uno (ajustado el
+  03/10/2026: al cliente le cansaba dar los datos de a uno).
 - Confirma cada dato («Año: 2022 ✓») y se corrige hablando normal («cambia el
   precio a 95 millones»).
 - Obligatorios, en este orden (se acepta «no aplica» donde corresponda): marca,

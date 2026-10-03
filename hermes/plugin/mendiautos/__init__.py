@@ -59,6 +59,21 @@ SOLICITUDES_PERMITIDOS = {'listar', 'ver', 'atender', 'estado', 'nota', 'resumen
 PROHIBIDAS = ('--por', '--carpeta', '--entrada-interna', '--json', '--completo', '--destino')
 CAMPOS_VIDEO = {'video', 'reel', 'instagram', 'youtube', 'video_recorrido'}
 
+# Textos de Hermes que ve el equipo, en lenguaje sencillo: /new y /stop en el botón «Menú» de
+# Telegram, y la respuesta de /new sin datos técnicos (modelo, proveedor, consejos de Hermes).
+DE_CERO = '✨ Listo, empezamos de cero. Los borradores siguen guardados. Escribe «menú» para ver las opciones.'
+TEXTOS_ES = {
+    'slash.new.description': 'Empezar de cero (los borradores no se pierden)',
+    'slash.stop.description': 'Detener lo que estoy haciendo',
+    'gateway.reset.header_default': DE_CERO,
+    'gateway.reset.header_new': DE_CERO,
+    'gateway.reset.tip': '',
+    'gateway.session.auto_reset_notice': ('◐ La conversación anterior se cerró y empezamos de cero. Los '
+                                          'borradores siguen guardados. Escribe «menú» para ver las opciones.'),
+    **dict.fromkeys(('gateway.session.info_model', 'gateway.session.info_provider', 'gateway.session.info_context',
+                     'gateway.session.info_acting_model', 'gateway.session.info_endpoint'), ''),
+}
+
 
 class Rechazo(Exception):
     """Algo que el modelo debe explicarle a la persona o corregir."""
@@ -407,6 +422,15 @@ def despues_de_herramienta(tool_name='', result=None, **_):
         anotar(m['id'], eleccion)
 
 
+def comando_menu(_args=''):
+    """/menu, si llega como comando (al_recibir suele convertirlo antes en un mensaje para el asistente)."""
+    try:
+        enviado = json.loads(herramienta_menu({})).get('ok')
+    except ValueError:
+        enviado = False
+    return None if enviado else 'Escríbeme «menú» y te muestro las opciones 👇'
+
+
 def al_recibir(event=None, **_):
     """/start y /menu abren el menú (Hermes ignora /start por su cuenta)."""
     texto = str(getattr(event, 'text', '') or '').strip()
@@ -473,3 +497,12 @@ def register(ctx):
     ctx.register_hook('pre_tool_call', antes_de_herramienta)
     ctx.register_hook('post_tool_call', despues_de_herramienta)
     ctx.register_hook('pre_gateway_dispatch', al_recibir)
+    # Botón «Menú» de Telegram en español: el instalador deja ahí solo /menu, /new y /stop.
+    # En una versión de Hermes sin estas funciones, el menú sigue como venía.
+    try:
+        if hasattr(ctx, 'register_command'):
+            ctx.register_command('menu', comando_menu, description='Ver el menú con botones')
+        if hasattr(ctx, 'register_locale'):
+            ctx.register_locale('es', TEXTOS_ES)
+    except Exception as e:  # el menú en español es un extra: el asistente funciona sin él
+        logger.warning('mendiautos: no pude poner el menú de Telegram en español: %s', e)
