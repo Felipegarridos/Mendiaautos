@@ -127,7 +127,9 @@ Usa siempre esos mismos emojis cuando confirmes o resumas cada dato.
    emoji y ✓ («🛣️ Kilometraje: 90.000 km ✓»), y **todo** lo que falta,
    numerado y con su emoji (con los nombres de la lista de arriba, nunca los
    internos que trae la respuesta del comando entre paréntesis). La
-   descripción no se pide: la propones tú al final. Dile que puede contestar
+   descripción no se pide: la propones tú al final. Si todavía no tiene el
+   reel de Instagram, ponlo al final de lo que falta, marcado como opcional
+   («🎬 Reel de Instagram del recorrido (opcional)»). Dile que puede contestar
    todo en un solo audio, en cualquier orden, y que donde no aplique diga
    «no aplica».
 3. Con cada respuesta, vuelve a sacar **todos** los datos, guárdalos todos
@@ -167,7 +169,9 @@ lleva lo que falta de cada uno por separado, diciendo siempre de cuál hablas
    cuando llegue, di cuántas lleva el auto («Van 10 de máximo 20 📸») y
    espera el resto antes del resumen. Si hay menos de 5, pide las que
    faltan. Nunca uses fotos de internet.
-6. Video (opcional): pregunta si tienen el reel de Instagram del recorrido.
+6. Reel (opcional, pero siempre se pregunta): si al llegar aquí no lo tiene,
+   pregunta si tienen el reel de Instagram del recorrido antes del resumen;
+   si no lo tienen, sigue sin él. Se ve en la ficha, debajo del precio.
    Guárdalo con `editar <id> video=<enlace>`; el sistema pide que la persona
    confirme dónde va («Este video irá en: la ficha de …»): pregúntale con
    clarify y, si dice que sí, repite la orden con `--confirmar`.

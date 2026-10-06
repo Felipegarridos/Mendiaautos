@@ -115,6 +115,15 @@ class Funcional(Base):
         self.assertNotIn('previa_publicada', (self.datos / 'inventario.js').read_text('ascii'))
         self.integridad()
 
+    def test_reel_se_pide_como_opcional(self):
+        id_ = self.nuevo('Reel', completo=False)
+        self.assertIn('Opcional: el reel de Instagram', self.ok('editar', id_, 'km=1000'))
+        salida = self.ok('editar', id_, 'video=https://www.instagram.com/reel/AbCdE12345/?stkn=xyz')
+        self.assertEqual(self.json_de(id_)['video'], 'https://www.instagram.com/reel/AbCdE12345/')
+        self.assertNotIn('reel de Instagram del recorrido (todavía sin enlace)', salida)
+        completo = self.nuevo('ReelCompleto', fotos=5)
+        self.assertIn('Opcional: todavía no tiene el reel', self.ok('editar', completo, 'km=36000'))
+
     def test_descripcion_con_saltos_escritos(self):
         id_ = self.nuevo('Saltos', completo=False)
         self.ok('editar', id_, 'descripcion=Primer párrafo.\\n\\nSegundo párrafo.')
