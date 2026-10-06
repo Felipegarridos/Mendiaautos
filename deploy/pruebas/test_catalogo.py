@@ -1,8 +1,7 @@
 """Pruebas del comando catalogo (deploy/catalogo.py) sobre un catálogo temporal, nunca sobre el real.
 
 Además de las funcionales, hay pruebas de estrés: varias personas cambiando autos a la vez, una ráfaga de
-cambios al mismo auto, el candado tomado por un cambio largo (como un video de portada) y flujos completos
-en paralelo. Necesitan Linux (fcntl), git y Pillow; en GitHub Actions corren solas en cada cambio:
+cambios al mismo auto, el candado retenido por otro proceso y flujos completos en paralelo. Necesitan Linux (fcntl), git y Pillow; en GitHub Actions corren solas en cada cambio:
 
     python -m unittest discover -s deploy/pruebas -v
 """
@@ -204,8 +203,9 @@ class Estres(Base):
         self.assertTrue(set(ids) <= disponibles)
         self.integridad()
 
-    def test_candado_tomado_por_un_cambio_largo(self):
-        """Si un cambio tarda más de 30 s (un video de portada), el siguiente avisa en vez de quedarse colgado."""
+    def test_candado_retenido(self):
+        """Si otro proceso retiene el candado más de 30 s, el cambio avisa que está ocupado en vez de colgarse.
+        (Las fotos y los videos se procesan antes de tomar el candado: solo el guardado lo ocupa.)"""
         id_ = self.nuevo('Candado', completo=False)
         (self.datos / '.candado').touch()
         bloqueo = subprocess.Popen([sys.executable, '-c', (

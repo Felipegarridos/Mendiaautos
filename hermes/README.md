@@ -381,7 +381,7 @@ nunca en la VPS:
 - `deploy/pruebas`: el comando `catalogo` sobre un catálogo temporal —flujo
   completo, vistas previas, textos maliciosos, límites, permisos del vendedor—
   y estrés: tres personas a la vez, 30 cambios simultáneos al mismo auto, el
-  candado ocupado por un cambio largo y flujos completos en paralelo.
+  candado retenido por otro proceso y flujos completos en paralelo.
 
 A mano: `python -m unittest discover -s hermes/pruebas -v` y, en Linux con
 Pillow, `python -m unittest discover -s deploy/pruebas -v`.
