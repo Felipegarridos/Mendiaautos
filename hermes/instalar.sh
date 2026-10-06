@@ -287,8 +287,10 @@ pantalla['busy_input_mode'] = 'queue'
 pantalla['language'] = 'es'
 menu_tg = seccion(seccion(seccion(seccion(cfg, 'platforms'), 'telegram'), 'extra'), 'command_menu')
 menu_tg.update(priority_mode='replace', priority=['menu', 'new', 'stop'], max_commands=3)
+# Sin eco de la transcripción: reenviar al chat todo lo que dijo la persona alarga la
+# conversación; el asistente pregunta solo lo que no entendió (pedido del equipo, 06/10/2026).
 voz = seccion(cfg, 'stt')
-voz.update(enabled=True, echo_transcripts=True, provider='local', language='es')
+voz.update(enabled=True, echo_transcripts=False, provider='local', language='es')
 seccion(voz, 'local').update(model=audios, language='es')
 with open(ruta + '.tmp', 'w', encoding='utf-8') as f:
     yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
