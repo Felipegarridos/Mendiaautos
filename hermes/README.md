@@ -370,12 +370,29 @@ formularios cargan `assets/solicitudes.js`, y «Otros servicios»,
 herramienta de diseño, esos enlaces se pierden: avísale a quien mantiene el
 sitio antes de reemplazarlas.
 
+## Pruebas
+
+Corren solas en GitHub Actions con cada cambio (`.github/workflows/pruebas.yml`),
+nunca en la VPS:
+
+- `hermes/pruebas`: confirmaciones con botones («Publicar», «Sí»), texto
+  limpio en el chat y estrés (20.000 textos al azar, 32 hilos a la vez, 200
+  publicaciones simultáneas).
+- `deploy/pruebas`: el comando `catalogo` sobre un catálogo temporal —flujo
+  completo, vistas previas, textos maliciosos, límites, permisos del vendedor—
+  y estrés: tres personas a la vez, 30 cambios simultáneos al mismo auto, el
+  candado ocupado por un cambio largo y flujos completos en paralelo.
+
+A mano: `python -m unittest discover -s hermes/pruebas -v` y, en Linux con
+Pillow, `python -m unittest discover -s deploy/pruebas -v`.
+
 ## Archivos de esta carpeta
 
 | Archivo | Para qué |
 |---|---|
 | `instalar.sh` | Lo que corre `mendiautos hermes` (asistente del equipo) |
-| `plugin/mendiautos/` | La extensión de Hermes: herramientas `catalogo`, `solicitudes` y `menu`, con los permisos por persona |
+| `plugin/mendiautos/` | La extensión de Hermes: herramientas `catalogo`, `solicitudes` y `menu`, con los permisos por persona; además limpia lo que llega al chat (saltos de línea, Markdown en los botones, razonamiento en inglés) |
+| `pruebas/` | Pruebas de la extensión, incluidas las de estrés (ver «Pruebas») |
 | `AGENTS.md` / `SOUL.md` | Procedimientos, reglas y personalidad del asistente del equipo |
 | `scripts/` | Tareas automáticas sin IA (avisos, informes, borradores, vigilante) |
 | `clientes/instalar.sh` | Lo que corre `mendiautos hermes --clientes` |

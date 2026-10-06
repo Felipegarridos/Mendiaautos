@@ -1,0 +1,31 @@
+# Pruebas automáticas del asistente y del catálogo, incluidas las de estrés.
+# Corren en servidores de GitHub con cada cambio, nunca en la VPS.
+name: Pruebas
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencias
+        run: python -m pip install --quiet pillow
+      - name: Asistente (extensión de Hermes)
+        run: python -m unittest discover -s hermes/pruebas -v
+      - name: Catálogo, con pruebas de estrés
+        run: python -m unittest discover -s deploy/pruebas -v
+      - name: Sintaxis de los scripts de la VPS
+        run: |
+          for f in $(git ls-files '*.sh'); do bash -n "$f" || exit 1; done
