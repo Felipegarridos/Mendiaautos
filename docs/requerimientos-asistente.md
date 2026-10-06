@@ -69,8 +69,10 @@ antes mostraba unos 60 comandos de Hermes en inglés).
 
 ## Voz
 
-Español de Colombia. Si no entiende un audio, transcribe y pide confirmar.
-Responde solo con texto.
+Español de Colombia. No devuelve la transcripción del audio: guarda lo que
+entendió y, si algo no quedó claro, pregunta solo por eso, en concreto
+(ajustado el 06/10/2026: antes reenviaba la transcripción completa y alargaba
+la conversación). Responde solo con texto.
 
 ## Fotos
 
