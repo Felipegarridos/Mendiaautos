@@ -83,7 +83,9 @@ MAX_DESTACADOS = 5                        # autos destacados en el inicio
 ESTADOS = ('disponible', 'vendido', 'oculto', 'borrador')
 PUBLICOS = ('disponible', 'vendido')
 # Datos internos: se guardan en inventario.json pero no se publican.
-INTERNOS = ('creado_por', 'actualizado', 'publicado', 'previa', 'no_aplica')
+# previa_publicada: la clave de la vista previa de un auto que ya se publicó o vendió; su enlace (el que se
+# mandó por el chat) lleva a la ficha publicada en vez de quedar roto.
+INTERNOS = ('creado_por', 'actualizado', 'publicado', 'previa', 'previa_publicada', 'no_aplica')
 # Datos que ya no se usan: se descartan al leer el catálogo.
 RETIRADOS = {'velocidad_max': 'La velocidad máxima ya no se muestra en el sitio; no hace falta.'}
 RE_ID = re.compile(r'^[a-z0-9][a-z0-9-]{0,79}$')
@@ -639,8 +641,9 @@ def problemas_de(a, pos):
             p.append(f'{ref}: {k} debe ser AAAA-MM-DD')
     if 'video' in a and not (isinstance(a['video'], str) and RE_VIDEO_GUARDADO.match(a['video'])):
         p.append(f'{ref}: video debe ser un enlace de Instagram o YouTube')
-    if 'previa' in a and not (isinstance(a['previa'], str) and RE_PREVIA.match(a['previa'])):
-        p.append(f'{ref}: previa inválida')
+    for k in ('previa', 'previa_publicada'):
+        if k in a and not (isinstance(a[k], str) and RE_PREVIA.match(a[k])):
+            p.append(f'{ref}: {k} inválida')
     if 'creado_por' in a and not (isinstance(a['creado_por'], str) and 0 < len(a['creado_por']) <= 40):
         p.append(f'{ref}: creado_por inválido')
     na = a.get('no_aplica', [])
@@ -774,17 +777,35 @@ def js_previa(a):
             'window.MND_PREVIA = ' + cuerpo + ';\n').encode('ascii')
 
 
+def js_hacia_ficha(a):
+    destino = 'DetalleAuto.dc.html?id=' + urllib.parse.quote(a['id'])
+    return ('/* Vista previa de un auto ya publicado: lleva a su ficha. Generado por el comando catalogo. */\n'
+            'location.replace(' + json.dumps(destino) + ');\n').encode('ascii')
+
+
+def retirar_previa(auto):
+    """Al publicar o vender se cierra la vista previa; su enlace, que ya se mandó por el chat, pasa a llevar a la
+    ficha del auto en vez de dejar a la persona en «Autos disponibles» sin saber por qué."""
+    clave = auto.pop('previa', None)
+    if clave:
+        auto['previa_publicada'] = clave
+
+
 def escribir_previas(datos):
-    """Una vista previa por borrador u oculto que la pidió; borra las que sobran."""
+    """Una vista previa por borrador u oculto que la pidió y, por cada auto ya publicado que la tuvo, un archivo
+    que lleva a su ficha. Borra las que sobran."""
     vigentes = {}
     for a in datos:
         if a.get('previa') and a.get('estado') not in PUBLICOS:
-            vigentes[a['previa'] + '.js'] = a
+            vigentes[a['previa'] + '.js'] = js_previa(a)
+    for a in datos:
+        if a.get('previa_publicada') and a.get('estado', 'disponible') in PUBLICOS:
+            vigentes.setdefault(a['previa_publicada'] + '.js', js_hacia_ficha(a))
     if not vigentes and not PREVIAS.is_dir():
         return
     PREVIAS.mkdir(exist_ok=True)
-    for nombre_f, a in vigentes.items():
-        escribir_atomico(PREVIAS / nombre_f, js_previa(a))
+    for nombre_f, contenido in vigentes.items():
+        escribir_atomico(PREVIAS / nombre_f, contenido)
     for f in PREVIAS.iterdir():
         if f.is_file() and f.name not in vigentes:
             f.unlink()
@@ -1375,7 +1396,7 @@ def cmd_publicar(a):
             auto['publicado'] = hoy()
             datos.insert(0, datos.pop(i))      # sale primero en «Autos disponibles»
         auto['estado'] = 'disponible'
-        auto.pop('previa', None)
+        retirar_previa(auto)
         tocar(auto)
         guardar(datos, f'{"publicar" if antes == "borrador" else "mostrar"}: {titulo(auto)} [{auto["id"]}]', a.nota)
         dest = destacados_de(datos)
@@ -1408,7 +1429,7 @@ def cmd_vender(a):
             return
         era_destacado = auto.get('destacado') and auto.get('estado', 'disponible') == 'disponible'
         auto['estado'], auto['vendido_el'], auto['destacado'] = 'vendido', fecha, False
-        auto.pop('previa', None)
+        retirar_previa(auto)
         tocar(auto)
         guardar(datos, f'vender: {titulo(auto)} [{auto["id"]}] el {fecha}', a.nota)
         quedan = len(destacados_de(datos))
