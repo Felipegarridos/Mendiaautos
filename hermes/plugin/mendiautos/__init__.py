@@ -17,6 +17,10 @@ Además, el sistema (no solo las instrucciones) hace cumplir que:
   - vender, borrar, quitar fotos y poner un video (en la portada o en la
     ficha de un auto) esperan la confirmación de la persona en un mensaje
     posterior («sí», «confirmo»…).
+
+Y limpia lo que llega al chat: las preguntas con botones salen con saltos de
+línea reales y sin Markdown (Telegram las muestra tal cual), y las respuestas
+no llevan «\\n» escrito ni el razonamiento del modelo en inglés.
 """
 from __future__ import annotations
 
@@ -72,6 +76,10 @@ TEXTOS_ES = {
                                           'borradores siguen guardados. Escribe «menú» para ver las opciones.'),
     **dict.fromkeys(('gateway.session.info_model', 'gateway.session.info_provider', 'gateway.session.info_context',
                      'gateway.session.info_acting_model', 'gateway.session.info_endpoint'), ''),
+    # Preguntas con botones: sin «Responde "skip"…» (al equipo no le sirve) y el botón de respuesta
+    # libre en español.
+    'gateway.clarify.skip_hint': '',
+    'platform.telegram.prompt.other': '✏️ Otra respuesta',
 }
 
 
@@ -93,6 +101,147 @@ def respuesta(ok, salida, **extra):
     if len(salida) > MAX_SALIDA:
         salida = salida[:MAX_SALIDA] + '\n… (salida recortada)'
     return json.dumps({'ok': ok, 'salida': salida, **extra}, ensure_ascii=False)
+
+
+# ---------------------------------------------------- texto limpio en el chat
+# Las preguntas con botones (clarify) llegan a Telegram como HTML escapado: el
+# Markdown sale tal cual («**Resumen**») y un «\n» escrito por el modelo se ve
+# como «\n» y se pega a los enlaces, que dejan de abrir el auto. Las respuestas
+# normales sí interpretan Markdown, pero también pueden traer «\n» escrito o el
+# razonamiento del modelo en inglés, que nunca debe llegar al equipo.
+RE_SALTO_ESCRITO = re.compile(r'(?:\\+r)?\\+n')
+RE_ENLACE_MD = re.compile(r'\[([^\]\n]{1,200})\]\((https?://[^\s)]+)\)')
+RE_MARCAS_MD = re.compile(r'\*\*|__|~~|`')
+RE_TITULO_MD = re.compile(r'^[ \t]*(?:#{1,6}[ \t]+)+', re.M)
+RE_VINETA_MD = re.compile(r'^[ \t]*(?:[*+-][ \t]+)+', re.M)
+RE_RECOMENDADO = re.compile(r'[ \t]*\((?:recommended|recomendad[oa])\)', re.I)
+RE_PALABRA = re.compile(r"[a-záéíóúñü]+(?:['’][a-z]+)?", re.I)
+# Una respuesta en inglés pegada a la buena: «…(vendido el 5 de octubre)Aquí tienes…».
+RE_PEGADO = re.compile(r'[a-záéíóúñ0-9)\].!?:](?=[A-ZÁÉÍÓÚÑ¿¡][a-záéíóúñ]{2,})')
+# Palabras que solo se usan en inglés (sin «a», «no», «he», «has», «me», que también son español).
+PALABRAS_EN = frozenset("""
+the and or but if then so to of in on at for with from by is are was were be been being it its this that these
+those there here we you she they them our your their let let's lets should would could will can must need needs
+do does did done have had not yes wait answer answers response respond reply format formatting nicely user asked
+asks ask following follow preference preferences show shows showing list listing sold today now first next also
+just only which what when where who why how about because since than into
+""".split())
+PALABRAS_ES = frozenset("""
+el la los las un una unos unas y o pero si de del al en con por para sin sobre es son fue está están hay que qué
+como cómo cuando donde quien cual cuál cuáles este esta estos estas ese esa eso aquí ya muy más menos también solo
+tu tus te mi mis nos lo le les se su sus auto autos carro carros foto fotos precio vendido vendidos tienes tiene
+quieres puedes listo hoy dime
+""".split())
+
+
+def saltos_reales(texto):
+    """«\\n» escrito como texto → salto de línea de verdad, sin espacios sobrantes ni más de una línea en blanco."""
+    t = str(texto or '').replace('\r\n', '\n').replace('\r', '\n')
+    t = RE_SALTO_ESCRITO.sub('\n', t)
+    t = re.sub(r'[ \t]+\n', '\n', t)
+    return re.sub(r'\n{3,}', '\n\n', t).strip()
+
+
+def texto_plano(texto):
+    """Para las preguntas con botones, que Telegram muestra sin formato. Primero se quitan las marcas (si no,
+    al quitar «**» de «\\**n» aparecería un «\\n» nuevo) y después se arreglan los saltos de línea. Se repite
+    hasta que no cambie: quitar algo puede dejar a la vista otra marca («*(Recommended)*» → «**»)."""
+    t = str(texto or '')
+    for _ in range(10):
+        antes = t
+        t = RE_ENLACE_MD.sub(lambda m: f'{m.group(1)}: {m.group(2)}', t)
+        t = RE_RECOMENDADO.sub('', RE_MARCAS_MD.sub('', t))
+        t = saltos_reales(t)
+        t = RE_VINETA_MD.sub('• ', RE_TITULO_MD.sub('', t)).strip()
+        if t == antes:
+            break
+    return t
+
+
+def opcion_plana(texto):
+    """Una opción de botón: una sola línea, sin formato."""
+    return ' '.join(texto_plano(texto).split())
+
+
+def es_ingles(linea):
+    """Una línea en inglés: el modelo dejó ver su razonamiento («Let's answer…»)."""
+    palabras = [p.lower().replace('’', "'") for p in RE_PALABRA.findall(linea)]
+    en = sum(p in PALABRAS_EN for p in palabras)
+    es = sum(p in PALABRAS_ES for p in palabras)
+    return (en >= 2 and es == 0) or (en >= 3 and en >= 2 * es)
+
+
+def quitar_ingles(texto):
+    """Quita las líneas en inglés. Si un borrador quedó pegado a la respuesta, deja solo la respuesta."""
+    lineas = texto.split('\n')
+    ingles = [bool(l.strip()) and es_ingles(l) for l in lineas]
+    if not any(ingles):
+        return texto
+    ultima = max(i for i, m in enumerate(ingles) if m)
+    quedan = []
+    for i, (linea, m) in enumerate(zip(lineas, ingles)):
+        if m:
+            continue
+        if i == ultima + 1:
+            p = RE_PEGADO.search(linea)
+            if p and p.end() < len(linea):
+                linea = linea[p.end():]
+        quedan.append(linea)
+    limpio = re.sub(r'\n{3,}', '\n\n', '\n'.join(quedan)).strip()
+    if not limpio:
+        return texto      # todo era inglés: mejor un mensaje que ninguno (queda en el registro)
+    logger.warning('mendiautos: quité %d línea(s) en inglés de una respuesta', sum(ingles))
+    return limpio
+
+
+def limpiar_pregunta(p):
+    if not isinstance(p, dict):
+        return p
+    q = dict(p)
+    if isinstance(q.get('question'), str):
+        q['question'] = texto_plano(q['question']) or q['question']
+    if isinstance(q.get('choices'), list):
+        q['choices'] = [(opcion_plana(c) or c) if isinstance(c, str) else c for c in q['choices']]
+    return q
+
+
+def limpiar_clarify(args):
+    """Los cambios para que la pregunta con botones se lea bien en Telegram, o None si ya está bien."""
+    if not isinstance(args, dict):
+        return None
+    cambios = {}
+    if isinstance(args.get('questions'), list):
+        nuevas = [limpiar_pregunta(p) for p in args['questions']]
+        if nuevas != args['questions']:
+            cambios['questions'] = nuevas
+    if isinstance(args.get('question'), str) or isinstance(args.get('choices'), list):
+        sola = limpiar_pregunta({k: args[k] for k in ('question', 'choices') if k in args})
+        cambios.update({k: v for k, v in sola.items() if v != args.get(k)})
+    return cambios or None
+
+
+def eleccion_clarify(resultado):
+    """Lo que la persona tocó o escribió en una pregunta con botones. Hermes lo devuelve como
+    {"responses": [{"user_response": "Publicar", "status": "answered"}]} (antes, plano)."""
+    try:
+        datos = json.loads(resultado) if isinstance(resultado, str) else (resultado or {})
+    except ValueError:
+        return ''
+    if not isinstance(datos, dict):
+        return ''
+    directa = datos.get('user_response') or datos.get('response')
+    if isinstance(directa, str) and directa.strip():
+        return RE_RECOMENDADO.sub('', directa).strip()
+    elegidas = []
+    for r in datos.get('responses') or []:
+        if not isinstance(r, dict) or r.get('status', 'answered') != 'answered':
+            continue
+        v = r.get('user_response')
+        if isinstance(v, list):
+            v = ', '.join(str(x) for x in v)
+        if isinstance(v, str) and v.strip():
+            elegidas.append(RE_RECOMENDADO.sub('', v).strip())
+    return ' · '.join(elegidas)
 
 
 _cache_equipo = {'mtime': None, 'datos': {}}
@@ -310,9 +459,30 @@ def herramienta_catalogo(args_modelo, **_):
 
         tiempo = 900 if sub == 'portada' else 180
         ok, salida = correr(CMD_CATALOGO, args + ['--por', m['id']], tiempo=tiempo)
-        return respuesta(ok, salida)
+        return respuesta(ok, con_pistas(args, ok, salida))
     except Rechazo as r:
         return respuesta(False, str(r))
+
+
+PISTA_DATO = ('[Sistema, no lo menciones] No inventes ni supongas el valor: dile a la persona qué no se pudo '
+              'guardar y pregúntale el dato correcto con un ejemplo de lo que se acepta.')
+PISTA_OCUPADO = ('[Sistema, no lo menciones] Otro cambio estaba en curso. Espera un momento y repite la orden una '
+                 'vez; si vuelve a pasar, díselo a la persona.')
+
+
+def con_pistas(args, ok, salida):
+    """Lo que el modelo necesita saber para seguir bien, sin que la persona lo vea."""
+    if not ok and 'ocupado' in salida:
+        return salida + '\n' + PISTA_OCUPADO
+    if not ok and 'Error' in salida:
+        return salida + '\n' + PISTA_DATO
+    if ok and args[:2] == ['foto', 'listar']:
+        archivos = re.findall(r'^\s*archivo:\s*(\S+)\s*$', salida, re.M)
+        if archivos:
+            return (salida + '\n[Sistema, no lo menciones] Para mostrarle las fotos en el chat, pon estas líneas '
+                    'tal cual al final de tu respuesta, en este orden, y antes di el número de cada una (nunca '
+                    'mandes los enlaces ni los nombres de archivo):\n' + '\n'.join(f'MEDIA:{a}' for a in archivos))
+    return salida
 
 
 def herramienta_solicitudes(args_modelo, **_):
@@ -400,26 +570,52 @@ def antes_de_llamar_al_modelo(user_message='', sender_id='', platform='', **_):
                        f'({m["rol"]}). Hoy es {fecha} (hora de Colombia).{extra}'}
 
 
-def antes_de_herramienta(tool_name='', **_):
+def antes_de_herramienta(tool_name='', args=None, **_):
     if tool_name not in HERRAMIENTAS:
         return {'action': 'block', 'message': f'La herramienta {tool_name} no está disponible en este asistente.'}
+    if tool_name == 'clarify':
+        cambios = limpiar_clarify(args)
+        if cambios:
+            return {'action': 'modify', 'args': cambios}
     return None
 
 
 def despues_de_herramienta(tool_name='', result=None, **_):
-    """Lo que la persona toca en los botones de clarify cuenta como su respuesta."""
+    """Lo que la persona toca en los botones de clarify cuenta como su respuesta («Publicar», «Sí»)."""
     if tool_name != 'clarify':
         return
     m, _plataforma = quien()
     if not m:
         return
-    try:
-        datos = json.loads(result) if isinstance(result, str) else (result or {})
-        eleccion = datos.get('user_response') or datos.get('response') or ''
-    except (ValueError, AttributeError):
-        eleccion = ''
+    eleccion = eleccion_clarify(result)
     if eleccion:
         anotar(m['id'], eleccion)
+
+
+def limpiar_respuesta(response_text='', **_):
+    """Lo último antes de que la respuesta salga al chat: «\\n» escrito y razonamiento en inglés fuera."""
+    if not isinstance(response_text, str) or not response_text.strip():
+        return None
+    limpio = saltos_reales(response_text)
+    for _ in range(5):      # lo que queda al despegar un borrador también puede venir en inglés
+        siguiente = quitar_ingles(limpio)
+        if siguiente == limpio:
+            break
+        limpio = siguiente
+    return limpio if limpio and limpio != response_text.strip() else None
+
+
+def quitar_recomendado():
+    """Hermes le pega «(Recommended)», en inglés, a la primera opción de cada pregunta con botones. En una
+    confirmación («¿Confirmas la venta?» Sí / No) no debe haber una opción «recomendada», así que se apaga."""
+    try:
+        import tools.clarify_tool as clarify_tool
+    except Exception:
+        return False
+    if not callable(getattr(clarify_tool, 'mark_recommended', None)):
+        return False
+    clarify_tool.mark_recommended = lambda choices: list(choices)
+    return True
 
 
 def comando_menu(_args=''):
@@ -497,6 +693,9 @@ def register(ctx):
     ctx.register_hook('pre_tool_call', antes_de_herramienta)
     ctx.register_hook('post_tool_call', despues_de_herramienta)
     ctx.register_hook('pre_gateway_dispatch', al_recibir)
+    ctx.register_hook('transform_llm_output', limpiar_respuesta)
+    if not quitar_recomendado():
+        logger.warning('mendiautos: esta versión de Hermes no deja quitar el «(Recommended)» de los botones')
     # Botón «Menú» de Telegram en español: el instalador deja ahí solo /menu, /new y /stop.
     # En una versión de Hermes sin estas funciones, el menú sigue como venía.
     try:
