@@ -317,9 +317,10 @@ construir_version() {
   dst=$RELEASES/$id
   mkdir -p "$dst"
   git -C "$REPO_DIR" archive --format=tar HEAD | tar -x -C "$dst"
-  # Solo lo público: fuera scripts de despliegue, borradores y archivos ocultos.
-  rm -rf "$dst/deploy" "$dst/scraps" "$dst/hermes"
-  find "$dst" -mindepth 1 -maxdepth 1 \( -name '.*' -o -name '*.md' \) -exec rm -rf {} +
+  # Solo lo público: fuera scripts de despliegue, el asistente, la documentación interna (docs/ tiene los
+  # nombres y los IDs de Telegram del equipo), borradores, archivos ocultos y cualquier .md.
+  rm -rf "$dst/deploy" "$dst/scraps" "$dst/hermes" "$dst/docs"
+  find "$dst" -mindepth 1 \( -name '.*' -o -name '*.md' \) -prune -exec rm -rf {} +
   # La portada del sitio es MendiautosHome.dc.html (index.html es su copia).
   [ -f "$dst/MendiautosHome.dc.html" ] && cp -f "$dst/MendiautosHome.dc.html" "$dst/index.html"
   [ -f "$dst/index.html" ] || { rm -rf "$dst"; error "La versión $id no tiene página de inicio (index.html)."; }
