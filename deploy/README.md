@@ -138,7 +138,7 @@ solicitudes atender S-1024 --nota "Lo llamó Laura"
 | Servidor web | nginx con compresión gzip, caché por tipo de archivo y soporte de video por rangos |
 | Cabeceras | `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` y HSTS con HTTPS |
 | Librerías | React se descarga una vez, se verifica con su huella SRI y se sirve desde la VPS; si falla, se sigue usando unpkg.com |
-| Privacidad | Solo se publica el sitio: `deploy/`, `scraps/`, `*.md` y archivos ocultos quedan fuera (responden 404) |
+| Privacidad | Solo se publica el sitio: `deploy/`, `hermes/`, `docs/`, `scraps/`, los `*.md` de cualquier carpeta y los archivos ocultos quedan fuera (responden 404) |
 | Firewall (ufw) | Solo SSH, 80 y 443. Si ya hay otros servicios escuchando, no lo activa y te avisa |
 | fail2ban | Bloquea 1 hora las IP con 5 intentos fallidos de SSH en 10 minutos |
 | SSH | Desactiva el ingreso por contraseña **solo** si confirma que entraste con llave en esa misma sesión |
