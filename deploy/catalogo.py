@@ -1153,7 +1153,8 @@ def destacados_de(datos):
 
 
 def resumen_pendiente(a):
-    """Lo que le falta a un borrador para publicarse: la lista completa, para pedirla de una vez."""
+    """Lo que le falta a un borrador para publicarse: la lista completa, para pedirla de una vez. El reel de
+    Instagram no es obligatorio, pero se pide siempre: si no lo tiene, se avisa como opcional."""
     falta, n = pendientes(a), len(a.get('fotos') or [])
     partes = []
     if falta:
@@ -1162,10 +1163,17 @@ def resumen_pendiente(a):
         partes.append(f'{plural(len(falta), "dato", "datos")}: ' + ', '.join(nombres))
     if n < MIN_FOTOS:
         partes.append(f'{MIN_FOTOS - n} {"foto" if MIN_FOTOS - n == 1 else "fotos"} (tiene {n}; mínimo {MIN_FOTOS})')
+    sin_reel = not a.get('video')
     if not partes:
-        return 'Tiene todo lo necesario: se publica cuando digan «Publicar» (catalogo publicar ' + a['id'] + ').'
+        texto = 'Tiene todo lo necesario: se publica cuando digan «Publicar» (catalogo publicar ' + a['id'] + ').'
+        if sin_reel:
+            texto += ('\nOpcional: todavía no tiene el reel de Instagram del recorrido. Pregunta si lo tienen antes '
+                      'del resumen; si no, se publica igual.')
+        return texto
     verbo = 'falta' if len(partes) == 1 and partes[0].startswith('1 ') else 'faltan'
     texto = f'Para publicar {verbo} ' + '; y '.join(partes) + '.'
+    if sin_reel:
+        texto += '\nOpcional: el reel de Instagram del recorrido (todavía sin enlace); pídelo junto con lo que falta.'
     if any(alt != ('descripcion',) for alt in falta):
         texto += ('\nPide todo lo que falta en un solo mensaje (se puede responder en un solo audio y en cualquier '
                   'orden). Ejemplos de cada dato: catalogo faltan ' + a['id'])
@@ -1290,7 +1298,8 @@ def cmd_faltan(a):
     n = len(auto.get('fotos') or [])
     print(f'Fotos: {n}' + (f' (faltan {MIN_FOTOS - n}; mínimo {MIN_FOTOS})' if n < MIN_FOTOS else
                           f' (bien; máximo {MAX_FOTOS})'))
-    print('Video del recorrido (opcional): ' + (auto['video'] if auto.get('video') else 'sin enlace'))
+    print('Reel de Instagram del recorrido (opcional): ' + (auto['video'] if auto.get('video') else
+                                                           'sin enlace; pregunta si lo tienen'))
     if estado == 'borrador':
         print('Listo para publicar: ' + ('sí, cuando digan «Publicar».' if not falta and n >= MIN_FOTOS else 'todavía no.'))
     pie(auto)
