@@ -344,11 +344,19 @@ def leer_fecha(v, avisos):
 
 
 # ------------------------------------------------------------------- videos
-# Recorrido de un auto: un reel o publicación de Instagram (o un video de
-# YouTube). Se guarda la dirección canónica, sin parámetros de seguimiento.
+# Recorrido de un auto: un reel o publicación de Instagram, un video de TikTok
+# (o un video de YouTube). Se guarda la dirección canónica, sin parámetros de
+# seguimiento.
 RE_INSTAGRAM = re.compile(
     r'^(?:https?://)?(?:www\.|m\.)?(?:instagram\.com|instagr\.am)/(?:[A-Za-z0-9_.]{1,30}/)?'
     r'(reels?|p|tv)/([A-Za-z0-9_-]{5,40})/?(?:[?#].*)?$', re.I)
+RE_TIKTOK = re.compile(
+    r'^(?:https?://)?(?:www\.|m\.)?tiktok\.com/@([A-Za-z0-9_.]{1,30})/(video|photo)/(\d{8,25})/?(?:[?#].*)?$', re.I)
+# El enlace que copia la app de TikTok es corto (vt.tiktok.com/…) y TikTok lo
+# redirige a la dirección completa del video.
+RE_TIKTOK_CORTO = re.compile(
+    r'^(?:https?://)?(?:(?:vm|vt)\.tiktok\.com|(?:www\.)?tiktok\.com/t)/[A-Za-z0-9]{5,20}/?(?:[?#].*)?$', re.I)
+HOSTS_TIKTOK = {'tiktok.com', 'www.tiktok.com', 'm.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com'}
 RE_YOUTUBE = (
     re.compile(r'^(?:https?://)?(?:www\.|m\.|music\.)?youtube(?:-nocookie)?\.com/'
                r'(?:watch\?(?:[^#]*&)?v=|embed/|shorts/|live/|v/)([A-Za-z0-9_-]{11})(?:[?&#/].*)?$', re.I),
@@ -365,17 +373,74 @@ def youtube_de(v):
     return None
 
 
+def redireccion(url):
+    """Adónde redirige url (su cabecera Location), sin seguirla ni descargar la página; None si no redirige."""
+    import urllib.error
+    import urllib.request
+
+    class SinSeguir(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            return None
+
+    pedido = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; Mendiautos)'})
+    try:
+        with urllib.request.build_opener(SinSeguir).open(pedido, timeout=10):
+            return None
+    except urllib.error.HTTPError as e:
+        e.close()
+        if 300 <= e.code < 400 and e.headers.get('Location'):
+            return e.headers['Location']
+        raise
+
+
+def destino_tiktok(corto):
+    """La dirección completa a la que lleva un enlace corto de TikTok (solo se siguen saltos dentro de TikTok)."""
+    url = 'https://' + re.sub(r'^https?://', '', corto, flags=re.I)
+    for _ in range(4):
+        try:
+            siguiente = redireccion(url)
+        except Exception:  # sin conexión, tiempo agotado o una respuesta rara de TikTok
+            raise Fallo('no pude abrir el enlace corto de TikTok para saber de qué video es. Pide el enlace '
+                        'completo (el que sale al abrir el video en el navegador: '
+                        'https://www.tiktok.com/@cuenta/video/…).') from None
+        if not siguiente:
+            break
+        url = urllib.parse.urljoin(url, siguiente)
+        if RE_TIKTOK.match(url):
+            return url
+        if (urllib.parse.urlsplit(url).hostname or '').lower() not in HOSTS_TIKTOK:
+            break
+    raise Fallo('ese enlace corto de TikTok no lleva a un video (¿lo borraron o es privado?). Pide el enlace '
+                'completo del video.')
+
+
+def tiktok_de(s):
+    """La dirección canónica de un video de TikTok, o None si el enlace no es de TikTok."""
+    if RE_TIKTOK_CORTO.match(s):
+        s = destino_tiktok(s)
+    m = RE_TIKTOK.match(s)
+    if not m:
+        return None
+    if m.group(2).lower() == 'photo':
+        raise Fallo('ese enlace de TikTok es una publicación de fotos, no un video.')
+    return f'https://www.tiktok.com/@{m.group(1)}/video/{m.group(3)}'
+
+
 def leer_video(v, avisos):
     s = str(v).strip()
     m = RE_INSTAGRAM.match(s)
     if m:
         tipo = 'reel' if m.group(1).lower().startswith('reel') else m.group(1).lower()
         return f'https://www.instagram.com/{tipo}/{m.group(2)}/'
+    t = tiktok_de(s)
+    if t:
+        return t
     y = youtube_de(s)
     if y:
         return y
     raise Fallo(f'«{limpiar_texto(s, 200)}» no es un enlace de un reel de Instagram '
-                '(https://www.instagram.com/reel/…) ni de un video de YouTube.')
+                '(https://www.instagram.com/reel/…), de un video de TikTok (https://www.tiktok.com/@…/video/… '
+                'o https://vt.tiktok.com/…) ni de un video de YouTube.')
 
 
 def leer_youtube(v):
@@ -429,7 +494,8 @@ CAMPOS = [
     ('referencia', texto_de(20), 'Referencia', 'MND-00123 (se asigna sola al agregar)'),
     ('resumen', texto_de(300), 'Resumen', 'una o dos frases para la ficha'),
     ('descripcion', texto_de(4000, True), 'Descripción', 'párrafos separados por una línea en blanco'),
-    ('video', leer_video, 'Video del recorrido', 'enlace de un reel de Instagram (o de YouTube)'),
+    ('video', leer_video, 'Video del recorrido',
+     'enlace de un reel de Instagram o de un video de TikTok (o de YouTube)'),
     ('historial.duenos', leer_entero(0, 30), 'Dueños anteriores', '1'),
     ('historial.siniestros', leer_entero(0, 99), 'Siniestros', '0'),
     ('historial.mantenimientos', leer_entero(0, 999), 'Mantenimientos', '4'),
@@ -447,7 +513,7 @@ ALIAS = {
     'tipo': 'carroceria', 'categoria': 'carroceria', 'cilindrada': 'cilindraje', 'cc': 'cilindraje',
     'potencia': 'hp', 'caballos': 'hp', 'cv': 'hp', 'velocidad': 'velocidad_max',
     'velocidad_maxima': 'velocidad_max', '0_100': 'aceleracion', 'color': 'color_exterior',
-    'reel': 'video', 'instagram': 'video', 'youtube': 'video', 'video_recorrido': 'video',
+    'reel': 'video', 'instagram': 'video', 'tiktok': 'video', 'youtube': 'video', 'video_recorrido': 'video',
     'interior': 'color_interior', 'tapiceria': 'color_interior', 'placa': 'placa_fin',
     'terminacion_placa': 'placa_fin', 'placa_termina': 'placa_fin', 'unico_propietario': 'unico_dueno',
     'duenos': 'historial.duenos', 'propietarios': 'historial.duenos', 'siniestros': 'historial.siniestros',
@@ -615,6 +681,7 @@ TIPOS = {'anio': int, 'precio': int, 'km': int, 'hp': int,
 CONOCIDOS = {c for c in LECTORES if '.' not in c} | {
     'id', 'estado', 'fotos', 'historial', 'creado', 'destacado'} | set(INTERNOS)
 RE_VIDEO_GUARDADO = re.compile(r'^https://www\.instagram\.com/(?:reel|p|tv)/[A-Za-z0-9_-]{5,40}/$'
+                               r'|^https://www\.tiktok\.com/@[A-Za-z0-9_.]{1,30}/video/\d{8,25}$'
                                r'|^https://www\.youtube\.com/watch\?v=[A-Za-z0-9_-]{11}$')
 
 
@@ -640,7 +707,7 @@ def problemas_de(a, pos):
         if k in a and not (isinstance(a[k], str) and RE_FECHA.match(a[k])):
             p.append(f'{ref}: {k} debe ser AAAA-MM-DD')
     if 'video' in a and not (isinstance(a['video'], str) and RE_VIDEO_GUARDADO.match(a['video'])):
-        p.append(f'{ref}: video debe ser un enlace de Instagram o YouTube')
+        p.append(f'{ref}: video debe ser un enlace de Instagram, TikTok o YouTube')
     for k in ('previa', 'previa_publicada'):
         if k in a and not (isinstance(a[k], str) and RE_PREVIA.match(a[k])):
             p.append(f'{ref}: {k} inválida')
@@ -1153,8 +1220,9 @@ def destacados_de(datos):
 
 
 def resumen_pendiente(a):
-    """Lo que le falta a un borrador para publicarse: la lista completa, para pedirla de una vez. El reel de
-    Instagram no es obligatorio, pero se pide siempre: si no lo tiene, se avisa como opcional."""
+    """Lo que le falta a un borrador para publicarse: la lista completa, para pedirla de una vez. El video del
+    recorrido (reel de Instagram o TikTok) no es obligatorio, pero se pide siempre: si no lo tiene, se avisa
+    como opcional."""
     falta, n = pendientes(a), len(a.get('fotos') or [])
     partes = []
     if falta:
@@ -1167,13 +1235,14 @@ def resumen_pendiente(a):
     if not partes:
         texto = 'Tiene todo lo necesario: se publica cuando digan «Publicar» (catalogo publicar ' + a['id'] + ').'
         if sin_reel:
-            texto += ('\nOpcional: todavía no tiene el reel de Instagram del recorrido. Pregunta si lo tienen antes '
-                      'del resumen; si no, se publica igual.')
+            texto += ('\nOpcional: todavía no tiene el video del recorrido (reel de Instagram o video de TikTok). '
+                      'Pregunta si lo tienen antes del resumen; si no, se publica igual.')
         return texto
     verbo = 'falta' if len(partes) == 1 and partes[0].startswith('1 ') else 'faltan'
     texto = f'Para publicar {verbo} ' + '; y '.join(partes) + '.'
     if sin_reel:
-        texto += '\nOpcional: el reel de Instagram del recorrido (todavía sin enlace); pídelo junto con lo que falta.'
+        texto += ('\nOpcional: el video del recorrido, un reel de Instagram o un video de TikTok (todavía sin '
+                  'enlace); pídelo junto con lo que falta.')
     if any(alt != ('descripcion',) for alt in falta):
         texto += ('\nPide todo lo que falta en un solo mensaje (se puede responder en un solo audio y en cualquier '
                   'orden). Ejemplos de cada dato: catalogo faltan ' + a['id'])
@@ -1298,8 +1367,8 @@ def cmd_faltan(a):
     n = len(auto.get('fotos') or [])
     print(f'Fotos: {n}' + (f' (faltan {MIN_FOTOS - n}; mínimo {MIN_FOTOS})' if n < MIN_FOTOS else
                           f' (bien; máximo {MAX_FOTOS})'))
-    print('Reel de Instagram del recorrido (opcional): ' + (auto['video'] if auto.get('video') else
-                                                           'sin enlace; pregunta si lo tienen'))
+    print('Video del recorrido, reel de Instagram o TikTok (opcional): ' +
+          (auto['video'] if auto.get('video') else 'sin enlace; pregunta si lo tienen'))
     if estado == 'borrador':
         print('Listo para publicar: ' + ('sí, cuando digan «Publicar».' if not falta and n >= MIN_FOTOS else 'todavía no.'))
     pie(auto)

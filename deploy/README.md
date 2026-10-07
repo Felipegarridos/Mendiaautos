@@ -70,10 +70,14 @@ versiones nuevas desde GitHub.
   YouTube de «Otros servicios» están en `sitio.json` → `assets/sitio.js`. La
   foto o el video van a `/catalogo/medios/`; el video se convierte con ffmpeg
   (que se instala solo) a un MP4 liviano, sin audio ni ubicación.
-- El reel de Instagram de cada auto y los videos de YouTube se ven con marcos
-  (iframes) de `www.instagram.com` y `www.youtube-nocookie.com`, permitidos en
-  la `Content-Security-Policy`. YouTube solo se carga cuando la persona toca
-  el video. La política de tratamiento de datos debe mencionarlos.
+- El video del recorrido de cada auto (reel de Instagram o video de TikTok) y
+  los videos de YouTube se ven con marcos (iframes) de `www.instagram.com`,
+  `www.tiktok.com` (su reproductor oficial, `player/v1`) y
+  `www.youtube-nocookie.com`, permitidos en la `Content-Security-Policy`.
+  YouTube solo se carga cuando la persona toca el video. El enlace corto de
+  TikTok (`vt.tiktok.com/…`) lo convierte `catalogo` al guardarlo, consultando
+  a TikTok adónde lleva. La política de tratamiento de datos debe
+  mencionarlos.
 - Las **visitas** se cuentan en el propio servidor: nginx guarda el registro
   del sitio en `/var/log/nginx/mendiautos.access.log` y cada noche (0:20 a. m.)
   `mendiautos-visitas` ([`visitas.py`](visitas.py)) guarda solo totales por
@@ -199,7 +203,7 @@ Dónde queda cada cosa:
 - Las páginas con autos (inicio, disponibles, vendidos, ficha y comparar) los
   dibujan desde `assets/inventario.js` con `assets/catalogo.js`. La ficha,
   además, carga `assets/previa.js` (vista previa de borradores) y
-  `assets/videos.js` (el reel de Instagram del auto).
+  `assets/videos.js` (el video del recorrido: Instagram, TikTok o YouTube).
   Si las vuelves a exportar desde la herramienta de diseño, conserva esas dos
   líneas del `<head>` y el código que llena las listas; si no, volverán los
   autos de ejemplo (detalles en `hermes/README.md`).

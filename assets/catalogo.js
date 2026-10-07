@@ -252,7 +252,10 @@
     var vendido = a.estado === 'vendido', v = video(a.video);
     return {
       existe: true, id: a.id, vendido: vendido, disponible: !vendido,
-      esPrevia: a === previa(), tieneVideo: !!v, videoEtiqueta: v && v.tipo === 'instagram' ? 'Recorrido en video · Instagram' : 'Recorrido en video',
+      esPrevia: a === previa(), tieneVideo: !!v,
+      videoInstagram: !!v && v.tipo === 'instagram', videoTiktok: !!v && v.tipo === 'tiktok',
+      videoYoutube: !!v && v.tipo === 'youtube',
+      videoEtiqueta: 'Recorrido en video' + ({ instagram: ' · Instagram', tiktok: ' · TikTok' }[v && v.tipo] || ''),
       titulo: titulo(a), nombre: nombre(a), marca: texto(a.marca), modelo: texto(a.modelo),
       version: texto(a.version), anio: texto(a.anio),
       precio: vendido ? 'VENDIDO' : precio(a.precio),
@@ -343,11 +346,13 @@
 
   // ------------------------------------------------------------- videos
   // Recorrido de un auto: un reel de Instagram (como la sección de Instagram de
-  // festivalviajes.com.ar) o un video de YouTube. Solo se aceptan esas dos
-  // direcciones; el reproductor lo pone assets/videos.js.
+  // festivalviajes.com.ar), un video de TikTok o un video de YouTube. Solo se
+  // aceptan esas direcciones; el reproductor lo pone assets/videos.js.
   function video(url) {
     var m = /^https:\/\/www\.instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]{5,40})\/$/.exec(url || '');
     if (m) return { tipo: 'instagram', ruta: m[1], codigo: m[2] };
+    m = /^https:\/\/www\.tiktok\.com\/@([A-Za-z0-9_.]{1,30})\/video\/(\d{8,25})$/.exec(url || '');
+    if (m) return { tipo: 'tiktok', cuenta: m[1], codigo: m[2] };
     m = /^https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})$/.exec(url || '');
     return m ? { tipo: 'youtube', codigo: m[1] } : null;
   }
@@ -356,6 +361,7 @@
     var v = a && video(a.video);
     if (!zona || !v || !window.MND_VIDEOS) return;
     if (v.tipo === 'instagram') MND_VIDEOS.instagram(zona, v.ruta, v.codigo, nombre(a));
+    else if (v.tipo === 'tiktok') MND_VIDEOS.tiktok(zona, v.cuenta, v.codigo, nombre(a));
     else MND_VIDEOS.youtube(zona, v.codigo, 'Recorrido · ' + nombre(a));
   }
 

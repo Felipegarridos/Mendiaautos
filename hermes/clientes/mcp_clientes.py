@@ -266,7 +266,7 @@ def ver_auto(args):
         d = re.sub(r'\s+', ' ', str(a['descripcion'])).strip()
         res.append('Descripción: ' + d[:700] + ('…' if len(d) > 700 else ''))
     res.append(f'Ficha en el sitio: {enlace(a)}')
-    if isinstance(a.get('video'), str) and re.match(r'^https://www\.(instagram|youtube)\.com/', a['video']):
+    if isinstance(a.get('video'), str) and re.match(r'^https://www\.(instagram|tiktok|youtube)\.com/', a['video']):
         res.append(f'Video del recorrido: {a["video"]}')
     fotos = fotos_locales(a)
     if fotos:

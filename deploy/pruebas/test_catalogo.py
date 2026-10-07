@@ -5,6 +5,8 @@ cambios al mismo auto, el candado retenido por otro proceso y flujos completos e
 
     python -m unittest discover -s deploy/pruebas -v
 """
+import http.server
+import importlib.util
 import json
 import os
 import re
@@ -12,10 +14,12 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest import mock
 
 CATALOGO = Path(__file__).resolve().parents[1] / 'catalogo.py'
 # Solo para depurar en otra máquina: un lanzador que sustituye fcntl/pwd. Sin candado real, así que con él
@@ -117,12 +121,25 @@ class Funcional(Base):
 
     def test_reel_se_pide_como_opcional(self):
         id_ = self.nuevo('Reel', completo=False)
-        self.assertIn('Opcional: el reel de Instagram', self.ok('editar', id_, 'km=1000'))
+        self.assertIn('Opcional: el video del recorrido, un reel de Instagram o un video de TikTok',
+                      self.ok('editar', id_, 'km=1000'))
         salida = self.ok('editar', id_, 'video=https://www.instagram.com/reel/AbCdE12345/?stkn=xyz')
         self.assertEqual(self.json_de(id_)['video'], 'https://www.instagram.com/reel/AbCdE12345/')
-        self.assertNotIn('reel de Instagram del recorrido (todavía sin enlace)', salida)
+        self.assertNotIn('Opcional: el video del recorrido', salida)
         completo = self.nuevo('ReelCompleto', fotos=5)
-        self.assertIn('Opcional: todavía no tiene el reel', self.ok('editar', completo, 'km=36000'))
+        self.assertIn('Opcional: todavía no tiene el video del recorrido', self.ok('editar', completo, 'km=36000'))
+
+    def test_video_de_tiktok(self):
+        id_ = self.nuevo('TikTok', fotos=5)
+        video = 'https://www.tiktok.com/@mendiautoscol/video/7691503077001678088'
+        self.ok('editar', id_, f'tiktok={video}?_r=1&_t=ZS-9ALTMbzYXI8')
+        self.assertEqual(self.json_de(id_)['video'], video)
+        self.assertIn('publicación de fotos', self.falla('editar', id_, 'video=https://www.tiktok.com/@cuenta/photo/7691503077001678088'))
+        self.falla('editar', id_, 'video=https://www.tiktok.com/@mendiautoscol')
+        self.falla('editar', id_, 'video=https://otro.invalid/vt.tiktok.com/ZSbVaCRAq/')
+        self.ok('publicar', id_)
+        self.assertIn(video, [a.get('video') for a in self.publicados()])
+        self.integridad()
 
     def test_descripcion_con_saltos_escritos(self):
         id_ = self.nuevo('Saltos', completo=False)
@@ -160,6 +177,61 @@ class Funcional(Base):
         self.falla('destacar', ajeno, por=VENDEDOR)
         propio = self.nuevo('Propio', por=VENDEDOR, completo=False)
         self.ok('editar', propio, 'km=1000', por=VENDEDOR)
+
+
+@unittest.skipIf(os.name == 'nt', 'catalogo.py necesita Linux (fcntl)')
+class EnlaceCortoDeTikTok(unittest.TestCase):
+    """El enlace corto que copia la app de TikTok (vt.tiktok.com/…) se convierte sin salir a internet."""
+    VIDEO = 'https://www.tiktok.com/@mendiautoscol/video/7691503077001678088'
+
+    @classmethod
+    def setUpClass(cls):
+        spec = importlib.util.spec_from_file_location('catalogo_en_prueba', CATALOGO)
+        cls.c = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.c)
+
+    def leer(self, enlace, saltos):
+        """leer_video con TikTok simulado: saltos es {dirección: adónde redirige}, o el error de la conexión."""
+        def redireccion(url):
+            if isinstance(saltos, Exception):
+                raise saltos
+            return saltos.get(url)
+        with mock.patch.object(self.c, 'redireccion', redireccion):
+            return self.c.leer_video(enlace, [])
+
+    def test_enlace_corto(self):
+        saltos = {'https://vt.tiktok.com/ZSbVaCRAq/': self.VIDEO + '?_r=1&_t=ZS-9ALTMbzYXI8'}
+        self.assertEqual(self.leer('https://vt.tiktok.com/ZSbVaCRAq/', saltos), self.VIDEO)
+        self.assertEqual(self.leer('vt.tiktok.com/ZSbVaCRAq/', saltos), self.VIDEO)
+        dos_saltos = {'https://vm.tiktok.com/ZMabc1234/': 'https://www.tiktok.com/t/ZTxyz9876/',
+                      'https://www.tiktok.com/t/ZTxyz9876/': self.VIDEO}
+        self.assertEqual(self.leer('https://vm.tiktok.com/ZMabc1234/', dos_saltos), self.VIDEO)
+
+    def test_enlace_corto_que_no_sirve(self):
+        corto = 'https://vt.tiktok.com/ZSbVaCRAq/'
+        with self.assertRaisesRegex(self.c.Fallo, 'no lleva a un video'):
+            self.leer(corto, {corto: 'https://otro.invalid/video/1234567890123'})    # fuera de TikTok no se sigue
+        with self.assertRaisesRegex(self.c.Fallo, 'no lleva a un video'):
+            self.leer(corto, {})                                                     # borrado o privado
+        with self.assertRaisesRegex(self.c.Fallo, 'enlace completo'):
+            self.leer(corto, OSError('sin conexión'))
+
+    def test_redireccion_sin_abrir_la_pagina(self):
+        class TikTokFalso(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(301)
+                self.send_header('Location', EnlaceCortoDeTikTok.VIDEO + '?_r=1')
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        servidor = http.server.HTTPServer(('127.0.0.1', 0), TikTokFalso)
+        threading.Thread(target=servidor.serve_forever, daemon=True).start()
+        self.addCleanup(servidor.server_close)
+        self.addCleanup(servidor.shutdown)
+        destino = self.c.redireccion(f'http://127.0.0.1:{servidor.server_port}/ZSbVaCRAq/')
+        self.assertEqual(destino, self.VIDEO + '?_r=1')
 
 
 @unittest.skipIf(bool(LANZADOR), 'sin candado real no hay prueba de estrés')

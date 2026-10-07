@@ -89,6 +89,19 @@ class ConfirmacionesConBotones(Base):
         self.mensaje('Publicar')
         self.assertTrue(self.catalogo('publicar kia-picanto-2021')['ok'])
 
+    def test_video_de_tiktok_confirma_el_lugar(self):
+        self.mensaje('Este es el TikTok del Fiat: https://vt.tiktok.com/ZSbVaCRAq/')
+        for campo in ('video', 'tiktok'):
+            r = self.catalogo(f'editar fiat-uno-way-1-4-2018 {campo}=https://vt.tiktok.com/ZSbVaCRAq/')
+            self.assertFalse(r['ok'], r)
+            self.assertIn('Este video irá en: la ficha de «fiat-uno-way-1-4-2018». ¿Confirmas?', json.dumps(r, ensure_ascii=False))
+        self.assertEqual(self.ordenes, [])
+        self.boton('Sí')
+        r = self.catalogo('editar fiat-uno-way-1-4-2018 tiktok=https://vt.tiktok.com/ZSbVaCRAq/ --confirmar')
+        self.assertTrue(r['ok'], r)
+        self.assertIn(['editar', 'fiat-uno-way-1-4-2018', 'tiktok=https://vt.tiktok.com/ZSbVaCRAq/', '--por', '111'],
+                      self.ordenes)
+
     def test_no_publica_si_dice_que_no(self):
         for texto in ('no lo publiques todavía', '¿lo publico?', 'todavía no publicar'):
             self.mensaje(texto)

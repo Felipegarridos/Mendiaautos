@@ -61,7 +61,7 @@ CATALOGO_PERMITIDOS = {
 }
 SOLICITUDES_PERMITIDOS = {'listar', 'ver', 'atender', 'estado', 'nota', 'resumen', 'informe'}
 PROHIBIDAS = ('--por', '--carpeta', '--entrada-interna', '--json', '--completo', '--destino')
-CAMPOS_VIDEO = {'video', 'reel', 'instagram', 'youtube', 'video_recorrido'}
+CAMPOS_VIDEO = {'video', 'reel', 'instagram', 'tiktok', 'youtube', 'video_recorrido'}
 
 # Textos de Hermes que ve el equipo, en lenguaje sencillo: /new y /stop en el botón «Menú» de
 # Telegram, y la respuesta de /new sin datos técnicos (modelo, proveedor, consejos de Hermes).

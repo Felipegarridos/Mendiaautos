@@ -1,11 +1,12 @@
 /* Mendiautos · videos insertados.
    - Recorrido de un auto (ficha): un reel de Instagram, que se ve como en la
-     sección de Instagram de festivalviajes.com.ar, o un video de YouTube.
+     sección de Instagram de festivalviajes.com.ar, un video de TikTok (con su
+     reproductor oficial para páginas) o un video de YouTube.
    - «Otros servicios»: un video de YouTube por servicio, según
      window.MND_SITIO.servicios (assets/sitio.js, lo cambia el asistente).
    YouTube se carga solo cuando la persona toca el video (antes se ve la
    miniatura) y desde youtube-nocookie.com. Nada de esto usa scripts de
-   Instagram ni de YouTube dentro de la página: solo marcos (iframes). */
+   Instagram, TikTok ni YouTube dentro de la página: solo marcos (iframes). */
 (function () {
   'use strict';
 
@@ -46,9 +47,29 @@
     }, 'display:block;width:100%;max-width:540px;min-width:280px;height:' + Math.round(ancho * 1.25 + 190) +
        'px;margin:0 auto;border:0;border-radius:12px;background:#fff;overflow:hidden');
     marcosInstagram.push(marco);
+    poner(zona, marco, enlace, 'Ver el video en Instagram');
+  }
+
+  // TikTok: su reproductor oficial para páginas (www.tiktok.com/player/v1), en
+  // vertical como el video y sin el texto de la publicación encima. Con rel=0,
+  // al terminar sugiere otros videos de la misma cuenta y no de otras.
+  function tiktok(zona, cuenta, id, titulo) {
+    if (!zona || !/^\d{8,25}$/.test(id || '') || !/^[A-Za-z0-9_.]{1,30}$/.test(cuenta || '')) return;
+    var marco = crear('iframe', {
+      src: 'https://www.tiktok.com/player/v1/' + id + '?rel=0',
+      title: 'Video en TikTok · ' + (titulo || 'Mendiautos'),
+      loading: 'lazy', allowfullscreen: '',
+      allow: 'autoplay; encrypted-media; fullscreen; picture-in-picture',
+      referrerpolicy: 'strict-origin-when-cross-origin'
+    }, 'display:block;width:100%;max-width:340px;aspect-ratio:9 / 16;margin:0 auto;border:0;border-radius:12px;background:#000');
+    poner(zona, marco, 'https://www.tiktok.com/@' + cuenta + '/video/' + id, 'Ver el video en TikTok');
+  }
+
+  // El marco y, debajo, el enlace para verlo en la red social por si no carga.
+  function poner(zona, marco, enlace, texto) {
     var respaldo = crear('a', { href: enlace, target: '_blank', rel: 'noopener' },
       'display:block;margin-top:10px;text-align:center;font:600 12px/1.4 \'Open Sans\',sans-serif;color:#1E50A2');
-    respaldo.textContent = 'Ver el video en Instagram';
+    respaldo.textContent = texto;
     zona.textContent = '';
     zona.appendChild(marco);
     zona.appendChild(respaldo);
@@ -128,5 +149,5 @@
     esperarServicios(150);
   }
 
-  window.MND_VIDEOS = { instagram: instagram, youtube: youtube };
+  window.MND_VIDEOS = { instagram: instagram, tiktok: tiktok, youtube: youtube };
 })();
