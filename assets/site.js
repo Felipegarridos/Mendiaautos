@@ -27,6 +27,15 @@
     volver();
   }, true);
 
+  // Menú «Compra tu auto»: «Autos disponibles» y «Carros vendidos» muestran
+  // las marcas al pasar el mouse, y la página cancela su clic. En el celular
+  // (sin mouse) no llevaban a ninguna parte: un toque o un clic abre la página.
+  document.addEventListener('click', function (e) {
+    var enlace = e.target && e.target.closest ? e.target.closest('a.mnd-sublink-brands[href]') : null;
+    if (!enlace || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    location.href = enlace.getAttribute('href');
+  }, true);
+
   // Menú «Compra tu auto» → «Marcas disponibles»: las marcas y cuántos autos
   // disponibles tiene cada una salen del catálogo (assets/inventario.js).
   var LOGOS = {

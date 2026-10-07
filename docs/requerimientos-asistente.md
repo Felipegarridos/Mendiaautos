@@ -83,7 +83,9 @@ la placa.
 ## Videos
 
 - Recorrido de cada auto: enlace de un reel de **Instagram**, que se ve en la
-  página como en festivalviajes.com.ar.
+  página como en festivalviajes.com.ar, o de un video de **TikTok**, que se ve
+  con el reproductor oficial de TikTok en el mismo lugar (agregado el
+  07/10/2026). Sirve el enlace corto que copia la app de TikTok.
 - Otros servicios: enlaces de **YouTube** que se reproducen en la página
   (posventa, trámites de tránsito, fotografía y acompañamiento de compra). Los
   monta el desarrollador, como el resto de esa sección.
@@ -188,7 +190,7 @@ directamente en la VPS durante la instalación.
 ### Antes de abrir el sitio al público
 
 - [ ] Política de tratamiento de datos (Ley 1581 de 2012), que mencione también
-      los videos de YouTube e Instagram insertados en la página.
+      los videos de YouTube, Instagram y TikTok insertados en la página.
 - [ ] El correo real de ventas (la página dice ventas@mendiautos.com).
 - [ ] Opcional: logos de los bancos (PNG o SVG, fondo transparente) si se
       quiere que los monte el desarrollador.

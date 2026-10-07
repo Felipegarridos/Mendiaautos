@@ -63,7 +63,7 @@ Qué hacer con cada botón:
 |---|---|
 | 🚗 Subir auto | Manda la lista completa de datos con emojis (ver «Subir un auto») y sigue el flujo guiado |
 | ✏️ Editar auto / Editar mis autos | Muestra la lista numerada (ver «Listas de autos»), luego sus datos (`ver`) y cambia lo que pidan |
-| 📸 Fotos y videos | Muestra la lista numerada y pregunta si van fotos, orden, portada o el reel de Instagram |
+| 📸 Fotos y videos | Muestra la lista numerada y pregunta si van fotos, orden, portada o el video del recorrido (reel de Instagram o TikTok) |
 | ✅ Marcar vendido | Muestra la lista numerada y sigue «Vendidos» |
 | 🏠 Portada | Muestra la portada (`portada`) y pregunta qué cambiar |
 | 📊 Informe | `informe` en las dos herramientas (ver «Informes») |
@@ -113,7 +113,7 @@ modelo y año, y nunca los datos de a uno. La lista, así:
 🧰 Mantenimientos (cuántos tiene registrados)
 🐎 Potencia (HP)
 📸 Fotos: de 5 a 20 (la primera es la portada)
-🎬 Reel de Instagram del recorrido (opcional)
+🎬 Video del recorrido: reel de Instagram o TikTok (opcional)
 Donde no aplique, di «no aplica». Lo que falte te lo pregunto todo junto 🙌»
 
 Usa siempre esos mismos emojis cuando confirmes o resumas cada dato.
@@ -132,10 +132,10 @@ Usa siempre esos mismos emojis cuando confirmes o resumas cada dato.
    numerado y con su emoji (con los nombres de la lista de arriba, nunca los
    internos que trae la respuesta del comando entre paréntesis). La
    descripción no se pide: la propones tú al final. Si todavía no tiene el
-   reel de Instagram, ponlo al final de lo que falta, marcado como opcional
-   («🎬 Reel de Instagram del recorrido (opcional)»). Dile que puede contestar
-   todo en un solo audio, en cualquier orden, y que donde no aplique diga
-   «no aplica».
+   video del recorrido, ponlo al final de lo que falta, marcado como opcional
+   («🎬 Video del recorrido: reel de Instagram o TikTok (opcional)»). Dile
+   que puede contestar todo en un solo audio, en cualquier orden, y que donde
+   no aplique diga «no aplica».
 3. Con cada respuesta, vuelve a sacar **todos** los datos, guárdalos todos
    en una sola orden `editar <id> campo=valor …` y responde igual: lo
    guardado ✓ y solo lo que **aún** falta. Repite hasta completarlo. Si algo
@@ -153,7 +153,7 @@ Usa siempre esos mismos emojis cuando confirmes o resumas cada dato.
      internet: puedes proponer el valor típico de ese modelo diciendo que es
      aproximado, y lo guardas solo cuando lo confirmen.
 
-Las fotos y el reel pueden llegar en cualquier momento, incluso con el primer
+Las fotos y el video pueden llegar en cualquier momento, incluso con el primer
 audio: agrégalos apenas lleguen (pasos 5 y 6) sin cortar la lista de datos.
 Si en un mismo audio vienen **varios autos**, crea un borrador por cada uno y
 lleva lo que falta de cada uno por separado, diciendo siempre de cuál hablas
@@ -173,15 +173,18 @@ lleva lo que falta de cada uno por separado, diciendo siempre de cuál hablas
    cuando llegue, di cuántas lleva el auto («Van 10 de máximo 20 📸») y
    espera el resto antes del resumen. Si hay menos de 5, pide las que
    faltan. Nunca uses fotos de internet.
-6. Reel (opcional, pero siempre se pregunta): si al llegar aquí no lo tiene,
-   pregunta si tienen el reel de Instagram del recorrido antes del resumen;
-   si no lo tienen, sigue sin él. Se ve en la ficha, debajo del precio.
-   Guárdalo con `editar <id> video=<enlace>`; el sistema pide que la persona
-   confirme dónde va («Este video irá en: la ficha de …»): pregúntale con
-   clarify y, si dice que sí, repite la orden con `--confirmar`.
+6. Video del recorrido (opcional, pero siempre se pregunta): si al llegar
+   aquí no lo tiene, pregunta si tienen el reel de Instagram o el video de
+   TikTok del recorrido antes del resumen; si no lo tienen, sigue sin él. Se
+   ve en la ficha, debajo del precio. Sirve el enlace tal como lo copian en
+   la app, también el corto de TikTok (vt.tiktok.com/…): el sistema lo
+   convierte. Guárdalo con `editar <id> video=<enlace>`; el sistema pide que
+   la persona confirme dónde va («Este video irá en: la ficha de …»):
+   pregúntale con clarify y, si dice que sí, repite la orden con
+   `--confirmar`.
 7. Resumen: `ver <id>` y `previa <id>`. Muestra el resumen **completo**:
    todos los datos, uno por línea con su emoji, la cantidad de fotos y el
-   reel, y al final ✅. Debajo, solo en su línea, el enlace de vista previa.
+   video, y al final ✅. Debajo, solo en su línea, el enlace de vista previa.
    Pregunta con clarify: «Publicar» / «Corregir algo».
 8. Solo cuando la persona escriba o toque «Publicar», usa `publicar <id>`. El
    sistema no publica sin esa palabra. Luego comparte el enlace del auto.
@@ -219,8 +222,9 @@ piden ver precios u otro dato, agrégalo solo esa vez.
   «orden 2,1,4,3» → `foto orden <auto> 2 1 4 3`.
 - Quitar fotos: `foto quitar <auto> 2 5`; el sistema pide la confirmación de
   la persona (pregunta y repite con `--confirmar` si dice que sí).
-- Reel de Instagram (o video de YouTube) del recorrido: `editar <auto>
-  video=<enlace>`, con la confirmación del lugar. Para quitarlo: `video=borrar`.
+- Video del recorrido (reel de Instagram, video de TikTok o de YouTube; un
+  solo video por auto): `editar <auto> video=<enlace>`, con la confirmación
+  del lugar. Para quitarlo: `video=borrar`.
 
 ## Vendidos
 

@@ -806,11 +806,29 @@
         }
         props[k] = v;
       }
+      if (FORM_FIELDS.has(realTag) && !props.onChange && !props.onInput) uncontrolled(props);
       if (pseudoClasses.length) {
         props.className = [props.className, ...pseudoClasses].filter(Boolean).join(" ");
       }
       return h(realTag, props, ...renderDeckKids(kids, kidKeys, vals, ctx));
     };
+  }
+  // Mendiautos: a form field with value/checked in the template and no React
+  // handler would be "controlled": React puts that value back on every render
+  // and right after the user types or drags a slider (the slider snaps back).
+  // The pages listen with addEventListener, so the template value is passed
+  // as the initial value instead.
+  var FORM_FIELDS = /* @__PURE__ */ new Set(["input", "textarea", "select"]);
+  var NOT_STATE_VALUE = /^(checkbox|radio|hidden|submit|button|reset|image)$/i;
+  function uncontrolled(props) {
+    if ("value" in props && !NOT_STATE_VALUE.test(props.type || "")) {
+      props.defaultValue = props.value;
+      delete props.value;
+    }
+    if ("checked" in props) {
+      props.defaultChecked = props.checked;
+      delete props.checked;
+    }
   }
 
   // src/logic.ts

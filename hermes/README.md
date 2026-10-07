@@ -47,7 +47,7 @@ El equipo y sus roles están en `/etc/mendiautos/equipo.json` y se manejan con
 
 | | Administrador y gerente | Vendedor |
 |---|---|---|
-| Subir autos, fotos y el reel de Instagram | Sí | Sí, y corrige solo los que él subió |
+| Subir autos, fotos y el video del recorrido (Instagram o TikTok) | Sí | Sí, y corrige solo los que él subió |
 | Publicar | Sí | Sí, sin aprobación |
 | Marcar vendido / volver a poner en venta | Sí | No |
 | Portada del inicio y 5 destacados | Sí | No |
@@ -158,7 +158,7 @@ español.
 |---|---|
 | 🚗 Subir auto | Flujo guiado: saca todos los datos de un mensaje o audio (aunque vengan en desorden), los guarda de una vez, confirma con ✓ y pide en un solo mensaje todo lo que falta («no aplica» donde corresponde), hasta completarlo; propone la descripción, pide de 5 a 20 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
 | ✏️ Editar auto | Cambia cualquier dato: «cámbiale el precio a 95 millones» |
-| 📸 Fotos y videos | Agrega fotos, cambia el orden («la 3 de primera», «orden 2,1,4,3»), quita fotos o pone el reel de Instagram |
+| 📸 Fotos y videos | Agrega fotos, cambia el orden («la 3 de primera», «orden 2,1,4,3»), quita fotos o pone el video del recorrido (reel de Instagram o video de TikTok, también con el enlace corto de la app) |
 | ✅ Marcar vendido | Muestra marca, modelo, año, precio, color y placa para confirmar; queda en «Autos vendidos» con la fecha |
 | 🏠 Portada | Texto corto, título y foto o video (hasta 20 MB) del bloque principal del inicio |
 | 📊 Informe | El informe de la semana o del mes |
