@@ -207,6 +207,22 @@ Dónde queda cada cosa:
   Si las vuelves a exportar desde la herramienta de diseño, conserva esas dos
   líneas del `<head>` y el código que llena las listas; si no, volverán los
   autos de ejemplo (detalles en `hermes/README.md`).
+- Ajustes para celulares (07/10/2026):
+  - Las filas que avanzan solas (categorías y destacados del inicio,
+    «Recomendados para ti» de la ficha) usan `carrusel` de
+    `assets/catalogo.js`: se deslizan con el dedo y se detienen mientras las
+    tocan.
+  - En el menú «Compra tu auto», «Autos disponibles» y «Carros vendidos»
+    abren su página con un toque (`assets/site.js`).
+  - `support.js`, el motor de las páginas, trae un ajuste marcado
+    «Mendiautos»: un campo con valor en la plantilla lo toma como valor
+    inicial. Sin él, los deslizadores de los simuladores (ficha, Créditos e
+    Inversionista) vuelven solos a su valor. Si la herramienta de diseño
+    entrega un `support.js` nuevo, hay que volver a aplicarlo.
+  - El video del inicio del diseño es un MP4 normal (el anterior venía
+    fragmentado y el iPhone no siempre lo reproducía), con una versión de
+    720p para pantallas de hasta 900 px (`assets/hero-video-movil.mp4`) y
+    una imagen fija (`assets/hero-poster.jpg`) que queda si el video no carga.
 - Los formularios envían los datos con `assets/solicitudes.js` (ver la
   sección 5). Si vuelves a exportar una página con formulario (Contacto,
   BuscaTuAuto, CompraInmediata, ConsignacionFisica, ConsignacionVirtual,

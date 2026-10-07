@@ -215,8 +215,63 @@
   function pintarRecomendados(el, excluirId) {
     if (!el) return;
     var l = disponibles().filter(function (a) { return a.id !== excluirId; }).slice(0, 8);
-    // El carrusel se desplaza -50 %: la lista va dos veces para que el giro sea continuo.
-    el.innerHTML = l.length ? l.concat(l).map(tarjetaRecomendado).join('') : '';
+    el.innerHTML = l.length ? l.map(tarjetaRecomendado).join('') : '';
+    carrusel(el.parentNode, { fila: el, velocidad: 45 });
+  }
+
+  // ------------------------------------------------------------- carruseles
+  // Fila de tarjetas que avanza sola y que también se desliza con el dedo, la
+  // rueda o el trackpad: se detiene mientras la tocan (o tienen el mouse
+  // encima) y sigue un momento después desde donde quedó. Las tarjetas van dos
+  // veces para que el giro sea continuo. Si todas caben, la fila queda quieta.
+  // el: lo que se desplaza · fila: donde están las tarjetas (por defecto, el).
+  function carrusel(el, opciones) {
+    opciones = opciones || {};
+    var fila = opciones.fila || el;
+    if (!el || !fila || el.mndCarrusel || !fila.children.length) return;
+    el.mndCarrusel = true;
+    el.classList.add('mnd-carrusel');
+    el.style.overflowX = 'auto';
+    el.style.scrollBehavior = 'auto';
+    var sinMovimiento = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (sinMovimiento || el.scrollWidth <= el.clientWidth + 2) return;
+    var n = fila.children.length;
+    Array.prototype.slice.call(fila.children).forEach(function (k) { fila.appendChild(k.cloneNode(true)); });
+    var velocidad = opciones.velocidad || 36;    // px por segundo
+    var pos = el.scrollLeft, puesto = pos, largo = 0, antes = 0;
+    var quieto = 0, tocando = false, encima = false, visible = true;
+    function pausar(ms) { quieto = Math.max(quieto, Date.now() + (ms || 2500)); }
+    function soltar() { tocando = false; pausar(); }
+    el.addEventListener('touchstart', function () { tocando = true; }, { passive: true });
+    el.addEventListener('touchend', soltar, { passive: true });
+    el.addEventListener('touchcancel', soltar, { passive: true });
+    el.addEventListener('wheel', function () { pausar(); }, { passive: true });
+    // Un desplazamiento que no puso el carrusel (inercia del dedo, teclado): espera.
+    el.addEventListener('scroll', function () { if (Math.abs(el.scrollLeft - puesto) > 2) pausar(1500); }, { passive: true });
+    el.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') encima = true; });
+    el.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { encima = false; pausar(800); } });
+    window.addEventListener('resize', function () { largo = 0; });
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) { visible = es[es.length - 1].isIntersecting; }).observe(el);
+    }
+    function paso(t) {
+      var dt = antes ? Math.min(t - antes, 100) : 0;
+      antes = t;
+      if (visible) {
+        if (tocando || encima || Date.now() < quieto) {
+          pos = puesto = el.scrollLeft;
+        } else {
+          // Ancho de una vuelta: del primer original a su copia.
+          largo = largo || fila.children[n].offsetLeft - fila.children[0].offsetLeft;
+          pos += velocidad * dt / 1000;
+          if (largo > 0 && pos >= largo) pos -= largo;
+          el.scrollLeft = pos;
+          puesto = el.scrollLeft;
+        }
+      }
+      requestAnimationFrame(paso);
+    }
+    requestAnimationFrame(paso);
   }
 
   // ------------------------------------------------------------- detalle
@@ -367,21 +422,24 @@
 
   // ------------------------------------------------------------- portada
   // Bloque principal del inicio. Lo que no se haya cambiado por el asistente
-  // queda como en el diseño original.
-  var PORTADA = { texto: 'BMW', titulo: 'Serie 7\n2026', video: 'assets/hero-video.mp4' };
+  // queda como en el diseño original. El video del diseño tiene una versión de
+  // 720p para celulares y tabletas (2,8 MB en vez de 7,6) y una imagen fija.
+  var PORTADA = { texto: 'BMW', titulo: 'Serie 7\n2026', video: 'assets/hero-video.mp4',
+                  videoMovil: 'assets/hero-video-movil.mp4', poster: 'assets/hero-poster.jpg' };
   var MEDIO_VALIDO = /^catalogo\/medios\/[0-9a-f]{16}\.(jpg|mp4)$/;
   function portada() {
     var s = window.MND_SITIO && window.MND_SITIO.portada || {};
     var m = s.medio || {}, foto = m.tipo === 'foto' && MEDIO_VALIDO.test(m.ruta || '');
     var videoPropio = m.tipo === 'video' && MEDIO_VALIDO.test(m.ruta || '');
+    var angosta = window.matchMedia && matchMedia('(max-width: 900px)').matches;
     var auto = s.auto ? buscar(s.auto) : null;
     return {
       texto: hay(s.texto) ? String(s.texto) : PORTADA.texto,
       titulo: hay(s.titulo) ? String(s.titulo) : PORTADA.titulo,
       esFoto: foto, esVideo: !foto,
       foto: foto ? m.ruta : '',
-      video: videoPropio ? m.ruta : PORTADA.video,
-      poster: videoPropio && MEDIO_VALIDO.test(m.poster || '') ? m.poster : '',
+      video: videoPropio ? m.ruta : angosta ? PORTADA.videoMovil : PORTADA.video,
+      poster: !videoPropio ? PORTADA.poster : MEDIO_VALIDO.test(m.poster || '') ? m.poster : '',
       enlace: auto && auto.estado !== 'vendido' ? enlace(auto) : 'AutosDisponibles.dc.html'
     };
   }
@@ -392,6 +450,6 @@
     pintarInicio: pintarInicio, pintarDisponibles: pintarDisponibles, pintarVendidos: pintarVendidos,
     pintarRecomendados: pintarRecomendados, autoDeLaPagina: autoDeLaPagina, detalle: detalle,
     pintarGaleria: pintarGaleria, pintarLinea: pintarLinea, pintarVideo: pintarVideo, video: video,
-    portada: portada, previa: previa
+    portada: portada, previa: previa, carrusel: carrusel
   };
 })();

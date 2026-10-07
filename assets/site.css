@@ -7,6 +7,17 @@
 /* Botón «Volver»: el desplazamiento de la flecha al pasar el mouse. */
 [data-mnd-back] button:hover svg { transform: translateX(-3px); }
 
+/* Carruseles que avanzan solos (carrusel en assets/catalogo.js): se deslizan
+   con el dedo, la rueda o el trackpad, sin barra visible. */
+.mnd-carrusel { scrollbar-width: none !important; overscroll-behavior-x: contain; }
+.mnd-carrusel::-webkit-scrollbar { display: none !important; }
+
+/* Video de fondo del inicio: sin el botón de reproducir que pone el iPhone
+   cuando no deja arrancar el video solo (por ejemplo, con ahorro de batería);
+   mientras tanto se ve la imagen fija, y arranca con el primer toque. */
+.mnd-hero-video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+.mnd-hero-video::-webkit-media-controls { display: none !important; }
+
 /* ---------- Tabletas y pantallas medianas (≤ 900 px) ---------- */
 @media (max-width: 900px) {
   /* Grilla o fila de columnas que pasa a una sola columna */

@@ -52,10 +52,8 @@
   .mnd-scrollx{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#1E50A2 var(--c-chip)}
   .mnd-scrollx::-webkit-scrollbar{height:6px}.mnd-scrollx::-webkit-scrollbar-thumb{background:#1E50A2}
   @media (prefers-reduced-motion:reduce){.mnd-reveal{opacity:1!important;transform:none!important}}
-  @keyframes mnd-rec-slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-  .mnd-rec-scroll{overflow:hidden!important}
-  .mnd-rec-track{display:flex;gap:18px;width:max-content;animation:mnd-rec-slide 30s linear infinite}
-  .mnd-rec-scroll:hover .mnd-rec-track{animation-play-state:paused}
+  .mnd-rec-scroll{overflow:hidden}
+  .mnd-rec-track{display:flex;gap:18px;width:max-content}
   /* ===== full-screen menu ===== */
   #mnd-menu{position:fixed;inset:0;z-index:2147483200;overflow-y:auto;display:none;background:radial-gradient(75% 95% at 0% 22%,rgba(30,80,162,.12),transparent 55%),var(--bg);color:var(--t-strong);font-family:'Open Sans',system-ui,sans-serif}
   body[data-theme="light"] #mnd-menu{background:linear-gradient(118deg,#ffffff 52%,#fbe7e8 100%)}

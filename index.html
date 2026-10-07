@@ -420,8 +420,8 @@
     const saved = (window.__mndTheme) || 'dark';
     this._applyTheme(saved);
     this._setupHeroVideo();
-    this._autoScrollFeatured();
     if(window.MND_CATALOGO) MND_CATALOGO.pintarInicio(document.getElementById('mnd-featured'));
+    this._autoScrollFeatured();
     const feat=document.getElementById('mnd-featured');
     if(feat){ feat.addEventListener('click',(e)=>{ const c=e.target.closest('.mnd-card'); if(!c||e.target.closest('a')) return; window.location.href=c.dataset.href||'DetalleAuto.dc.html'; }); feat.querySelectorAll('.mnd-card').forEach(c=>c.style.cursor='pointer'); }
     this._buildFixedHeader();
@@ -451,8 +451,10 @@
     if(p.esFoto && foto){ foto.src=p.foto; foto.style.display='block'; if(v) v.remove(); return; }
     if(!v) return;
     if(p.poster) v.poster=p.poster;
-    v.src=p.video;
     v.muted=true; v.defaultMuted=true;
+    // Si el celular no puede reproducir el video, queda la imagen fija en su lugar.
+    v.addEventListener('error',()=>{ if(foto && p.poster){ foto.src=p.poster; foto.style.display='block'; v.style.display='none'; } },{once:true});
+    v.src=p.video;
     const tryPlay=()=>{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); };
     if(v.readyState>=2) tryPlay(); else v.addEventListener('loadeddata',tryPlay,{once:true});
     v.addEventListener('canplay',tryPlay,{once:true});
@@ -468,19 +470,8 @@
     this._infiniteMarquee(document.getElementById('mnd-cats'), 0.6);
   }
   _infiniteMarquee(el, speed){
-    if(!el || el._marq) return; el._marq = true;
-    Array.from(el.children).forEach(k => el.appendChild(k.cloneNode(true)));
-    el.style.overflowX = 'hidden';
-    el.style.scrollBehavior = 'auto';
-    let x = 0;
-    const step = ()=>{
-      const half = el.scrollWidth / 2;
-      x += speed;
-      if(x >= half) x -= half;
-      el.scrollLeft = x;
-      requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
+    // Avanza solo y también se desliza con el dedo (carrusel en assets/catalogo.js).
+    if(window.MND_CATALOGO && MND_CATALOGO.carrusel) MND_CATALOGO.carrusel(el, {velocidad: speed*60});
   }
   _applyTheme(theme){
     window.__mndTheme = theme;
