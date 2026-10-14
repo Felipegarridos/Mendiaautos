@@ -177,6 +177,16 @@
   a,button{transition:color .3s cubic-bezier(.22,.61,.36,1),background-color .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),box-shadow .35s cubic-bezier(.22,.61,.36,1),opacity .3s ease}
   .mnd-brand-logo,.mnd-soc{transition:transform .4s cubic-bezier(.22,.61,.36,1),border-color .35s ease,color .35s ease}
   @media (prefers-reduced-motion:reduce){body{animation:none}.mnd-agenda::after,.mnd-cta::after,.mnd-alerta-btn::after{display:none}}
+  /* Compactado para celular */
+  @media (max-width:640px){
+    .mnd-hero-col{height:30vh!important;min-height:190px!important}
+    .mnd-filtcard{padding:14px 14px!important;margin-top:-28px!important;border-radius:16px!important}
+    .mnd-searchbar{padding:9px 12px!important;margin-bottom:10px!important}
+    .mnd-filt{padding:9px 12px!important}
+    .mnd-filt .mnd-filt-head div:last-child{margin-top:5px!important}
+    .mnd-brand-grid{max-height:180px!important;gap:8px!important}
+    .mnd-chips{margin-bottom:10px!important}
+  }
 </style>
 </helmet>
 <div style="background:var(--bg);width:100%;max-width:1280px;margin:0 auto;overflow:hidden">
@@ -197,26 +207,25 @@
   <div class="r-px" data-mnd-back style="max-width:1280px;margin:0 auto;padding:16px 34px 0"><button type="button" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 2px;cursor:pointer;color:var(--t-3);font:600 11px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;transition:color .3s ease" style-hover="color:var(--t-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="transition:transform .3s ease"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Volver</button></div>
 
   <!-- HERO -->
-  <section style="position:relative;height:60vh;min-height:420px;background:radial-gradient(120% 100% at 50% 20%,#26262a 0%,#141416 55%,#0a0a0b 100%);overflow:hidden">
-    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.08)"><svg width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5" stroke-linecap="round"></path><path d="M3 13h18v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4Z"></path></svg></div>
-    <div style="position:absolute;top:16px;right:22px;font:400 10px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.4);border:1px dashed rgba(255,255,255,.22);padding:6px 10px">FOTO · sala de exposición</div>
+  <section class="mnd-hero-col" style="position:relative;height:38vh;min-height:300px;background:#0a0a0b url('assets/hero-coleccion.jpg') center 78%/cover no-repeat;overflow:hidden">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,.25) 55%,rgba(0,0,0,.45))"></div>
     <div class="r-left" style="position:absolute;left:52px;bottom:64px;max-width:760px">
       <div style="display:flex;align-items:center;gap:14px;font:600 12px/1 'Open Sans',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.6)"><a href="MendiautosHome.dc.html" style="color:rgba(255,255,255,.6)">Inicio</a><span style="width:28px;height:1px;background:rgba(255,255,255,.35)"></span><span style="color:#fff">Colección</span></div>
       <h1 class="r-display" style="margin:18px 0 0;font:400 clamp(48px,7vw,92px)/.9 'Michroma','Open Sans',sans-serif;letter-spacing:.01em;color:#fff;text-transform:uppercase">La<br>Colección</h1>
-      <div style="display:flex;align-items:center;gap:16px;margin-top:24px"><span style="width:44px;height:2px;background:#1E50A2"></span><span style="font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)"><span class="mnd-hero-count">63</span> automóviles disponibles</span></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:24px"><span style="font:600 13px/1 'Open Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)"><span class="mnd-hero-count">63</span> automóviles disponibles</span></div>
     </div>
     <div style="position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg))"></div>
   </section>
 
   <!-- FILTER BAR -->
   <section style="max-width:1180px;margin:-40px auto 0;position:relative;z-index:5;padding:0 20px">
-    <div class="r-pc r-px" style="background:var(--c-card);border:1px solid var(--ln);border-radius:22px;padding:28px 30px;box-shadow:0 50px 90px -40px rgba(0,0,0,.6)">
-      <div class="mnd-searchbar" style="display:flex;align-items:center;gap:12px;margin-bottom:22px;padding:14px 18px;border:1px solid var(--ln);border-radius:12px;background:var(--c-card)">
+    <div class="r-pc r-px mnd-filtcard" style="background:var(--c-card);border:1px solid var(--ln);border-radius:22px;padding:18px 24px;box-shadow:0 50px 90px -40px rgba(0,0,0,.6)">
+      <div class="mnd-searchbar" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 16px;border:1px solid var(--ln);border-radius:12px;background:var(--c-card)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color:var(--t-3);flex:none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5" stroke-linecap="round"></path></svg>
         <input class="mnd-search-input" placeholder="Busca por marca o modelo (ej. Toyota, Duster, SUV...)" style="flex:1;background:transparent;border:0;outline:none;color:var(--t-strong);font:400 14px/1 'Open Sans',sans-serif">
         <button class="mnd-search-clear" type="button" style="display:none;background:none;border:0;color:var(--t-3);cursor:pointer;font-size:18px;line-height:1">×</button>
       </div>
-      <div class="r-wrap r-gap-xs" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+      <div class="r-wrap r-gap-xs" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="display:inline-flex;background:var(--c-chip);border-radius:100px;padding:5px">
           <button class="mnd-tab mnd-tab-on" data-href="AutosDisponibles.dc.html" style="border:0;cursor:pointer;padding:9px 22px;border-radius:100px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Disponible</button>
           <button class="mnd-tab" data-href="AutosVendidos.dc.html" style="border:0;cursor:pointer;background:transparent;padding:9px 22px;border-radius:100px;font:700 12px/1 'Open Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--t-3)">Vendido</button>
@@ -225,7 +234,7 @@
       </div>
       <div id="mnd-chips" class="mnd-chips"><span class="mnd-chips-list"></span><button class="mnd-reset" type="button">Restablecer todo</button></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln)">
-        <div class="mnd-filt" data-f="marca" style="position:relative;padding:18px 20px 18px 0;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="marca" style="position:relative;padding:12px 20px 12px 0;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Marca</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas las marcas</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <div class="mnd-brand-grid">
@@ -251,14 +260,14 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="anio" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="anio" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Año</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los años</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><label class="mnd-fl">De<select class="mnd-year-from"></select></label><label class="mnd-fl">A<select class="mnd-year-to"></select></label></div>
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="precio" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="precio" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Precio</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los precios</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-price-all" defaultChecked="true">Todos los rangos de precios</label>
@@ -267,7 +276,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="tipo" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="tipo" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Tipo de carrocería</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos los tipos</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-type-all" defaultChecked="true">Todos los tipos</label>
@@ -289,7 +298,7 @@
         </button>
       </div>
       <div class="mnd-morewrap" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);margin-top:14px">
-        <div class="mnd-filt" data-f="combustible" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="combustible" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Combustible</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Todos</label>
@@ -300,7 +309,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="transmision" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="transmision" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Transmisión</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Todas</label>
@@ -309,14 +318,14 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="km" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="km" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Kilometraje</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Cualquiera</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><label class="mnd-fl">Desde<select class="mnd-km-from"></select></label><label class="mnd-fl">Hasta<select class="mnd-km-to"></select></label></div>
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="ciudad" style="position:relative;padding:18px 20px">
+        <div class="mnd-filt" data-f="ciudad" style="position:relative;padding:12px 20px">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Ciudad</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Todas</label>
@@ -328,7 +337,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="traccion" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="traccion" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Tracción</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todas</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Todas</label>
@@ -337,7 +346,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="cilindraje" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="cilindraje" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Cilindraje</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Todos</label>
@@ -348,7 +357,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="hp" style="position:relative;padding:18px 20px;border-right:1px solid var(--ln)">
+        <div class="mnd-filt" data-f="hp" style="position:relative;padding:12px 20px;border-right:1px solid var(--ln)">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Potencia (HP)</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Cualquiera</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop">
             <label class="mnd-chk"><input type="checkbox" class="mnd-grp-all" defaultChecked="true">Cualquiera</label>
@@ -359,7 +368,7 @@
             <button class="mnd-aplicar" type="button">Aplicar</button>
           </div>
         </div>
-        <div class="mnd-filt" data-f="specs" style="position:relative;padding:18px 0 18px 20px">
+        <div class="mnd-filt" data-f="specs" style="position:relative;padding:12px 0 12px 20px">
           <div class="mnd-filt-head" style="cursor:pointer"><div style="font:700 10px/1 'Open Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)">Detalles</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;font:400 14px/1.2 'Open Sans',sans-serif;color:var(--t-3)"><span class="mnd-filt-val">Todos</span><span class="mnd-filt-chev">▾</span></div></div>
           <div class="mnd-drop mnd-drop-r">
             <label class="mnd-chk"><input type="checkbox" class="mnd-spec-all" defaultChecked="true">Todos</label>
