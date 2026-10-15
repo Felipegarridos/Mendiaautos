@@ -39,16 +39,26 @@
   // Menú «Compra tu auto» → «Marcas disponibles»: las marcas y cuántos autos
   // disponibles tiene cada una salen del catálogo (assets/inventario.js).
   var LOGOS = {
-    'aston martin': 'aston-martin', 'audi': 'audi', 'bmw': 'bmw', 'citroen': 'citroen', 'citroën': 'citroen',
-    'ford': 'ford', 'honda': 'honda', 'hyundai': 'hyundai', 'jac': 'jac', 'kia': 'kia', 'land rover': 'land-rover',
-    'mercedes-benz': 'mercedes-benz', 'mercedes benz': 'mercedes-benz', 'peugeot': 'peugeot', 'porsche': 'porsche',
-    'renault': 'renault', 'suzuki': 'suzuki', 'tesla': 'tesla', 'toyota': 'toyota'
+    'aston martin': 'aston-martin', 'audi': 'audi', 'bmw': 'bmw', 'chevrolet': 'chevrolet', 'citroen': 'citroen', 'citroën': 'citroen',
+    'ford': 'ford', 'honda': 'honda', 'hyundai': 'hyundai', 'jac': 'jac', 'kia': 'kia', 'land rover': 'land-rover', 'mazda': 'mazda',
+    'mercedes-benz': 'mercedes-benz', 'mercedes benz': 'mercedes-benz', 'mini': 'mini', 'peugeot': 'peugeot', 'porsche': 'porsche',
+    'renault': 'renault', 'suzuki': 'suzuki', 'tesla': 'tesla', 'toyota': 'toyota', 'volkswagen': 'volkswagen', 'volvo': 'volvo', 'nissan': 'nissan', 'ferrari': 'ferrari'
   };
   var SIGLAS = {
     'chevrolet': 'CH', 'mazda': 'MZ', 'nissan': 'NI', 'volkswagen': 'VW', 'mitsubishi': 'MI', 'subaru': 'SB',
     'volvo': 'VO', 'fiat': 'FI', 'byd': 'BYD', 'mg': 'MG', 'dodge': 'DG', 'ram': 'RAM', 'chery': 'CY',
     'changan': 'CA', 'great wall': 'GW', 'lexus': 'LX', 'mini': 'MN', 'jeep': 'JP', 'skoda': 'SK', 'seat': 'SE'
   };
+
+  function iniciales(k) {
+    return SIGLAS[k] || k.replace(/[^a-z]/g, '').slice(0, 2).toUpperCase() || '··';
+  }
+  // Distintivo cuando la marca no tiene imagen (o el PNG falla): monograma limpio.
+  function pintarMonograma(logo, k) {
+    logo.textContent = iniciales(k);
+    logo.style.fontWeight = '700';
+    logo.style.letterSpacing = '.02em';
+  }
 
   function pintarFila(fila, marca, n) {
     var k = marca.toLowerCase();
@@ -58,17 +68,21 @@
     if (nombre) nombre.textContent = marca;
     if (cuenta) cuenta.setAttribute('data-count', String(n));
     if (!logo) return;
-    var img = logo.querySelector('img');
     if (LOGOS[k]) {
-      if (!img) {
-        logo.textContent = '';
-        img = document.createElement('img');
-        logo.appendChild(img);
-      }
-      img.src = 'assets/marcas/' + LOGOS[k] + '.png';
+      logo.textContent = '';
+      logo.style.fontWeight = '';
+      logo.style.letterSpacing = '';
+      var img = document.createElement('img');
+      img.style.width = '26px';
+      img.style.height = '26px';
+      img.style.objectFit = 'contain';
       img.alt = marca;
+      // Si el PNG no existe o falla, se cae al monograma en vez de quedar roto.
+      img.onerror = function () { pintarMonograma(logo, k); };
+      logo.appendChild(img);
+      img.src = 'assets/marcas/' + LOGOS[k] + '.png';
     } else {
-      logo.textContent = SIGLAS[k] || k.replace(/[^a-z]/g, '').slice(0, 2).toUpperCase() || '··';
+      pintarMonograma(logo, k);
     }
   }
 

@@ -20,6 +20,15 @@
     'chery': 'CY', 'changan': 'CA', 'great wall': 'GW', 'lexus': 'LX', 'mini': 'MN'
   };
   var FOTO_VALIDA = /^(catalogo\/fotos|assets)\/[A-Za-z0-9._\-\/]+\.(jpe?g|png|webp)$/i;
+  // Marcas con logo en assets/marcas/. Si no está, se usan las siglas.
+  var LOGOS = {
+    'aston martin': 'aston-martin', 'audi': 'audi', 'bmw': 'bmw', 'chevrolet': 'chevrolet',
+    'citroen': 'citroen', 'citroën': 'citroen', 'ford': 'ford', 'honda': 'honda', 'hyundai': 'hyundai',
+    'jac': 'jac', 'kia': 'kia', 'land rover': 'land-rover', 'mazda': 'mazda', 'mercedes-benz': 'mercedes-benz',
+    'mercedes benz': 'mercedes-benz', 'mini': 'mini', 'peugeot': 'peugeot', 'porsche': 'porsche',
+    'renault': 'renault', 'suzuki': 'suzuki', 'tesla': 'tesla', 'toyota': 'toyota',
+    'volkswagen': 'volkswagen', 'volvo': 'volvo', 'nissan': 'nissan', 'ferrari': 'ferrari'
+  };
   var ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
   function esc(v) {
@@ -60,6 +69,16 @@
   function siglas(marca) {
     var m = String(marca || '').trim().toLowerCase();
     return SIGLAS[m] || m.replace(/[^a-z]/g, '').slice(0, 2).toUpperCase() || '··';
+  }
+  // Logo de la marca: imagen si existe, con respaldo a las siglas si el PNG falla.
+  function logoMarca(marca, px) {
+    var f = LOGOS[String(marca || '').trim().toLowerCase()];
+    if (f) {
+      return '<img src="assets/marcas/' + esc(f) + '.png" alt="' + esc(marca) +
+        '" style="width:' + px + 'px;height:' + px + 'px;object-fit:contain"' +
+        ' onerror="this.parentNode.textContent=\'' + esc(siglas(marca)) + '\'">';
+    }
+    return esc(siglas(marca));
   }
   function fotos(a) {
     return (Array.isArray(a.fotos) ? a.fotos : []).filter(function (u) {
@@ -120,8 +139,8 @@
     return '<a href="' + esc(enlace(a)) + '" aria-label="Ver ' + esc(titulo(a)) + '" style="width:34px;height:34px;border-radius:8px;background:rgba(30,80,162,.14);display:flex;align-items:center;justify-content:center;color:#1E50A2">' + FLECHA + '</a>';
   }
   function marcaFila(a, envolvente, estiloMarca) {
-    return '<div' + envolvente + ' style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;font:700 9px/1 \'Open Sans\',sans-serif;color:var(--t-2);background:var(--c-circle)">' +
-      esc(siglas(a.marca)) + '</span><span style="font:600 11px/1 \'Open Sans\',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)' + estiloMarca + '">' + esc(a.marca) + '</span></div>';
+    return '<div' + envolvente + ' style="display:flex;align-items:center;gap:12px"><span style="width:38px;height:38px;border-radius:50%;border:1px solid var(--ln-strong);display:flex;align-items:center;justify-content:center;overflow:hidden;font:700 12px/1 \'Open Sans\',sans-serif;color:var(--t-2);background:var(--c-circle)">' +
+      logoMarca(a.marca, 28) + '</span><span style="font:600 11px/1 \'Open Sans\',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--t-2)' + estiloMarca + '">' + esc(a.marca) + '</span></div>';
   }
   function atributos(a) {
     return ' data-id="' + esc(a.id) + '" data-href="' + esc(enlace(a)) + '"';
@@ -144,11 +163,11 @@
     var vendido = a.estado === 'vendido';
     return '<div class="mnd-card mnd-reveal"' + atributos(a) + ' style="background:var(--c-card);border:1px solid var(--ln);border-radius:18px;overflow:hidden">' +
       zonaFoto(a, 230) +
-      '<div style="padding:18px 20px 20px">' + marcaFila(a, '', '') +
-      '<h3 style="margin:14px 0 0;font:500 20px/1.2 \'Open Sans\',sans-serif;color:var(--t-strong)">' + esc(titulo(a)) + '</h3>' +
-      '<div style="margin-top:12px;font:400 13px/1 \'Open Sans\',sans-serif;color:var(--t-2)">' + esc(km(a.km)) + '</div>' +
+      '<div style="padding:14px 20px 16px">' + marcaFila(a, '', '') +
+      '<h3 style="margin:10px 0 0;font:500 20px/1.2 \'Open Sans\',sans-serif;color:var(--t-strong)">' + esc(titulo(a)) + '</h3>' +
+      '<div style="margin-top:8px;font:400 13px/1 \'Open Sans\',sans-serif;color:var(--t-2)">' + esc(km(a.km)) + '</div>' +
       (vendido ? '<div style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 \'Open Sans\',sans-serif;color:#1E50A2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path></svg>' + esc(vendidoHace(a)) + '</div>' : '') +
-      '<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between">' +
+      '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between">' +
       '<span style="display:inline-flex;align-items:center;gap:8px;font:700 19px/1 \'Open Sans\',sans-serif;color:var(--t-strong)">' +
       (vendido ? 'Vendido' : esc(precio(a.precio)) + chevron('var(--t-3)')) + '</span>' +
       botonFicha(a) + '</div></div></div>';
@@ -197,7 +216,7 @@
       if (!m || hay[m.toLowerCase()]) return;
       hay[m.toLowerCase()] = true;
       rejilla.insertAdjacentHTML('beforeend', '<button class="mnd-brand-chip" data-brand="' + esc(m) +
-        '" type="button"><span class="mnd-blogo">' + esc(siglas(m)) + '</span>' + esc(m) + '</button>');
+        '" type="button"><span class="mnd-blogo">' + logoMarca(m, 18) + '</span>' + esc(m) + '</button>');
     });
   }
   function pintarDisponibles(el) {
