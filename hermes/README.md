@@ -154,6 +154,17 @@ asistente). Los demás comandos de Hermes siguen funcionando si un
 administrador los escribe. Los avisos propios de Hermes también salen en
 español.
 
+La conversación también **empieza de cero sola** (como `/new`) en el primer
+mensaje después de 2 horas sin escribirle o después de las 3 a. m. (hora de
+Colombia). Los borradores quedan guardados: «sigamos con el Suzuki» o
+«📝 Mis borradores» retoman el auto. Sin esto una conversación duraba semanas,
+cada mensaje le mandaba a Gemini todo el historial (más caro) y, con unas fotos
+seguidas, se pasaba el límite de tokens por minuto de Google (ajustado el
+13/11/2026). Para cambiar las horas: `systemctl edit mendiautos-hermes`, con
+`Environment=MENDIAUTOS_INACTIVIDAD_MIN=180` o `Environment=MENDIAUTOS_HORA_DIARIA=4`
+(`MENDIAUTOS_INACTIVIDAD_MIN=0` deja solo el corte de la madrugada), y
+`mendiautos hermes --reiniciar`.
+
 | Botón | Qué hace |
 |---|---|
 | 🚗 Subir auto | Flujo guiado: saca todos los datos de un mensaje o audio (aunque vengan en desorden), los guarda de una vez, confirma con ✓ y pide en un solo mensaje todo lo que falta («no aplica» donde corresponde), hasta completarlo; propone la descripción, pide de 5 a 20 fotos y el reel de Instagram, muestra un resumen con la vista previa y publica solo con «Publicar» |
@@ -344,6 +355,13 @@ systemctl start mendiautos-hermes
 - **El bot no responde**: `systemctl status mendiautos-hermes` y
   `journalctl -u mendiautos-hermes -n 50`. Revisa el token, que la persona esté
   en `mendiautos equipo` y que la clave de Gemini tenga saldo o cupo.
+- **«You exceeded your current quota… check your plan and billing details»**
+  (HTTP 429 en `~/.hermes/logs/errors.log`): suena a falta de saldo, pero casi
+  siempre es un límite **por minuto** (la línea «Quota exceeded for metric…»
+  dice cuál, p. ej. tokens de entrada por minuto del nivel 1). Pasa solo y se
+  evita con conversaciones cortas: la conversación empieza de cero sola tras
+  2 horas sin uso; si urge, la persona escribe `/new`. Los límites del nivel se
+  ven en https://ai.dev/rate-limit.
 - **«no está registrado en el equipo»**: `mendiautos equipo agregar …`.
 - **No llegan los avisos o los informes**: la persona debe haberle escrito
   «/start» al bot al menos una vez. `solicitudes pendientes` muestra si hay

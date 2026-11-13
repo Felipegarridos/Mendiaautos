@@ -21,6 +21,10 @@ Además, el sistema (no solo las instrucciones) hace cumplir que:
 Y limpia lo que llega al chat: las preguntas con botones salen con saltos de
 línea reales y sin Markdown (Telegram las muestra tal cual), y las respuestas
 no llevan «\\n» escrito ni el razonamiento del modelo en inglés.
+
+La conversación empieza de cero sola tras 2 horas sin mensajes o en la primera
+de cada madrugada (como /new), para que el historial no crezca sin fin: más
+caro y, con mucho historial, Google corta por tokens por minuto.
 """
 from __future__ import annotations
 
@@ -566,6 +570,11 @@ def antes_de_llamar_al_modelo(user_message='', sender_id='', platform='', **_):
     extra = ('' if m['rol'] in ROLES_TODO else
              ' Es vendedor: sube autos y corrige los que él subió; no marca vendidos, no cambia la portada ni los '
              'destacados y no ve solicitudes ni informes (el sistema lo bloquea igual).')
+    if _reinicios.pop(str(sender_id), None):
+        extra += (' Esta conversación es nueva: la anterior se cerró sola por tiempo, y los borradores siguen '
+                  'guardados. Si la persona sigue con algo de antes (fotos, datos, «sigamos») y no sabes de qué '
+                  'auto, revisa sus borradores con `listar --borradores` y pregúntale si es ese; retoma con '
+                  '`faltan <id>`. No le expliques el cierre salvo que pregunte.')
     return {'context': f'[Sistema, no lo menciones] Te escribe {m["nombre"] or "alguien del equipo"} '
                        f'({m["rol"]}). Hoy es {fecha} (hora de Colombia).{extra}'}
 
@@ -627,8 +636,114 @@ def comando_menu(_args=''):
     return None if enviado else 'Escríbeme «menú» y te muestro las opciones 👇'
 
 
-def al_recibir(event=None, **_):
-    """/start y /menu abren el menú (Hermes ignora /start por su cuenta)."""
+# ------------------------------------------------- conversación nueva sola
+# Hermes ya no cierra las conversaciones de Telegram por su cuenta: una sola puede durar semanas y en cada
+# mensaje se le manda a Gemini todo el historial. El 12/11/2026 la de una vendedora llevaba 3 semanas y
+# ~300.000 tokens por llamada; con unas fotos seguidas pasó el límite de tokens por minuto de Google
+# (HTTP 429, que suena a «sin saldo» pero no lo es). Por eso la conversación empieza de cero sola tras
+# INACTIVIDAD_MIN sin mensajes de la persona o en el primer mensaje después de HORA_DIARIA (hora de
+# Colombia). Es lo mismo que /new: los borradores quedan guardados en el catálogo.
+# (Misma idea que el complemento comunitario hermes-session-reset-policy, MIT, de fastfinge.)
+def _entero(nombre, por_defecto):
+    try:
+        return int(os.environ.get(nombre) or por_defecto)
+    except ValueError:
+        logger.warning('mendiautos: %s no es un número; uso %s', nombre, por_defecto)
+        return por_defecto
+
+
+INACTIVIDAD_MIN = _entero('MENDIAUTOS_INACTIVIDAD_MIN', 120)    # 0 = sin corte por inactividad
+HORA_DIARIA = _entero('MENDIAUTOS_HORA_DIARIA', 3)              # fuera de 0-23 = sin corte diario
+RELOJ = 'mendiautos_ultimo_mensaje'        # cuándo escribió la persona por última vez (en la ruta de Hermes)
+_reinicios = {}                            # id de Telegram → motivo, para avisarle al modelo en el primer turno
+
+
+def _fecha(valor):
+    """datetime con zona (las de Hermes vienen sin zona, en la hora del servidor), o None."""
+    if isinstance(valor, str):
+        try:
+            valor = dt.datetime.fromisoformat(valor)
+        except ValueError:
+            return None
+    if not isinstance(valor, dt.datetime):
+        return None
+    return valor if valor.tzinfo else valor.astimezone()
+
+
+def motivo_reinicio(ultimo, ahora):
+    """'inactividad' / 'madrugada' si toca empezar de cero, o None."""
+    ultimo, ahora = _fecha(ultimo), _fecha(ahora)
+    if ultimo is None or ahora is None:
+        return None
+    if INACTIVIDAD_MIN > 0 and ahora - ultimo >= dt.timedelta(minutes=INACTIVIDAD_MIN):
+        return 'inactividad'
+    if 0 <= HORA_DIARIA <= 23:
+        local = ahora.astimezone(TZ)
+        corte = local.replace(hour=HORA_DIARIA, minute=0, second=0, microsecond=0)
+        if corte > local:
+            corte -= dt.timedelta(days=1)
+        if ultimo < corte:
+            return 'madrugada'
+    return None
+
+
+def reiniciar_si_toca(event, gateway, session_store, ahora=None):
+    """Antes de atender un mensaje: si la conversación quedó vieja, empieza una nueva (como /new).
+
+    El reloj es propio (metadatos de la ruta, que no mueven el updated_at de Hermes) y solo avanza con
+    mensajes reales de la persona: las tareas internas no mantienen viva una conversación. Si el asistente
+    está a mitad de una respuesta no se toca nada (ni el reloj): se decide en el siguiente mensaje.
+    Nunca frena el mensaje: ante cualquier error sigue con la conversación de siempre.
+    """
+    fuente = getattr(event, 'source', None)
+    if session_store is None or gateway is None or fuente is None:
+        return None
+    try:
+        clave = gateway._session_key_for_source(fuente)
+        ruta = session_store.lookup_by_session_key(clave) if clave else None
+    except Exception:
+        logger.debug('mendiautos: no pude ubicar la conversación', exc_info=True)
+        return None
+    if ruta is None:            # primera vez que escribe: ya es una conversación nueva
+        return None
+    ahora = _fecha(ahora) or dt.datetime.now(dt.timezone.utc)
+    datos = getattr(ruta, 'metadata', None)
+    ultimo = (datos.get(RELOJ) if isinstance(datos, dict) else None) or \
+        getattr(ruta, 'updated_at', None) or getattr(ruta, 'created_at', None)
+    motivo = motivo_reinicio(ultimo, ahora)
+    if motivo is None:
+        try:
+            session_store.set_session_metadata(clave, RELOJ, ahora.isoformat())
+        except Exception:
+            logger.debug('mendiautos: no pude anotar la hora del mensaje', exc_info=True)
+        return None
+    if getattr(ruta, 'active_turn_token', None):
+        logger.info('mendiautos: %s ya toca conversación nueva (%s), pero hay una respuesta en curso', clave, motivo)
+        return None
+    try:
+        nueva = session_store.reset_session(clave)
+    except Exception:
+        logger.warning('mendiautos: no pude empezar una conversación nueva para %s', clave, exc_info=True)
+        return None
+    if nueva is None:
+        return None
+    try:
+        session_store.set_session_metadata(clave, RELOJ, ahora.isoformat())
+    except Exception:
+        pass
+    if getattr(fuente, 'user_id', None) is not None:
+        _reinicios[str(fuente.user_id)] = motivo
+    logger.info('mendiautos: conversación nueva para %s (%s): %s → %s', clave, motivo,
+                getattr(ruta, 'session_id', '?'), getattr(nueva, 'session_id', '?'))
+    return motivo
+
+
+def al_recibir(event=None, gateway=None, session_store=None, **_):
+    """Conversación nueva si la anterior quedó vieja; /start y /menu abren el menú (Hermes ignora /start)."""
+    try:
+        reiniciar_si_toca(event, gateway, session_store)
+    except Exception:           # esto es un ahorro: el mensaje se atiende igual
+        logger.warning('mendiautos: falló la revisión de conversación nueva', exc_info=True)
     texto = str(getattr(event, 'text', '') or '').strip()
     fuente = getattr(event, 'source', None)
     plataforma = str(getattr(getattr(fuente, 'platform', None), 'value', '') or '').lower()
