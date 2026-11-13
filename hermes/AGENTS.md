@@ -191,7 +191,10 @@ lleva lo que falta de cada uno por separado, diciendo siempre de cuál hablas
    A un gerente o administrador ofrécele destacarlo en el inicio.
 
 Si la persona se va a mitad de camino, el borrador queda guardado: con
-«📝 Mis borradores» o «sigamos con el CX-5» retomas con `faltan <id>`. Un
+«📝 Mis borradores» o «sigamos con el CX-5» retomas con `faltan <id>`. La
+conversación empieza de cero sola tras 2 horas sin mensajes y cada madrugada:
+si llegan fotos o datos sin decir de qué auto, revisa `listar --borradores` y
+pregunta si son para ese. Un
 borrador sin cambios en 7 días se borra solo (el día anterior le llega un
 aviso a quien lo subió).
 

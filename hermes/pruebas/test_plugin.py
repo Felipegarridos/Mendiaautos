@@ -223,6 +223,152 @@ class PistasParaElModelo(Base):
         self.assertIn('MEDIA:/var/lib/mendiautos/catalogo/fotos/kia/b-m.jpg', r['salida'])
 
 
+class RutaFalsa:
+    """Lo que guarda Hermes por chat (SessionEntry): hora sin zona, en la del servidor."""
+
+    def __init__(self, actualizada, metadata=None, en_curso=None, sid='viejo'):
+        self.session_id = sid
+        self.created_at = actualizada
+        self.updated_at = actualizada
+        self.metadata = dict(metadata or {})
+        self.active_turn_token = en_curso
+
+
+class AlmacenFalso:
+    """SessionStore de Hermes con solo lo que usa la extensión."""
+
+    def __init__(self, ruta=None, falla_reinicio=False):
+        self.rutas = {} if ruta is None else {'agent:main:telegram:dm:222': ruta}
+        self.reinicios = []
+        self.falla_reinicio = falla_reinicio
+
+    def lookup_by_session_key(self, clave):
+        return self.rutas.get(clave)
+
+    def set_session_metadata(self, clave, k, v):
+        ruta = self.rutas.get(clave)
+        if ruta is None:
+            return False
+        ruta.metadata[k] = v
+        return True
+
+    def reset_session(self, clave):
+        if self.falla_reinicio:
+            raise RuntimeError('base de datos ocupada')
+        self.reinicios.append(clave)
+        vieja = self.rutas[clave]
+        nueva = RutaFalsa(vieja.updated_at, sid='nuevo')
+        self.rutas[clave] = nueva
+        return nueva
+
+
+class PasarelaFalsa:
+    def _session_key_for_source(self, fuente):
+        return f'agent:main:telegram:dm:{fuente.user_id}'
+
+
+def mensaje(texto='Hola', usuario='222'):
+    plataforma = mock.Mock(value='telegram')
+    return mock.Mock(text=texto, source=mock.Mock(platform=plataforma, user_id=usuario))
+
+
+CO = m.TZ
+
+
+def hora(dia, h, mi=0):
+    """Hora de Colombia del 12 o 13 de noviembre de 2026."""
+    return m.dt.datetime(2026, 11, dia, h, mi, tzinfo=CO)
+
+
+class ConversacionNuevaSola(unittest.TestCase):
+    """Tras 2 h sin mensajes o pasada la madrugada, el siguiente mensaje va a una conversación nueva."""
+
+    def setUp(self):
+        m._reinicios.clear()
+        self.pasarela = PasarelaFalsa()
+
+    def recibir(self, almacen, ahora, texto='Hola'):
+        return m.reiniciar_si_toca(mensaje(texto), self.pasarela, almacen, ahora=ahora)
+
+    def test_mensaje_seguido_sigue_la_misma_y_avanza_el_reloj(self):
+        ruta = RutaFalsa(None, {m.RELOJ: hora(12, 15, 0).isoformat()})
+        almacen = AlmacenFalso(ruta)
+        self.assertIsNone(self.recibir(almacen, hora(12, 16, 30)))
+        self.assertEqual(almacen.reinicios, [])
+        self.assertEqual(m._fecha(ruta.metadata[m.RELOJ]), hora(12, 16, 30))
+
+    def test_dos_horas_sin_mensajes_empieza_de_cero(self):
+        almacen = AlmacenFalso(RutaFalsa(None, {m.RELOJ: hora(12, 13, 0).isoformat()}))
+        self.assertEqual(self.recibir(almacen, hora(12, 15, 0)), 'inactividad')
+        self.assertEqual(almacen.reinicios, ['agent:main:telegram:dm:222'])
+        nueva = almacen.rutas['agent:main:telegram:dm:222']
+        self.assertEqual(nueva.session_id, 'nuevo')
+        self.assertEqual(m._fecha(nueva.metadata[m.RELOJ]), hora(12, 15, 0))   # el reloj arranca de nuevo
+        self.assertEqual(m._reinicios, {'222': 'inactividad'})
+
+    def test_pasada_la_madrugada_empieza_de_cero(self):
+        """Escribió a las 2:50 a. m. y vuelve a las 3:10 (20 minutos): igual es un día nuevo."""
+        almacen = AlmacenFalso(RutaFalsa(None, {m.RELOJ: hora(13, 2, 50).isoformat()}))
+        self.assertEqual(self.recibir(almacen, hora(13, 3, 10)), 'madrugada')
+
+    def test_la_madrugada_es_en_hora_de_colombia(self):
+        """22:00 de Colombia son las 3:00 en el servidor (UTC): no es la madrugada de aquí."""
+        almacen = AlmacenFalso(RutaFalsa(None, {m.RELOJ: hora(12, 21, 50).isoformat()}))
+        self.assertIsNone(self.recibir(almacen, hora(12, 22, 10)))
+
+    def test_conversacion_de_semanas_sin_reloj_usa_la_hora_de_hermes(self):
+        """Las conversaciones de antes no tienen reloj propio: cuenta la última actividad que guardó Hermes."""
+        vieja = hora(12, 15, 54).astimezone().replace(tzinfo=None)   # sin zona, en la hora de esta máquina
+        self.assertEqual(m._fecha(vieja), hora(12, 15, 54))
+        almacen = AlmacenFalso(RutaFalsa(vieja))
+        self.assertEqual(self.recibir(almacen, hora(12, 16, 30)), None)   # 36 minutos: sigue
+        almacen = AlmacenFalso(RutaFalsa(vieja))
+        self.assertEqual(self.recibir(almacen, hora(13, 9, 0)), 'inactividad')
+
+    def test_respuesta_en_curso_no_se_corta_ni_avanza_el_reloj(self):
+        antes = hora(12, 10, 0).isoformat()
+        ruta = RutaFalsa(None, {m.RELOJ: antes}, en_curso='turno-1')
+        almacen = AlmacenFalso(ruta)
+        self.assertIsNone(self.recibir(almacen, hora(12, 15, 0)))
+        self.assertEqual(almacen.reinicios, [])
+        self.assertEqual(ruta.metadata[m.RELOJ], antes)
+
+    def test_primera_vez_que_escribe_no_hace_nada(self):
+        self.assertIsNone(self.recibir(AlmacenFalso(), hora(12, 15, 0)))
+
+    def test_sin_almacen_o_con_errores_atiende_igual(self):
+        self.assertIsNone(m.reiniciar_si_toca(mensaje(), self.pasarela, None))
+        self.assertIsNone(m.reiniciar_si_toca(mensaje(), None, AlmacenFalso()))
+        rota = mock.Mock()
+        rota.lookup_by_session_key.side_effect = RuntimeError('sin base')
+        self.assertIsNone(m.reiniciar_si_toca(mensaje(), self.pasarela, rota))
+        almacen = AlmacenFalso(RutaFalsa(None, {m.RELOJ: hora(12, 8, 0).isoformat()}), falla_reinicio=True)
+        self.assertIsNone(self.recibir(almacen, hora(12, 15, 0)))
+        self.assertEqual(m._reinicios, {})
+        self.assertIsNone(self.recibir(AlmacenFalso(RutaFalsa(None, {m.RELOJ: 'no es una fecha'})), hora(12, 15)))
+
+    def test_gancho_reinicia_y_start_sigue_abriendo_el_menu(self):
+        almacen = AlmacenFalso(RutaFalsa(None, {m.RELOJ: '2026-11-01T10:00:00+00:00'}))
+        r = m.al_recibir(event=mensaje('/start'), gateway=self.pasarela, session_store=almacen)
+        self.assertEqual(r, {'action': 'rewrite', 'text': 'Hola, muéstrame el menú'})
+        self.assertEqual(len(almacen.reinicios), 1)
+        self.assertIsNone(m.al_recibir(event=mensaje('Hola'), gateway=self.pasarela, session_store=almacen))
+        self.assertEqual(len(almacen.reinicios), 1)
+
+    def test_el_gancho_nunca_frena_el_mensaje(self):
+        with mock.patch.object(m, 'reiniciar_si_toca', side_effect=RuntimeError('algo raro')):
+            self.assertIsNone(m.al_recibir(event=mensaje('Hola'), gateway=self.pasarela, session_store=None))
+
+    def test_el_modelo_sabe_que_es_nueva_solo_en_el_primer_turno(self):
+        m._reinicios['222'] = 'inactividad'
+        vendedora = {'222': {'id': '222', 'nombre': 'Katherine', 'rol': 'vendedor'}}
+        with mock.patch.object(m, 'equipo', return_value=vendedora), mock.patch.object(m, 'anotar'):
+            primero = m.antes_de_llamar_al_modelo(user_message='sigamos', sender_id='222', platform='telegram')
+            segundo = m.antes_de_llamar_al_modelo(user_message='ok', sender_id='222', platform='telegram')
+        self.assertIn('listar --borradores', primero['context'])
+        self.assertNotIn('conversación es nueva', segundo['context'])
+
+
 class Estres(unittest.TestCase):
     PIEZAS = ['\\', 'n', 'r', '*', '**', '`', '_', '__', '~', '[', ']', '(', ')', ' ', '  ', '\n', '\t', '#', '-',
               'á', 'ñ', '¿', '?', '🚗', '✓', 'http://x.y/z', 'Precio', 'the', "let's", 'answer', 'Aquí', 'tienes',

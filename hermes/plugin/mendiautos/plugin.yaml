@@ -1,5 +1,5 @@
 name: mendiautos
-version: 2.1.0
+version: 2.2.0
 description: "Herramientas del asistente del equipo de Mendiautos (catálogo, solicitudes y menú) con permisos por persona: el rol sale del ID de Telegram de quien escribe, no de lo que diga el modelo."
 author: Mendiautos
 provides_tools:

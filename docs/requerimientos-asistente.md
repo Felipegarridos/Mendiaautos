@@ -43,6 +43,11 @@ solo tres opciones: ver el menú con botones (/menu), empezar de cero (/new) y
 detener lo que está haciendo el asistente (/stop) (ajustado el 03/10/2026:
 antes mostraba unos 60 comandos de Hermes en inglés).
 
+La conversación empieza de cero sola tras 2 horas sin mensajes y después de
+las 3 a. m.; los borradores no se pierden (ajustado el 13/11/2026: una
+conversación de 3 semanas hacía cada mensaje más caro y llegó al límite de
+tokens por minuto de Google, que el bot mostraba como si no hubiera saldo).
+
 ## Subir auto
 
 - Acepta varios datos en un mismo mensaje o audio y pregunta solo lo que falte,
